@@ -93,34 +93,174 @@ function createEmptyDB() {
   };
 }
 
+function normalizeParsedDB(parsed) {
+  const base = parsed && typeof parsed === 'object' ? parsed : createEmptyDB();
+  if (!base.schemaVersion) base.schemaVersion = 2;
+  if (!base.users || typeof base.users !== 'object') base.users = {};
+  if (!Array.isArray(base.withdrawals)) base.withdrawals = [];
+  if (!base.usedTxRefs || typeof base.usedTxRefs !== 'object') base.usedTxRefs = {};
+  if (!base.presale || typeof base.presale !== 'object') {
+    base.presale = {
+      totalCoinsSold: 0,
+      totalTonRaised: 0,
+      walletTonSpent: {},
+      purchases: [],
+    };
+  }
+  if (!base.presale.walletTonSpent || typeof base.presale.walletTonSpent !== 'object') {
+    base.presale.walletTonSpent = {};
+  }
+  if (!Array.isArray(base.presale.purchases)) base.presale.purchases = [];
+  return base;
+}
+
 function loadDB() {
   try {
     if (fs.existsSync(DB_PATH)) {
       const parsed = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-      if (!parsed.users) parsed.users = {};
-      if (!Array.isArray(parsed.withdrawals)) parsed.withdrawals = [];
-      if (!parsed.usedTxRefs) parsed.usedTxRefs = {};
-      if (!parsed.presale) {
-        parsed.presale = {
-          totalCoinsSold: 0,
-          totalTonRaised: 0,
-          walletTonSpent: {},
-          purchases: [],
-        };
-      }
-      if (!parsed.presale.walletTonSpent) parsed.presale.walletTonSpent = {};
-      if (!Array.isArray(parsed.presale.purchases)) parsed.presale.purchases = [];
-      return parsed;
+      return normalizeParsedDB(parsed);
     }
   } catch (_) {}
   return createEmptyDB();
 }
 
 const db = loadDB();
-function saveDB() {
+
+// ================= FREE PERMANENT CLOUD DB (UPSTASH REDIS REST API) =================
+const CLOUD_DB_KEY = process.env.CLOUD_DB_KEY || 'maxima_mining_db_v2';
+let cloudDbLoaded = false;
+let cloudLoadInFlight = null;
+let cloudFlushPromise = null;
+let cloudFlushPendingAgain = false;
+let cloudDebounceTimer = null;
+let lastCloudJson = '';
+let lastCloudPingAt = 0;
+
+function getUpstashCreds() {
+  const url = String(process.env.UPSTASH_REDIS_REST_URL || '')
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/\/+$/, '');
+  const token = String(process.env.UPSTASH_REDIS_REST_TOKEN || '')
+    .trim()
+    .replace(/^['"]|['"]$/g, '');
+  if (!url || !token || !/^https?:\/\//i.test(url)) return null;
+  return { url, token };
+}
+
+async function upstashCommand(creds, cmdArray) {
+  const r = await fetch(creds.url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${creds.token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(cmdArray),
+  });
+  if (!r.ok) {
+    throw new Error(`Upstash HTTP ${r.status}`);
+  }
+  const data = await r.json();
+  if (data && Object.prototype.hasOwnProperty.call(data, 'error') && data.error) {
+    throw new Error(String(data.error));
+  }
+  return data;
+}
+
+async function ensureCloudDBLoaded() {
+  const creds = getUpstashCreds();
+  if (!creds || cloudDbLoaded) return;
+  if (cloudLoadInFlight) return cloudLoadInFlight;
+
+  cloudLoadInFlight = (async () => {
+    try {
+      const data = await upstashCommand(creds, ['GET', CLOUD_DB_KEY]);
+      lastCloudPingAt = Date.now();
+      if (data && typeof data.result === 'string' && data.result.trim().startsWith('{')) {
+        const parsed = normalizeParsedDB(JSON.parse(data.result));
+        db.schemaVersion = parsed.schemaVersion;
+        db.users = parsed.users;
+        db.withdrawals = parsed.withdrawals;
+        db.usedTxRefs = parsed.usedTxRefs;
+        db.presale = parsed.presale;
+        lastCloudJson = JSON.stringify(db);
+        cloudDbLoaded = true;
+        try {
+          fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
+        } catch (_) {}
+        console.log(`☁️  [Cloud DB] Berhasil memuat ${Object.keys(db.users).length} akun member permanen dari Upstash!`);
+      } else if (data && data.result === null) {
+        cloudDbLoaded = true;
+        await flushCloudDB();
+        console.log('☁️  [Cloud DB] Upstash Redis terhubung & database permanen berhasil diinisialisasi!');
+      }
+    } catch (err) {
+      console.warn('⚠️  [Cloud DB] Gagal memuat dari Upstash Redis (akan dicoba ulang otomatis):', err.message);
+    } finally {
+      cloudLoadInFlight = null;
+    }
+  })();
+
+  return cloudLoadInFlight;
+}
+
+async function flushCloudDB() {
+  if (cloudDebounceTimer) {
+    clearTimeout(cloudDebounceTimer);
+    cloudDebounceTimer = null;
+  }
+  const creds = getUpstashCreds();
+  if (!creds) return;
+  if (!cloudDbLoaded) {
+    await ensureCloudDBLoaded();
+    if (!cloudDbLoaded) return;
+  }
+
+  if (cloudFlushPromise) {
+    cloudFlushPendingAgain = true;
+    return cloudFlushPromise;
+  }
+
+  cloudFlushPromise = (async () => {
+    do {
+      cloudFlushPendingAgain = false;
+      const snapshot = JSON.stringify(db);
+      if (snapshot === lastCloudJson) break;
+      try {
+        const res = await upstashCommand(creds, ['SET', CLOUD_DB_KEY, snapshot]);
+        if (res && res.result === 'OK') {
+          lastCloudJson = snapshot;
+          lastCloudPingAt = Date.now();
+        }
+      } catch (err) {
+        console.warn('⚠️  [Cloud DB] Gagal menyimpan ke Upstash Redis:', err.message);
+        break;
+      }
+    } while (cloudFlushPendingAgain);
+  })().finally(() => {
+    cloudFlushPromise = null;
+  });
+
+  return cloudFlushPromise;
+}
+
+function saveDB(immediateCloud = false) {
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
   } catch (_) {}
+
+  const creds = getUpstashCreds();
+  if (!creds || !cloudDbLoaded) return;
+
+  if (immediateCloud) {
+    flushCloudDB().catch(() => {});
+  } else if (!cloudDebounceTimer) {
+    cloudDebounceTimer = setTimeout(() => {
+      cloudDebounceTimer = null;
+      flushCloudDB().catch(() => {});
+    }, 8000);
+    if (cloudDebounceTimer.unref) cloudDebounceTimer.unref();
+  }
 }
 
 // ================= TON ADDRESS PARSER & CONVERTER (CRC16-XMODEM) =================
@@ -380,7 +520,7 @@ async function tryAutoVerifyFromChain(cfg, user) {
       user.everVerifiedWallet = true;
       user.verifiedAt = Date.now();
       checkAndActivateReferral(cfg, user);
-      saveDB();
+      saveDB(true);
       return true;
     }
   }
@@ -512,7 +652,7 @@ function checkAndActivateReferral(cfg, user) {
   inviter.balance = +(inviter.balance + bonus).toFixed(6);
   inviter.referralCoinsEarned = +(inviter.referralCoinsEarned + bonus).toFixed(6);
   accruePendingMining(cfg, inviter);
-  saveDB();
+  saveDB(true);
 
   notifyTelegramUser(
     cfg,
@@ -723,7 +863,7 @@ function getOrCreateUser(cfg, { userId, username, firstName, refBy }) {
     ? Number(db.presale.walletTonSpent[user.walletRaw] || 0)
     : 0;
 
-  saveDB();
+  saveDB(isNew);
 
   return {
     userId: user.userId,
@@ -835,7 +975,10 @@ function parseBody(req) {
   });
 }
 
-function sendJson(res, status, data) {
+async function sendJson(res, status, data) {
+  if (res._flushCloud && status === 200) {
+    await flushCloudDB();
+  }
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
@@ -862,13 +1005,27 @@ const server = http.createServer(async (req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
 
-  // Healthcheck for Render / Railway Cloud Hosting
+  // Healthcheck for Render / Railway Cloud Hosting & UptimeRobot Anti-Sleep + Upstash Keep-Alive
   if (req.method === 'GET' && pathname === '/healthz') {
-    return sendJson(res, 200, { ok: true, app: cfg.appName || 'MAXIMA MINING APP' });
+    await ensureCloudDBLoaded();
+    const creds = getUpstashCreds();
+    if (creds && cloudDbLoaded && Date.now() - lastCloudPingAt > 6 * 3600 * 1000) {
+      upstashCommand(creds, ['PING'])
+        .then(() => {
+          lastCloudPingAt = Date.now();
+        })
+        .catch(() => {});
+    }
+    return sendJson(res, 200, {
+      ok: true,
+      app: cfg.appName || 'MAXIMA MINING APP',
+      cloudDb: creds ? (cloudDbLoaded ? 'connected' : 'error') : 'not_configured',
+    });
   }
 
   // Telegram Bot Webhook Endpoint (Used automatically when deployed with HTTPS publicAppUrl)
   if (req.method === 'POST' && pathname === '/api/telegram/webhook') {
+    await ensureCloudDBLoaded();
     const update = await parseBody(req);
     if (cfg.botToken && update && typeof update === 'object') {
       handleTelegramUpdate(cfg, update).catch(() => {});
@@ -920,6 +1077,8 @@ const server = http.createServer(async (req, res) => {
 
   // POST API Endpoints
   if (req.method === 'POST' && pathname.startsWith('/api/')) {
+    await ensureCloudDBLoaded();
+    res._flushCloud = pathname !== '/api/user/sync';
     const body = await parseBody(req);
     getOrCreateUser(cfg, body);
     const rawUser = db.users[String(body.userId || 'guest_demo').trim()];
@@ -934,7 +1093,7 @@ const server = http.createServer(async (req, res) => {
       if (rawUser.onChainHolding !== onChainBal) {
         accruePendingMining(cfg, rawUser);
         rawUser.onChainHolding = onChainBal;
-        saveDB();
+        saveDB(true);
       }
     }
 
@@ -995,7 +1154,7 @@ const server = http.createServer(async (req, res) => {
       rawUser.walletAppName = '';
       rawUser.onChainHolding = 0;
       rawUser.walletVerified = false;
-      saveDB();
+      saveDB(true);
 
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
@@ -1123,7 +1282,7 @@ const server = http.createServer(async (req, res) => {
       }
       const todayUtc = getUtcDateStr();
       rawUser.dailyMissionVisits[missionId] = todayUtc;
-      saveDB();
+      saveDB(true);
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, { ok: true, data: buildSyncPayload(cfg, view) });
     }
@@ -1150,20 +1309,43 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      // Optional Telegram Bot API membership verification when botToken is configured
-      if (cfg.botToken && mission.channelHandle && /^\d+$/.test(String(rawUser.userId))) {
+      // Strict Telegram Bot API membership verification when botToken is configured
+      if (cfg.botToken && mission.channelHandle) {
+        if (!/^\d+$/.test(String(rawUser.userId))) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: `Buka aplikasi melalui Telegram @${cfg.botUsername || 'MAXIMAMININGBOT'} untuk verifikasi join channel ${mission.channelHandle}!`,
+          });
+        }
         const memberRes = await tgCall(cfg.botToken, 'getChatMember', {
           chat_id: mission.channelHandle,
           user_id: Number(rawUser.userId),
         }).catch(() => null);
-        if (memberRes && memberRes.ok && memberRes.result) {
-          const st = memberRes.result.status;
-          if (st === 'left' || st === 'kicked') {
+
+        if (!memberRes || !memberRes.ok || !memberRes.result) {
+          const desc = String((memberRes && memberRes.description) || '').toLowerCase();
+          if (desc.includes('inaccessible') || desc.includes('chat not found') || desc.includes('forbidden')) {
             return sendJson(res, 400, {
               ok: false,
-              error: `Anda belum join channel ${mission.channelHandle}. Silakan Join terlebih dahulu!`,
+              error: `Bot @${cfg.botUsername || 'MAXIMAMININGBOT'} belum dijadikan Admin di channel ${mission.channelHandle}!`,
             });
           }
+          return sendJson(res, 400, {
+            ok: false,
+            error: `Anda belum join channel ${mission.channelHandle}. Silakan Join terlebih dahulu!`,
+          });
+        }
+
+        const st = memberRes.result.status;
+        const isNotMember =
+          st === 'left' ||
+          st === 'kicked' ||
+          (st === 'restricted' && memberRes.result.is_member === false);
+        if (isNotMember) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: `Anda belum join channel ${mission.channelHandle}. Silakan Join terlebih dahulu!`,
+          });
         }
       }
 
@@ -1177,7 +1359,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         ok: true,
         leveledUp,
-        message: `🎁 Misi ${mission.channelHandle} Selesai! +${mission.rewardCoins} ${cfg.token.symbol} (Reset harian 00:00 UTC)`,
+        message: `🎁 Misi ${mission.channelHandle} Selesai! +${mission.rewardCoins} ${cfg.token.symbol}`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1434,6 +1616,7 @@ async function notifyTelegramUser(cfg, chatId, text) {
 
 async function handleTelegramUpdate(cfg, u) {
   if (!u || !u.message || !u.message.text) return;
+  await ensureCloudDBLoaded();
 
   const msg = u.message;
   const chatId = msg.chat.id;
@@ -1449,6 +1632,7 @@ async function handleTelegramUpdate(cfg, u) {
       firstName: from.first_name,
       refBy: refParam,
     });
+    await flushCloudDB();
 
     const sym = cfg.token.symbol;
     const cleanBaseUrl = String(cfg.publicAppUrl || '').trim().replace(/\/+$/, '');
@@ -1573,7 +1757,8 @@ const initialCfg = loadConfig();
 const PORT = initialCfg.port || 3000;
 
 if (require.main === module) {
-  server.listen(PORT, () => {
+  ensureCloudDBLoaded().catch(() => {});
+  server.listen(PORT, '0.0.0.0', () => {
     console.log('========================================================================================');
     console.log(`  ⛏️  ${initialCfg.appName} (${initialCfg.token.symbol} · 1,000 LEVELS) SERVER RUNNING!`);
     console.log('========================================================================================');
@@ -1587,6 +1772,8 @@ if (require.main === module) {
 module.exports = {
   server,
   db,
+  ensureCloudDBLoaded,
+  flushCloudDB,
   requiredHolding,
   miningSpeed,
   dailyOutput,
