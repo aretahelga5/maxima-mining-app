@@ -2,8 +2,12 @@
   "appName": "MAXIMA MINING APP",
   "botToken": "",
   "botUsername": "MAXIMAMININGBOT",
-  "publicAppUrl": "",
+  "publicAppUrl": "https://maxima-mining-app.onrender.com",
   "port": 3000,
+  "admin": {
+    "telegramIds": ["8464908276"],
+    "payoutChannel": "@MAXIMAPAYOUT"
+  },
   "wallet": {
     "creatorTonWallet": "UQDUe_P76bjHJ9EIUk8KLnFVRhbHf9_g7lJXHXgchYpZy4R1",
     "creatorRawAddress": "0:d47bf3fbe9b8c727d108524f0a2e71554616c77fdfe0ee52571d781c858a59cb",

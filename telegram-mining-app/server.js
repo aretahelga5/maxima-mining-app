@@ -521,6 +521,7 @@ async function tryAutoVerifyFromChain(cfg, user) {
       user.verifiedAt = Date.now();
       checkAndActivateReferral(cfg, user);
       saveDB(true);
+      notifyAdminsWalletVerified(cfg, user).catch(() => {});
       return true;
     }
   }
@@ -1028,7 +1029,7 @@ const server = http.createServer(async (req, res) => {
     await ensureCloudDBLoaded();
     const update = await parseBody(req);
     if (cfg.botToken && update && typeof update === 'object') {
-      handleTelegramUpdate(cfg, update).catch(() => {});
+      await handleTelegramUpdate(cfg, update).catch(() => {});
     }
     return sendJson(res, 200, { ok: true });
   }
@@ -1425,8 +1426,10 @@ const server = http.createServer(async (req, res) => {
       rawUser.balance = +(rawUser.balance + pkg.coins).toFixed(6);
 
       const receipt = {
-        id: `PS-${Date.now()}`,
+        id: `PS-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
         userId: rawUser.userId,
+        username: rawUser.username,
+        firstName: rawUser.firstName,
         walletAddress: rawUser.walletFriendly,
         tonPaid: pkg.ton,
         coinsReceived: pkg.coins,
@@ -1440,6 +1443,7 @@ const server = http.createServer(async (req, res) => {
         rawUser.userId,
         `🚀 *Pembelian Presale Berhasil!*\n\n• *Dibayar:* ${pkg.ton} TON\n• *Koin Diterima:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Kuota Wallet Terpakai:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} TON`
       ).catch(() => {});
+      notifyAdminsNewPresale(cfg, rawUser, receipt).catch(() => {});
 
       const view = getOrCreateUser(cfg, body);
       const leveledUp = view.level > prevLevel;
@@ -1498,6 +1502,7 @@ const server = http.createServer(async (req, res) => {
         rawUser.userId,
         `✅ *Wallet Terverifikasi Otomatis!*\n\nPembayaran verifikasi *${cfg.wallet.verificationFeeTon} TON* berhasil dikonfirmasi. Fitur *Withdraw ${cfg.token.symbol}* kini aktif!`
       ).catch(() => {});
+      notifyAdminsWalletVerified(cfg, rawUser).catch(() => {});
 
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
@@ -1544,9 +1549,10 @@ const server = http.createServer(async (req, res) => {
       rawUser.balance = Math.max(0, +(rawUser.balance - amount).toFixed(6));
 
       const wdRecord = {
-        id: `WD-${Date.now()}`,
+        id: `WD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
         userId: rawUser.userId,
         username: rawUser.username,
+        firstName: rawUser.firstName,
         requestedAmount: amount,
         feeCoins,
         netAmount: netReceived,
@@ -1564,6 +1570,7 @@ const server = http.createServer(async (req, res) => {
         rawUser.userId,
         `💸 *Permintaan Withdraw Diterima!*\n\n• *Jumlah Withdraw:* ${amount.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Biaya (Fee):* -${feeCoins} ${cfg.token.symbol}\n• *Bersih Dikirim:* ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Tujuan:* \`${rawUser.walletFriendly}\`\n• *Kontrak Jetton:* \`${cfg.token.contractAddress}\``
       ).catch(() => {});
+      notifyAdminsNewWithdraw(cfg, rawUser, wdRecord).catch(() => {});
 
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
@@ -1594,7 +1601,62 @@ const server = http.createServer(async (req, res) => {
   res.end('Not Found');
 });
 
-// ================= TELEGRAM BOT INTEGRATION =================
+// ================= TELEGRAM BOT & ADMIN PANEL INTEGRATION =================
+const DEFAULT_ADMIN_IDS = ['8464908276'];
+const DEFAULT_PAYOUT_CHANNEL = '@MAXIMAPAYOUT';
+
+function escHtml(val) {
+  return String(val == null ? '' : val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function fmtUtcTime(ts) {
+  const d = new Date(ts || Date.now());
+  return d.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+}
+
+function maskWalletShort(addr) {
+  const s = String(addr || '').trim();
+  if (s.length <= 14) return s;
+  return `${s.slice(0, 6)}...${s.slice(-6)}`;
+}
+
+function maskMinerDisplay(firstName, username) {
+  const base = String(firstName || username || 'Miner').trim();
+  if (base.length <= 3) return `${base[0] || 'M'}***`;
+  return `${base.slice(0, 3)}***`;
+}
+
+function getAdminIds(cfg) {
+  const set = new Set(DEFAULT_ADMIN_IDS);
+  const fromCfg = cfg && cfg.admin && Array.isArray(cfg.admin.telegramIds) ? cfg.admin.telegramIds : [];
+  for (const id of fromCfg) {
+    if (id) set.add(String(id).trim());
+  }
+  if (process.env.ADMIN_TELEGRAM_IDS) {
+    for (const id of String(process.env.ADMIN_TELEGRAM_IDS).split(',')) {
+      if (id.trim()) set.add(id.trim());
+    }
+  }
+  return Array.from(set);
+}
+
+function isAdminUser(cfg, userId) {
+  if (!userId) return false;
+  return getAdminIds(cfg).includes(String(userId).trim());
+}
+
+function getPayoutChannel(cfg) {
+  return String(
+    process.env.PAYOUT_CHANNEL ||
+      (cfg && cfg.admin && cfg.admin.payoutChannel) ||
+      DEFAULT_PAYOUT_CHANNEL
+  ).trim();
+}
+
 async function tgCall(token, method, body = {}) {
   const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: 'POST',
@@ -1614,27 +1676,549 @@ async function notifyTelegramUser(cfg, chatId, text) {
   });
 }
 
+async function notifyTelegramUserHtml(cfg, chatId, htmlText, inlineKeyboard) {
+  if (!cfg.botToken || !chatId || !/^\d+$/.test(String(chatId))) return null;
+  const payload = {
+    chat_id: chatId,
+    text: htmlText,
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+  };
+  if (inlineKeyboard) {
+    payload.reply_markup = { inline_keyboard: inlineKeyboard };
+  }
+  return tgCall(cfg.botToken, 'sendMessage', payload);
+}
+
+async function notifyAdminsHtml(cfg, htmlText, inlineKeyboard) {
+  if (!cfg.botToken) return;
+  const adminIds = getAdminIds(cfg);
+  for (const adminId of adminIds) {
+    await notifyTelegramUserHtml(cfg, adminId, htmlText, inlineKeyboard).catch(() => null);
+  }
+}
+
+function formatMemberLabelHtml(u, fallbackId) {
+  const name = escHtml((u && (u.firstName || u.username)) || `Miner ${fallbackId || ''}`);
+  const uname = u && u.username && !String(u.username).startsWith('Miner_') ? ` (@${escHtml(u.username)})` : '';
+  const uid = escHtml((u && u.userId) || fallbackId || '-');
+  return `${name}${uname} · ID: <code>${uid}</code>`;
+}
+
+function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
+  const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+  const memberStr = formatMemberLabelHtml(userObj || wd, wd.userId);
+  return [
+    `💸 <b>PERMINTAAN WITHDRAW MEMBER</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `🆔 <b>ID:</b> <code>${escHtml(wd.id)}</code>`,
+    `👤 <b>Member:</b> ${memberStr}`,
+    `💰 <b>Jumlah Withdraw:</b> ${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}`,
+    `🧾 <b>Biaya (Fee):</b> -${Number(wd.feeCoins).toLocaleString('en-US')} ${sym}`,
+    `✅ <b>BERSIH DIKIRIM:</b> <code>${wd.netAmount}</code> <b>${sym}</b>`,
+    ``,
+    `👛 <b>Wallet TON Tujuan (Ketuk untuk Copy):</b>`,
+    `<code>${escHtml(wd.walletAddress)}</code>`,
+    ``,
+    `🕒 <b>Waktu:</b> ${fmtUtcTime(wd.createdAt)}`,
+    `📋 <b>Status:</b> ${escHtml(wd.status)}`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `<i>Setelah Anda transfer ${Number(wd.netAmount).toLocaleString('en-US')} ${sym} ke wallet di atas, klik tombol PAID agar otomatis diumumkan ke ${escHtml(getPayoutChannel(cfg))}:</i>`,
+  ].join('\n');
+}
+
+function buildWithdrawAdminKeyboard(wdId) {
+  return [
+    [{ text: '✅ Tandai PAID & Post @MAXIMAPAYOUT', callback_data: `wd_paid:${wdId}` }],
+    [{ text: '❌ Tolak & Kembalikan Saldo', callback_data: `wd_rej:${wdId}` }],
+  ];
+}
+
+async function notifyAdminsNewWithdraw(cfg, rawUser, wdRecord) {
+  const html = buildWithdrawAdminCardHtml(cfg, wdRecord, rawUser);
+  const kb = buildWithdrawAdminKeyboard(wdRecord.id);
+  await notifyAdminsHtml(cfg, html, kb);
+}
+
+async function notifyAdminsNewPresale(cfg, rawUser, receipt) {
+  const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+  const maxPool = Number(cfg.presale?.maxTotalPresaleCoins || 20000000);
+  const totalTon = Number(db.presale?.totalTonRaised || 0);
+  const totalSold = Number(db.presale?.totalCoinsSold || 0);
+  const html = [
+    `🚀 <b>PEMBELIAN PRESALE BARU!</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `🆔 <b>ID Presale:</b> <code>${escHtml(receipt.id)}</code>`,
+    `👤 <b>Member:</b> ${formatMemberLabelHtml(rawUser, receipt.userId)}`,
+    `💎 <b>Paket Dibayar:</b> <b>${receipt.tonPaid} TON</b>`,
+    `🪙 <b>Koin Diterima:</b> +${Number(receipt.coinsReceived).toLocaleString('en-US')} ${sym}`,
+    `👛 <b>Wallet Pembayar:</b>`,
+    `<code>${escHtml(receipt.walletAddress)}</code>`,
+    `🕒 <b>Waktu:</b> ${fmtUtcTime(receipt.createdAt)}`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `📊 <b>Total Presale Terkumpul:</b> <b>${totalTon} TON</b> (${totalSold.toLocaleString('en-US')} / ${maxPool.toLocaleString('en-US')} ${sym})`,
+  ].join('\n');
+  await notifyAdminsHtml(cfg, html, [[{ text: '🚀 Lihat Semua Data Presale', callback_data: 'adm:presale' }]]);
+}
+
+async function notifyAdminsWalletVerified(cfg, rawUser) {
+  const feeTon = cfg.wallet?.verificationFeeTon ?? 0.1;
+  const html = [
+    `🛡️ <b>VERIFIKASI WALLET (${feeTon} TON) BARU!</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `👤 <b>Member:</b> ${formatMemberLabelHtml(rawUser, rawUser.userId)}`,
+    `👛 <b>Wallet Terverifikasi:</b>`,
+    `<code>${escHtml(rawUser.walletFriendly || rawUser.walletAddress)}</code>`,
+    `🕒 <b>Waktu:</b> ${fmtUtcTime(rawUser.verifiedAt)}`,
+  ].join('\n');
+  await notifyAdminsHtml(cfg, html);
+}
+
+function isWithdrawPending(w) {
+  const st = String((w && w.status) || '').toUpperCase();
+  return !st.startsWith('PAID') && !st.startsWith('REFUNDED');
+}
+
+function buildAdminDashboardPayload(cfg) {
+  const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+  const usersArr = Object.values(db.users || {});
+  const connectedCount = usersArr.filter((u) => Boolean(u.walletRaw)).length;
+  const verifiedCount = usersArr.filter((u) => Boolean(u.walletVerified || u.everVerifiedWallet)).length;
+
+  const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+  const pendingWds = allWds.filter(isWithdrawPending);
+  const paidWds = allWds.filter((w) => String(w.status || '').toUpperCase().startsWith('PAID'));
+  const pendingNetSum = pendingWds.reduce((acc, w) => acc + Number(w.netAmount || 0), 0);
+  const paidNetSum = paidWds.reduce((acc, w) => acc + Number(w.netAmount || 0), 0);
+
+  const purchases = (db.presale && Array.isArray(db.presale.purchases)) ? db.presale.purchases : [];
+  const totalTon = Number(db.presale?.totalTonRaised || 0);
+  const totalSold = Number(db.presale?.totalCoinsSold || 0);
+  const uniquePresaleWallets = Object.keys((db.presale && db.presale.walletTonSpent) || {}).length;
+
+  const html = [
+    `🛠️ <b>PANEL ADMIN · MAXIMA MINING APP</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `👥 <b>Total Member:</b> ${usersArr.length.toLocaleString('en-US')} akun`,
+    `👛 <b>Wallet Terkoneksi:</b> ${connectedCount.toLocaleString('en-US')} member`,
+    `🛡️ <b>Wallet Terverifikasi (0.1 TON):</b> ${verifiedCount.toLocaleString('en-US')} member`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `🚀 <b>RINGKASAN PRESALE</b>`,
+    `• <b>Transaksi Presale:</b> ${purchases.length.toLocaleString('en-US')} pembelian (${uniquePresaleWallets} wallet)`,
+    `• <b>Total TON Masuk:</b> <b>${totalTon} TON</b>`,
+    `• <b>Total Koin Terjual:</b> ${totalSold.toLocaleString('en-US')} ${sym}`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `💸 <b>RINGKASAN WITHDRAW</b>`,
+    `• <b>Menunggu Dikirim (Pending):</b> <b>${pendingWds.length} antrean</b> (${pendingNetSum.toLocaleString('en-US')} ${sym})`,
+    `• <b>Selesai Dikirim (Paid):</b> <b>${paidWds.length} transaksi</b> (${paidNetSum.toLocaleString('en-US')} ${sym})`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `<i>Perintah cepat: /admin · /withdrawals · /presale · /stats</i>`,
+  ].join('\n');
+
+  const keyboard = [
+    [{ text: `💸 Antrean Withdraw (${pendingWds.length} Pending)`, callback_data: 'adm:wd_pending' }],
+    [{ text: `🚀 Daftar Member Presale (${purchases.length})`, callback_data: 'adm:presale' }],
+    [{ text: `✅ Riwayat Withdraw Paid (${paidWds.length})`, callback_data: 'adm:wd_paid' }],
+    [{ text: '🔄 Refresh Statistik', callback_data: 'adm:stats' }],
+  ];
+
+  return { html, keyboard };
+}
+
+async function sendAdminPendingWithdrawals(cfg, chatId) {
+  const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+  const pendingWds = allWds.filter(isWithdrawPending);
+
+  if (!pendingWds.length) {
+    await notifyTelegramUserHtml(
+      cfg,
+      chatId,
+      `✅ <b>Tidak ada antrean withdraw yang menunggu saat ini.</b>\nSemua permintaan withdraw member sudah diproses.`,
+      [[{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }]]
+    );
+    return;
+  }
+
+  const batch = pendingWds.slice(0, 10);
+  await notifyTelegramUserHtml(
+    cfg,
+    chatId,
+    `⏳ <b>DAFTAR ANTREAN WITHDRAW (${pendingWds.length} Menunggu)</b>\nMenampilkan ${batch.length} antrean teratas. Ketuk alamat wallet untuk menyalin, lalu klik tombol <b>PAID</b> setelah koin dikirim:`
+  );
+
+  for (const wd of batch) {
+    const u = db.users[String(wd.userId)];
+    await notifyTelegramUserHtml(
+      cfg,
+      chatId,
+      buildWithdrawAdminCardHtml(cfg, wd, u),
+      buildWithdrawAdminKeyboard(wd.id)
+    );
+  }
+}
+
+async function sendAdminPaidWithdrawals(cfg, chatId) {
+  const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+  const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+  const paidWds = allWds
+    .filter((w) => String(w.status || '').toUpperCase().startsWith('PAID'))
+    .slice(-15)
+    .reverse();
+
+  if (!paidWds.length) {
+    await notifyTelegramUserHtml(
+      cfg,
+      chatId,
+      `📭 <b>Belum ada riwayat withdraw berstatus PAID.</b>`,
+      [[{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }]]
+    );
+    return;
+  }
+
+  const lines = [
+    `✅ <b>15 RIWAYAT WITHDRAW PAID TERAKHIR</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+  ];
+  paidWds.forEach((w, idx) => {
+    const u = db.users[String(w.userId)];
+    const name = escHtml((u && (u.firstName || u.username)) || w.firstName || w.username || w.userId);
+    lines.push(
+      `<b>${idx + 1}. ${name}</b> (ID: <code>${escHtml(w.userId)}</code>)\n   • Bersih: <b>${Number(w.netAmount).toLocaleString('en-US')} ${sym}</b> ➔ <code>${escHtml(maskWalletShort(w.walletAddress))}</code>\n   • Dibayar: ${fmtUtcTime(w.paidAt || w.createdAt)}`
+    );
+  });
+
+  await notifyTelegramUserHtml(cfg, chatId, lines.join('\n'), [
+    [{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }],
+  ]);
+}
+
+async function sendAdminPresaleList(cfg, chatId) {
+  const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+  const purchases = (db.presale && Array.isArray(db.presale.purchases)) ? db.presale.purchases : [];
+  const totalTon = Number(db.presale?.totalTonRaised || 0);
+  const totalSold = Number(db.presale?.totalCoinsSold || 0);
+  const uniqueWallets = Object.keys((db.presale && db.presale.walletTonSpent) || {}).length;
+
+  if (!purchases.length) {
+    await notifyTelegramUserHtml(
+      cfg,
+      chatId,
+      `🚀 <b>DATA MEMBER PRESALE MAXIMA</b>\n━━━━━━━━━━━━━━━━━━━━━━\nBelum ada transaksi pembelian presale saat ini.`,
+      [[{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }]]
+    );
+    return;
+  }
+
+  const recent = purchases.slice(-20).reverse();
+  const lines = [
+    `🚀 <b>DAFTAR MEMBER PRESALE MAXIMA</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `💎 <b>Total Terkumpul:</b> <b>${totalTon} TON</b>`,
+    `🪙 <b>Total Koin Terjual:</b> <b>${totalSold.toLocaleString('en-US')} ${sym}</b>`,
+    `👥 <b>Total Transaksi:</b> ${purchases.length} (${uniqueWallets} wallet unik)`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `<b>${recent.length} Transaksi Presale Terbaru:</b>`,
+    ``,
+  ];
+
+  recent.forEach((p, idx) => {
+    const u = db.users[String(p.userId)];
+    const memberStr = formatMemberLabelHtml(u || p, p.userId);
+    lines.push(
+      `<b>${idx + 1}.</b> ${memberStr}\n   • Paket: <b>${p.tonPaid} TON</b> ➔ +${Number(p.coinsReceived).toLocaleString('en-US')} ${sym}\n   • Wallet: <code>${escHtml(p.walletAddress)}</code>\n   • Waktu: ${fmtUtcTime(p.createdAt)}`
+    );
+  });
+
+  await notifyTelegramUserHtml(cfg, chatId, lines.join('\n'), [
+    [{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }],
+  ]);
+}
+
+async function postPayoutToChannel(cfg, wd, userObj) {
+  const payoutChannel = getPayoutChannel(cfg);
+  if (!cfg.botToken || !payoutChannel) return { ok: false, description: 'No payout channel' };
+
+  const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+  const botUsername = cfg.botUsername || 'MAXIMAMININGBOT';
+  const minerMasked = escHtml(
+    maskMinerDisplay(
+      (userObj && userObj.firstName) || wd.firstName,
+      (userObj && userObj.username) || wd.username
+    )
+  );
+  const walletMasked = escHtml(maskWalletShort(wd.walletAddress));
+
+  const postHtml = [
+    `💸 <b>MAXIMA PAYOUT COMPLETED</b> ✅`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+    `👤 <b>Miner:</b> ${minerMasked}`,
+    `🪙 <b>Amount Sent:</b> <b>${Number(wd.netAmount).toLocaleString('en-US')} ${sym}</b>`,
+    `👛 <b>Recipient Wallet:</b> <code>${walletMasked}</code>`,
+    `⛓️ <b>Network:</b> TON Blockchain (Jetton)`,
+    `📋 <b>Status:</b> <b>PAID ON-CHAIN ✅</b>`,
+    `🕒 <b>Time:</b> ${fmtUtcTime(wd.paidAt || Date.now())}`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+  ].join('\n');
+
+  const keyboard = [
+    [
+      { text: '⛏️ Mine MAXIMA Now', url: `https://t.me/${botUsername}` },
+      { text: '🔎 Jetton Contract', url: cfg.token.explorerUrl || 'https://tonviewer.com' },
+    ],
+  ];
+
+  return tgCall(cfg.botToken, 'sendMessage', {
+    chat_id: payoutChannel,
+    text: postHtml,
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+    reply_markup: { inline_keyboard: keyboard },
+  });
+}
+
+async function handleAdminCallbackQuery(cfg, cq) {
+  const fromId = cq.from && cq.from.id;
+  const chatId = cq.message && cq.message.chat && cq.message.chat.id;
+  const msgId = cq.message && cq.message.message_id;
+  const data = String(cq.data || '');
+
+  if (!isAdminUser(cfg, fromId)) {
+    await tgCall(cfg.botToken, 'answerCallbackQuery', {
+      callback_query_id: cq.id,
+      text: '⛔ Akses khusus Admin.',
+      show_alert: true,
+    }).catch(() => null);
+    return;
+  }
+
+  if (data === 'adm:stats') {
+    const dash = buildAdminDashboardPayload(cfg);
+    if (chatId && msgId) {
+      const editRes = await tgCall(cfg.botToken, 'editMessageText', {
+        chat_id: chatId,
+        message_id: msgId,
+        text: dash.html,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        reply_markup: { inline_keyboard: dash.keyboard },
+      }).catch(() => null);
+      if (!editRes || !editRes.ok) {
+        await notifyTelegramUserHtml(cfg, chatId || fromId, dash.html, dash.keyboard);
+      }
+    } else {
+      await notifyTelegramUserHtml(cfg, fromId, dash.html, dash.keyboard);
+    }
+    await tgCall(cfg.botToken, 'answerCallbackQuery', { callback_query_id: cq.id }).catch(() => null);
+    return;
+  }
+
+  if (data === 'adm:wd_pending') {
+    await tgCall(cfg.botToken, 'answerCallbackQuery', { callback_query_id: cq.id }).catch(() => null);
+    await sendAdminPendingWithdrawals(cfg, chatId || fromId);
+    return;
+  }
+
+  if (data === 'adm:wd_paid') {
+    await tgCall(cfg.botToken, 'answerCallbackQuery', { callback_query_id: cq.id }).catch(() => null);
+    await sendAdminPaidWithdrawals(cfg, chatId || fromId);
+    return;
+  }
+
+  if (data === 'adm:presale') {
+    await tgCall(cfg.botToken, 'answerCallbackQuery', { callback_query_id: cq.id }).catch(() => null);
+    await sendAdminPresaleList(cfg, chatId || fromId);
+    return;
+  }
+
+  if (data.startsWith('wd_paid:')) {
+    const wdId = data.slice('wd_paid:'.length).trim();
+    const wd = (db.withdrawals || []).find((w) => w.id === wdId);
+    if (!wd) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: 'Data withdraw tidak ditemukan!',
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+    if (!isWithdrawPending(wd)) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: `Withdraw ini sudah diproses (${wd.status})!`,
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+
+    const now = Date.now();
+    wd.status = 'PAID ✅';
+    wd.paidAt = now;
+
+    const u = db.users[String(wd.userId)];
+    if (u && Array.isArray(u.withdrawals)) {
+      const uw = u.withdrawals.find((x) => x.id === wdId);
+      if (uw) {
+        uw.status = 'PAID ✅';
+        uw.paidAt = now;
+      }
+    }
+
+    saveDB(true);
+    await flushCloudDB();
+
+    // 1. Notify Member
+    const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+    await notifyTelegramUserHtml(
+      cfg,
+      wd.userId,
+      [
+        `✅ <b>Withdraw ${sym} Berhasil Dikirim!</b>`,
+        `━━━━━━━━━━━━━━━━━━━━━━`,
+        `• <b>ID:</b> <code>${escHtml(wd.id)}</code>`,
+        `• <b>Jumlah Bersih Dikirim:</b> <b>${Number(wd.netAmount).toLocaleString('en-US')} ${sym}</b>`,
+        `• <b>Wallet Tujuan:</b> <code>${escHtml(wd.walletAddress)}</code>`,
+        `• <b>Status:</b> <b>PAID ✅</b>`,
+      ].join('\n')
+    ).catch(() => null);
+
+    // 2. Auto-post payout proof to @MAXIMAPAYOUT
+    const chRes = await postPayoutToChannel(cfg, wd, u).catch((e) => ({ ok: false, description: e.message }));
+    const payoutCh = escHtml(getPayoutChannel(cfg));
+    const postNote =
+      chRes && chRes.ok
+        ? `✅ <b>SELESAI:</b> Ditandai <b>PAID ✅</b> & otomatis diposting ke <b>${payoutCh}</b>!`
+        : `✅ Ditandai <b>PAID ✅</b> (Gagal post ke ${payoutCh}: ${escHtml((chRes && chRes.description) || 'cek izin bot')})`;
+
+    if (chatId && msgId) {
+      await tgCall(cfg.botToken, 'editMessageText', {
+        chat_id: chatId,
+        message_id: msgId,
+        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n${postNote}`,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+      }).catch(() => null);
+    }
+
+    await tgCall(cfg.botToken, 'answerCallbackQuery', {
+      callback_query_id: cq.id,
+      text: chRes && chRes.ok ? '✅ PAID & Terposting ke @MAXIMAPAYOUT!' : '✅ Ditandai PAID!',
+    }).catch(() => null);
+    return;
+  }
+
+  if (data.startsWith('wd_rej:')) {
+    const wdId = data.slice('wd_rej:'.length).trim();
+    const wd = (db.withdrawals || []).find((w) => w.id === wdId);
+    if (!wd) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: 'Data withdraw tidak ditemukan!',
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+    if (!isWithdrawPending(wd)) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: `Withdraw ini sudah diproses (${wd.status})!`,
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+
+    const now = Date.now();
+    wd.status = 'REFUNDED ❌';
+    wd.refundedAt = now;
+
+    const u = db.users[String(wd.userId)];
+    if (u) {
+      ensureUserSchema(u);
+      u.balance = +(Number(u.balance || 0) + Number(wd.requestedAmount || 0)).toFixed(6);
+      if (Array.isArray(u.withdrawals)) {
+        const uw = u.withdrawals.find((x) => x.id === wdId);
+        if (uw) {
+          uw.status = 'REFUNDED ❌';
+          uw.refundedAt = now;
+        }
+      }
+    }
+
+    saveDB(true);
+    await flushCloudDB();
+
+    const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+    await notifyTelegramUserHtml(
+      cfg,
+      wd.userId,
+      `❌ <b>Withdraw Dibatalkan & Saldo Dikembalikan</b>\n\nPermintaan withdraw <code>${escHtml(wd.id)}</code> dibatalkan oleh Admin dan saldo penuh <b>+${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> telah dikembalikan ke akun aplikasi Anda.`
+    ).catch(() => null);
+
+    if (chatId && msgId) {
+      await tgCall(cfg.botToken, 'editMessageText', {
+        chat_id: chatId,
+        message_id: msgId,
+        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n❌ <b>DIBATALKAN:</b> Saldo +${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym} telah dikembalikan ke member.`,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+      }).catch(() => null);
+    }
+
+    await tgCall(cfg.botToken, 'answerCallbackQuery', {
+      callback_query_id: cq.id,
+      text: '❌ Withdraw ditolak & saldo dikembalikan ke member.',
+    }).catch(() => null);
+  }
+}
+
 async function handleTelegramUpdate(cfg, u) {
-  if (!u || !u.message || !u.message.text) return;
+  if (!u) return;
   await ensureCloudDBLoaded();
+
+  if (u.callback_query) {
+    await handleAdminCallbackQuery(cfg, u.callback_query);
+    return;
+  }
+
+  if (!u.message || !u.message.text) return;
 
   const msg = u.message;
   const chatId = msg.chat.id;
   const from = msg.from || {};
+  const senderId = from.id || chatId;
   const text = msg.text.trim();
+  const cmd = text.split(/\s+/)[0].split('@')[0].toLowerCase();
 
-  if (text.startsWith('/start')) {
+  // Admin-Only Commands (/admin, /stats, /withdrawals, /wd, /presale)
+  if (['/admin', '/stats', '/withdrawals', '/wd', '/presale'].includes(cmd)) {
+    if (!isAdminUser(cfg, senderId)) {
+      await notifyTelegramUserHtml(cfg, chatId, '⛔ Perintah ini khusus untuk Admin.');
+      return;
+    }
+    if (cmd === '/withdrawals' || cmd === '/wd') {
+      await sendAdminPendingWithdrawals(cfg, chatId);
+      return;
+    }
+    if (cmd === '/presale') {
+      await sendAdminPresaleList(cfg, chatId);
+      return;
+    }
+    const dash = buildAdminDashboardPayload(cfg);
+    await notifyTelegramUserHtml(cfg, chatId, dash.html, dash.keyboard);
+    return;
+  }
+
+  if (cmd === '/start') {
     const parts = text.split(/\s+/);
     const refParam = parts[1] ? parts[1].replace(/^ref_/i, '') : '';
     const view = getOrCreateUser(cfg, {
-      userId: from.id || chatId,
+      userId: senderId,
       username: from.username,
       firstName: from.first_name,
       refBy: refParam,
     });
     await flushCloudDB();
 
-    const sym = cfg.token.symbol;
+    const sym = escHtml(cfg.token.symbol);
     const cleanBaseUrl = String(cfg.publicAppUrl || '').trim().replace(/\/+$/, '');
     const isHttps = cleanBaseUrl.startsWith('https://');
     const appUrl = refParam
@@ -1656,43 +2240,67 @@ async function handleTelegramUpdate(cfg, u) {
           ],
         ];
 
+    if (isAdminUser(cfg, senderId)) {
+      keyboard.push([{ text: '🛠️ Panel Admin (Withdraw & Presale)', callback_data: 'adm:stats' }]);
+    }
+
     await tgCall(cfg.botToken, 'sendMessage', {
       chat_id: chatId,
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       disable_web_page_preview: true,
       text: [
-        `⛏️ *Welcome to MAXIMA MINING APP!*`,
+        `⛏️ <b>Welcome to MAXIMA MINING APP!</b>`,
         `━━━━━━━━━━━━━━━━━━━━━━`,
-        `🪙 *Token:* ${sym} (TON Jetton)`,
-        `📋 *Contract:* \`${cfg.token.contractAddress}\``,
-        `👤 *Miner:* ${view.firstName}`,
-        `🏆 *Road:* Level ${view.level} / 1,000 (${view.currentLevelSpec.rankName})`,
-        `⚡ *Mining Power:* ${view.activePowerThs} TH/s (${view.activeDailyCoins} ${sym}/24h)`,
-        `💼 *Combined Holding:* ${view.combinedHolding.toFixed(2)} ${sym}`,
-        `  ├─ *In-App Holding:* ${view.inAppHolding.toFixed(2)} ${sym}`,
-        `  └─ *On-Chain Wallet:* ${view.onChainHolding.toFixed(2)} ${sym}`,
-        `👥 *Active Referrals:* ${view.referralStats.activeCount} (+200 ${sym}/aktif + 10% mining)`,
+        `🪙 <b>Token:</b> ${sym} (TON Jetton)`,
+        `📋 <b>Contract:</b> <code>${escHtml(cfg.token.contractAddress)}</code>`,
+        `👤 <b>Miner:</b> ${escHtml(view.firstName)}`,
+        `🏆 <b>Road:</b> Level ${view.level} / 1,000 (${escHtml(view.currentLevelSpec.rankName)})`,
+        `⚡ <b>Mining Power:</b> ${view.activePowerThs} TH/s (${view.activeDailyCoins} ${sym}/24h)`,
+        `💼 <b>Combined Holding:</b> ${view.combinedHolding.toFixed(2)} ${sym}`,
+        `  ├─ <b>In-App Holding:</b> ${view.inAppHolding.toFixed(2)} ${sym}`,
+        `  └─ <b>On-Chain Wallet:</b> ${view.onChainHolding.toFixed(2)} ${sym}`,
+        `👥 <b>Active Referrals:</b> ${view.referralStats.activeCount} (+200 ${sym}/aktif + 10% mining)`,
         `━━━━━━━━━━━━━━━━━━━━━━`,
-        `🔗 *Referral Link:*`,
-        `\`${view.referralLink}\``,
+        `🔗 <b>Referral Link:</b>`,
+        `<code>${escHtml(view.referralLink)}</code>`,
       ].join('\n'),
       reply_markup: { inline_keyboard: keyboard },
     });
-  } else if (text === '/contract' || text === '/token') {
+  } else if (cmd === '/contract' || cmd === '/token') {
     await tgCall(cfg.botToken, 'sendMessage', {
       chat_id: chatId,
-      parse_mode: 'Markdown',
+      parse_mode: 'HTML',
       text: [
-        `💎 *MAXIMA TON JETTON CONTRACT*`,
+        `💎 <b>MAXIMA TON JETTON CONTRACT</b>`,
         `━━━━━━━━━━━━━━━━━━━━━━`,
-        `• *App:* MAXIMA MINING APP`,
-        `• *Coin:* ${cfg.token.name} (${cfg.token.symbol})`,
-        `• *Decimals:* ${cfg.token.decimals}`,
-        `• *Contract Address:*`,
-        `\`${cfg.token.contractAddress}\``,
-        `• *Tonviewer:* ${cfg.token.explorerUrl}`,
+        `• <b>App:</b> MAXIMA MINING APP`,
+        `• <b>Coin:</b> ${escHtml(cfg.token.name)} (${escHtml(cfg.token.symbol)})`,
+        `• <b>Decimals:</b> ${cfg.token.decimals}`,
+        `• <b>Contract Address:</b>`,
+        `<code>${escHtml(cfg.token.contractAddress)}</code>`,
+        `• <b>Tonviewer:</b> ${escHtml(cfg.token.explorerUrl)}`,
       ].join('\n'),
     });
+  }
+}
+
+async function registerBotCommandsForAdmins(cfg) {
+  if (!cfg.botToken) return;
+  const adminCommands = [
+    { command: 'admin', description: '🛠️ Buka Panel Admin (Withdraw & Presale)' },
+    { command: 'withdrawals', description: '💸 Daftar Antrean Withdraw Member' },
+    { command: 'presale', description: '🚀 Daftar Pembeli Presale MAXIMA' },
+    { command: 'stats', description: '📊 Ringkasan Statistik Aplikasi' },
+    { command: 'start', description: '⛏️ Buka MAXIMA MINING APP' },
+    { command: 'contract', description: '💎 Kontrak Resmi TON Jetton MAXIMA' },
+  ];
+  for (const adminId of getAdminIds(cfg)) {
+    if (/^\d+$/.test(adminId)) {
+      await tgCall(cfg.botToken, 'setMyCommands', {
+        commands: adminCommands,
+        scope: { type: 'chat', chat_id: Number(adminId) },
+      }).catch(() => null);
+    }
   }
 }
 
@@ -1709,6 +2317,8 @@ async function startTelegramBotPolling(cfg) {
   saveBotUsernameToConfig(me.result.username);
   console.log(`🤖 [Telegram Bot] Aktif sebagai @${cfg.botUsername}`);
 
+  await registerBotCommandsForAdmins(cfg).catch(() => null);
+
   const cleanPublicUrl = String(cfg.publicAppUrl || '').trim().replace(/\/+$/, '');
   if (cleanPublicUrl.startsWith('https://')) {
     await tgCall(cfg.botToken, 'setChatMenuButton', {
@@ -1721,7 +2331,10 @@ async function startTelegramBotPolling(cfg) {
     console.log(`📲 [Telegram Mini App] Menu Button otomatis terpasang ke ${cleanPublicUrl}`);
 
     const whUrl = `${cleanPublicUrl}/api/telegram/webhook`;
-    const whRes = await tgCall(cfg.botToken, 'setWebhook', { url: whUrl }).catch(() => null);
+    const whRes = await tgCall(cfg.botToken, 'setWebhook', {
+      url: whUrl,
+      allowed_updates: ['message', 'callback_query'],
+    }).catch(() => null);
     if (whRes && whRes.ok) {
       console.log(`🔗 [Telegram Webhook] Aktif pada ${whUrl}`);
       return;
