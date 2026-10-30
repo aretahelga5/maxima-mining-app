@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: maxima-mining-app
+    runtime: node
+    plan: free
+    buildCommand: echo "No build step needed"
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: BOT_TOKEN
+        sync: false

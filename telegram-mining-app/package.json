@@ -1,0 +1,10 @@
+{
+  "name": "maxima-mining-app",
+  "version": "2.0.0",
+  "description": "MAXIMA MINING APP - Telegram Mini App on TON with 1,000 Mining Levels, Combined Proof-of-Holding, Presale, Daily Missions & TON Connect",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "ISC"
+}
