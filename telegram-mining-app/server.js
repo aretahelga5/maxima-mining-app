@@ -188,14 +188,14 @@ async function ensureCloudDBLoaded() {
         try {
           fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
         } catch (_) {}
-        console.log(`☁️  [Cloud DB] Berhasil memuat ${Object.keys(db.users).length} akun member permanen dari Upstash!`);
+        console.log(`☁️  [Cloud DB] Loaded ${Object.keys(db.users).length} permanent member accounts from Upstash!`);
       } else if (data && data.result === null) {
         cloudDbLoaded = true;
         await flushCloudDB();
-        console.log('☁️  [Cloud DB] Upstash Redis terhubung & database permanen berhasil diinisialisasi!');
+        console.log('☁️  [Cloud DB] Upstash Redis connected & permanent database initialized!');
       }
     } catch (err) {
-      console.warn('⚠️  [Cloud DB] Gagal memuat dari Upstash Redis (akan dicoba ulang otomatis):', err.message);
+      console.warn('⚠️  [Cloud DB] Failed to load from Upstash Redis (will retry automatically):', err.message);
     } finally {
       cloudLoadInFlight = null;
     }
@@ -233,7 +233,7 @@ async function flushCloudDB() {
           lastCloudPingAt = Date.now();
         }
       } catch (err) {
-        console.warn('⚠️  [Cloud DB] Gagal menyimpan ke Upstash Redis:', err.message);
+        console.warn('⚠️  [Cloud DB] Failed to save to Upstash Redis:', err.message);
         break;
       }
     } while (cloudFlushPendingAgain);
@@ -548,7 +548,7 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
       notifyTelegramUser(
         cfg,
         user.userId,
-        `✅ *Wallet Terverifikasi Otomatis (On-Chain)!*\n\nPembayaran verifikasi *${feeTon} GRAM* dari wallet Anda berhasil terdeteksi. Fitur *Withdraw ${cfg.token.symbol}* kini aktif!`
+        `✅ *Wallet Automatically Verified (On-Chain)!*\n\nYour *${feeTon} GRAM* verification payment was detected on-chain. *Withdraw ${cfg.token.symbol}* is now unlocked!`
       ).catch(() => {});
       notifyAdminsWalletVerified(cfg, user).catch(() => {});
       return true;
@@ -646,7 +646,7 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
     notifyTelegramUser(
       cfg,
       user.userId,
-      `🚀 *Pembelian Presale Terdeteksi Otomatis (On-Chain)!*\n\n• *Dibayar:* ${matchedPkg.ton} GRAM\n• *Koin Diterima:* +${matchedPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Kuota Wallet Terpakai:* ${db.presale.walletTonSpent[user.walletRaw]} / ${maxTonWallet} GRAM`
+      `🚀 *Presale Purchase Automatically Detected (On-Chain)!*\n\n• *Paid:* ${matchedPkg.ton} GRAM\n• *Coins Received:* +${matchedPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[user.walletRaw]} / ${maxTonWallet} GRAM`
     ).catch(() => {});
     notifyAdminsNewPresale(cfg, user, receipt).catch(() => {});
 
@@ -786,7 +786,7 @@ function checkAndActivateReferral(cfg, user) {
   notifyTelegramUser(
     cfg,
     inviter.userId,
-    `🎉 *Referral Aktif Baru!*\n\nTeman Anda *${user.firstName || user.username}* telah menyelesaikan *Absensi 3 Hari Berturut-turut* & *Verifikasi Wallet*!\n💰 Anda mendapatkan bonus *+${bonus} ${cfg.token.symbol}* + komisi *10%* dari setiap klaim miningnya!`
+    `🎉 *New Active Referral!*\n\nYour friend *${user.firstName || user.username}* has completed *3 Consecutive Days of Check-In* & *Wallet Verification*!\n💰 You earned a *+${bonus} ${cfg.token.symbol}* bonus + *10%* commission from every mining claim they make!`
   ).catch(() => {});
 
   return true;
@@ -1257,7 +1257,7 @@ const server = http.createServer(async (req, res) => {
       if (!rawAddr || !appName) {
         return sendJson(res, 400, {
           ok: false,
-          error: 'Koneksi wallet tidak valid! Gunakan sistem koneksi otomatis TON Connect ke wallet pribadi.',
+          error: 'Invalid wallet connection! Please connect your personal wallet automatically via TON Connect.',
         });
       }
 
@@ -1288,7 +1288,7 @@ const server = http.createServer(async (req, res) => {
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
         ok: true,
-        message: `👛 Wallet ${appName} Terkoneksi! Mining Level ${view.level} (${view.activePowerThs} TH/s) Aktif.`,
+        message: `👛 ${appName} Wallet Connected! Mining Level ${view.level} (${view.activePowerThs} TH/s) Active.`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1307,7 +1307,7 @@ const server = http.createServer(async (req, res) => {
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
         ok: true,
-        message: '🔒 Wallet diputuskan. Mining berhenti hingga wallet pribadi dihubungkan kembali.',
+        message: '🔒 Wallet disconnected. Mining is paused until you reconnect your personal wallet.',
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1317,7 +1317,7 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletRaw) {
         return sendJson(res, 403, {
           ok: false,
-          error: '🔒 Hubungkan wallet pribadi Anda terlebih dahulu agar mining berjalan & dapat diklaim!',
+          error: '🔒 Please connect your personal wallet first to start mining and claim rewards!',
         });
       }
 
@@ -1329,7 +1329,7 @@ const server = http.createServer(async (req, res) => {
       if (pending + 1e-9 < minClaim) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Minimal klaim mining adalah ${minClaim} ${cfg.token.symbol} (Saat ini: ${pending.toFixed(4)} ${cfg.token.symbol}).`,
+          error: `Minimum mining claim is ${minClaim} ${cfg.token.symbol} (Current: ${pending.toFixed(4)} ${cfg.token.symbol}).`,
         });
       }
 
@@ -1363,8 +1363,8 @@ const server = http.createServer(async (req, res) => {
         leveledUp,
         claimedCoins: pending,
         message: leveledUp
-          ? `🎉 Klaim +${pending.toFixed(3)} ${cfg.token.symbol} Berhasil! Naik ke Level ${view.level} (${view.activePowerThs} TH/s)!`
-          : `⛏️ Berhasil klaim +${pending.toFixed(3)} ${cfg.token.symbol} ke saldo aplikasi!`,
+          ? `🎉 Claimed +${pending.toFixed(3)} ${cfg.token.symbol}! Leveled up to Level ${view.level} (${view.activePowerThs} TH/s)!`
+          : `⛏️ Successfully claimed +${pending.toFixed(3)} ${cfg.token.symbol} to your in-app balance!`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1377,7 +1377,7 @@ const server = http.createServer(async (req, res) => {
       if (rawUser.lastCheckInUtc === todayUtc) {
         return sendJson(res, 400, {
           ok: false,
-          error: 'Anda sudah melakukan Check-In hari ini! Reset berikutnya pukul 00:00 UTC.',
+          error: 'You have already checked in today! Next reset is at 00:00 UTC.',
         });
       }
 
@@ -1416,7 +1416,7 @@ const server = http.createServer(async (req, res) => {
         rewardCoins: reward,
         cycleDay: rawUser.checkInCycleDay,
         consecutiveDays: rawUser.consecutiveCheckInDays,
-        message: `📅 Check-In Hari ke-${rawUser.checkInCycleDay} Berhasil! +${reward} ${cfg.token.symbol} (Streak: ${rawUser.consecutiveCheckInDays} hari)`,
+        message: `📅 Day ${rawUser.checkInCycleDay} Check-In Complete! +${reward} ${cfg.token.symbol} (Streak: ${rawUser.consecutiveCheckInDays}d)`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1426,7 +1426,7 @@ const server = http.createServer(async (req, res) => {
       const missionId = String(body.missionId || '').trim();
       const mission = (cfg.missions?.dailyChannels || []).find((m) => m.id === missionId);
       if (!mission) {
-        return sendJson(res, 400, { ok: false, error: 'Misi tidak ditemukan!' });
+        return sendJson(res, 400, { ok: false, error: 'Mission not found!' });
       }
       const todayUtc = getUtcDateStr();
       rawUser.dailyMissionVisits[missionId] = todayUtc;
@@ -1440,20 +1440,20 @@ const server = http.createServer(async (req, res) => {
       const missionId = String(body.missionId || '').trim();
       const mission = (cfg.missions?.dailyChannels || []).find((m) => m.id === missionId);
       if (!mission) {
-        return sendJson(res, 400, { ok: false, error: 'Misi tidak ditemukan!' });
+        return sendJson(res, 400, { ok: false, error: 'Mission not found!' });
       }
 
       const todayUtc = getUtcDateStr();
       if (rawUser.dailyMissionClaims[missionId] === todayUtc) {
         return sendJson(res, 400, {
           ok: false,
-          error: 'Hadiah misi ini sudah diklaim hari ini! Dapat diulang kembali setelah pukul 00:00 UTC.',
+          error: 'This mission reward has already been claimed today! Repeatable again after 00:00 UTC.',
         });
       }
       if (rawUser.dailyMissionVisits[missionId] !== todayUtc) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Buka & bergabung ke channel ${mission.channelHandle} terlebih dahulu!`,
+          error: `Please open and join channel ${mission.channelHandle} first!`,
         });
       }
 
@@ -1462,7 +1462,7 @@ const server = http.createServer(async (req, res) => {
         if (!/^\d+$/.test(String(rawUser.userId))) {
           return sendJson(res, 400, {
             ok: false,
-            error: `Buka aplikasi melalui Telegram @${cfg.botUsername || 'MAXIMAMININGBOT'} untuk verifikasi join channel ${mission.channelHandle}!`,
+            error: `Please open the app via Telegram @${cfg.botUsername || 'MAXIMAMININGBOT'} to verify membership in ${mission.channelHandle}!`,
           });
         }
         const memberRes = await tgCall(cfg.botToken, 'getChatMember', {
@@ -1475,12 +1475,12 @@ const server = http.createServer(async (req, res) => {
           if (desc.includes('inaccessible') || desc.includes('chat not found') || desc.includes('forbidden')) {
             return sendJson(res, 400, {
               ok: false,
-              error: `Bot @${cfg.botUsername || 'MAXIMAMININGBOT'} belum dijadikan Admin di channel ${mission.channelHandle}!`,
+              error: `Bot @${cfg.botUsername || 'MAXIMAMININGBOT'} must be added as an Admin in channel ${mission.channelHandle}!`,
             });
           }
           return sendJson(res, 400, {
             ok: false,
-            error: `Anda belum join channel ${mission.channelHandle}. Silakan Join terlebih dahulu!`,
+            error: `You have not joined channel ${mission.channelHandle} yet. Please join first!`,
           });
         }
 
@@ -1492,7 +1492,7 @@ const server = http.createServer(async (req, res) => {
         if (isNotMember) {
           return sendJson(res, 400, {
             ok: false,
-            error: `Anda belum join channel ${mission.channelHandle}. Silakan Join terlebih dahulu!`,
+            error: `You have not joined channel ${mission.channelHandle} yet. Please join first!`,
           });
         }
       }
@@ -1507,7 +1507,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         ok: true,
         leveledUp,
-        message: `🎁 Misi ${mission.channelHandle} Selesai! +${mission.rewardCoins} ${cfg.token.symbol}`,
+        message: `🎁 Mission ${mission.channelHandle} Completed! +${mission.rewardCoins} ${cfg.token.symbol}`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1517,7 +1517,7 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletRaw) {
         return sendJson(res, 403, {
           ok: false,
-          error: '🔒 Hubungkan wallet pribadi Anda melalui TON Connect terlebih dahulu!',
+          error: '🔒 Please connect your personal wallet via TON Connect first!',
         });
       }
 
@@ -1525,7 +1525,7 @@ const server = http.createServer(async (req, res) => {
       if (Number.isFinite(presaleEndsAtMs) && Date.now() >= presaleEndsAtMs) {
         return sendJson(res, 400, {
           ok: false,
-          error: '⏳ Waktu Presale MAXIMA telah berakhir (5 November 2026)!',
+          error: '⏳ MAXIMA Presale has ended (November 5, 2026)!',
         });
       }
 
@@ -1543,25 +1543,25 @@ const server = http.createServer(async (req, res) => {
             ok: true,
             leveledUp,
             message: leveledUp
-              ? `🚀 Pembayaran ${autoPkg.ton} GRAM Terdeteksi On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} · Naik ke Level ${view.level}!`
-              : `🚀 Pembayaran ${autoPkg.ton} GRAM Terdeteksi On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} berhasil ditambahkan!`,
+              ? `🚀 ${autoPkg.ton} GRAM Payment Detected On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} · Leveled up to Level ${view.level}!`
+              : `🚀 ${autoPkg.ton} GRAM Payment Detected On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
             data: buildSyncPayload(cfg, view),
           });
         }
         return sendJson(res, 400, {
           ok: false,
-          error: 'Pembayaran presale GRAM belum terdeteksi di blockchain. Pastikan transaksi telah dikonfirmasi dari wallet terkoneksi Anda!',
+          error: 'GRAM presale payment not detected on-chain yet. Please make sure the transaction was confirmed from your connected wallet!',
         });
       }
 
       const pkg = (cfg.presale?.packages || []).find((p) => p.id === packageId);
       if (!pkg) {
-        return sendJson(res, 400, { ok: false, error: 'Paket presale tidak valid!' });
+        return sendJson(res, 400, { ok: false, error: 'Invalid presale package!' });
       }
 
       const bocKey = `boc_${hashTxRef(txBoc)}`;
       if (db.usedTxRefs[bocKey]) {
-        return sendJson(res, 400, { ok: false, error: 'Transaksi ini sudah pernah diproses!' });
+        return sendJson(res, 400, { ok: false, error: 'This transaction has already been processed!' });
       }
 
       const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 10);
@@ -1571,14 +1571,14 @@ const server = http.createServer(async (req, res) => {
       if (currentWalletTon + pkg.ton > maxTonWallet + 1e-9) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Maksimal mengikuti presale adalah ${maxTonWallet} GRAM untuk 1 alamat wallet! Sisa kuota wallet ini: ${Math.max(0, maxTonWallet - currentWalletTon)} GRAM.`,
+          error: `Maximum presale limit is ${maxTonWallet} GRAM per wallet! Remaining quota for this wallet: ${Math.max(0, maxTonWallet - currentWalletTon)} GRAM.`,
         });
       }
 
       if ((db.presale.totalCoinsSold || 0) + pkg.coins > maxTotalCoins) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Kuota total presale (${maxTotalCoins.toLocaleString('en-US')} ${cfg.token.symbol}) tidak mencukupi!`,
+          error: `Insufficient global presale supply (${maxTotalCoins.toLocaleString('en-US')} ${cfg.token.symbol})!`,
         });
       }
 
@@ -1607,7 +1607,7 @@ const server = http.createServer(async (req, res) => {
       notifyTelegramUser(
         cfg,
         rawUser.userId,
-        `🚀 *Pembelian Presale Berhasil!*\n\n• *Dibayar:* ${pkg.ton} GRAM\n• *Koin Diterima:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Kuota Wallet Terpakai:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} GRAM`
+        `🚀 *Presale Purchase Successful!*\n\n• *Paid:* ${pkg.ton} GRAM\n• *Coins Received:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} GRAM`
       ).catch(() => {});
       notifyAdminsNewPresale(cfg, rawUser, receipt).catch(() => {});
 
@@ -1617,8 +1617,8 @@ const server = http.createServer(async (req, res) => {
         ok: true,
         leveledUp,
         message: leveledUp
-          ? `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} Berhasil! Naik ke Level ${view.level} (${view.activePowerThs} TH/s)!`
-          : `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} berhasil ditambahkan!`,
+          ? `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} Successful! Leveled up to Level ${view.level} (${view.activePowerThs} TH/s)!`
+          : `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1626,7 +1626,7 @@ const server = http.createServer(async (req, res) => {
     // 8. Wallet Verification (0.1 TON sent to UQDUe_P76bjHJ9EIUk8KLnFVRhbHf9_g7lJXHXgchYpZy4R1)
     if (pathname === '/api/wallet/verify') {
       if (!rawUser.walletRaw) {
-        return sendJson(res, 400, { ok: false, error: 'Wallet belum terkoneksi!' });
+        return sendJson(res, 400, { ok: false, error: 'Wallet is not connected!' });
       }
       const txBoc = String(body.txBoc || '').trim();
       if (!txBoc || txBoc.length < 20) {
@@ -1636,19 +1636,19 @@ const server = http.createServer(async (req, res) => {
           const view = getOrCreateUser(cfg, body);
           return sendJson(res, 200, {
             ok: true,
-            message: '✅ Pembayaran 0.1 GRAM terdeteksi on-chain! Wallet otomatis terverifikasi.',
+            message: '✅ 0.1 GRAM payment detected on-chain! Your wallet is now verified.',
             data: buildSyncPayload(cfg, view),
           });
         }
         return sendJson(res, 400, {
           ok: false,
-          error: 'Transaksi verifikasi 0.1 GRAM belum ditemukan. Pastikan Anda mengirim 0.1 GRAM dari wallet terkoneksi Anda!',
+          error: '0.1 GRAM verification transaction not found yet. Please make sure you sent 0.1 GRAM from your connected wallet!',
         });
       }
 
       const bocKey = `boc_${hashTxRef(txBoc)}`;
       if (db.usedTxRefs[bocKey]) {
-        return sendJson(res, 400, { ok: false, error: 'Bukti transaksi ini sudah pernah digunakan!' });
+        return sendJson(res, 400, { ok: false, error: 'This transaction proof has already been used!' });
       }
 
       db.usedTxRefs[bocKey] = { type: 'verify', userId: rawUser.userId, at: Date.now() };
@@ -1666,14 +1666,14 @@ const server = http.createServer(async (req, res) => {
       notifyTelegramUser(
         cfg,
         rawUser.userId,
-        `✅ *Wallet Terverifikasi Otomatis!*\n\nPembayaran verifikasi *${cfg.wallet.verificationFeeTon} GRAM* berhasil dikonfirmasi. Fitur *Withdraw ${cfg.token.symbol}* kini aktif!`
+        `✅ *Wallet Verified Automatically!*\n\nYour *${cfg.wallet.verificationFeeTon} GRAM* verification payment has been confirmed. *Withdraw ${cfg.token.symbol}* is now unlocked!`
       ).catch(() => {});
       notifyAdminsWalletVerified(cfg, rawUser).catch(() => {});
 
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
         ok: true,
-        message: `✅ Verifikasi ${cfg.wallet.verificationFeeTon} GRAM Berhasil! Wallet Anda otomatis terverifikasi untuk Withdraw.`,
+        message: `✅ ${cfg.wallet.verificationFeeTon} GRAM Verification Complete! Your wallet is now verified for Withdraw.`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1688,25 +1688,25 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletRaw) {
         return sendJson(res, 403, {
           ok: false,
-          error: '🔒 Hubungkan wallet pribadi Anda melalui TON Connect terlebih dahulu!',
+          error: '🔒 Please connect your personal wallet via TON Connect first!',
         });
       }
       if (!rawUser.walletVerified) {
         return sendJson(res, 403, {
           ok: false,
-          error: `🛡️ Wajib melakukan verifikasi wallet (${feeTon} GRAM) terlebih dahulu sebelum melakukan Withdraw!`,
+          error: `🛡️ Please complete wallet verification (${feeTon} GRAM) first before withdrawing!`,
         });
       }
       if (!Number.isFinite(amount) || amount < minW) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Syarat minimal withdraw adalah ${minW.toLocaleString('en-US')} ${cfg.token.symbol}!`,
+          error: `Minimum withdrawal amount is ${minW.toLocaleString('en-US')} ${cfg.token.symbol}!`,
         });
       }
       if (rawUser.balance + 1e-9 < amount) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Saldo di dalam aplikasi tidak mencukupi (Tersedia: ${rawUser.balance.toFixed(2)} ${cfg.token.symbol}).`,
+          error: `Insufficient in-app balance (Available: ${rawUser.balance.toFixed(2)} ${cfg.token.symbol}).`,
         });
       }
 
@@ -1734,14 +1734,14 @@ const server = http.createServer(async (req, res) => {
       notifyTelegramUser(
         cfg,
         rawUser.userId,
-        `💸 *Permintaan Withdraw Diterima!*\n\n• *Jumlah Withdraw:* ${amount.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Biaya (Fee):* -${feeCoins} ${cfg.token.symbol}\n• *Bersih Dikirim:* ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Tujuan:* \`${rawUser.walletFriendly}\`\n• *Kontrak Jetton:* \`${cfg.token.contractAddress}\``
+        `💸 *Withdrawal Request Received!*\n\n• *Withdrawal Amount:* ${amount.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Withdrawal Fee:* -${feeCoins} ${cfg.token.symbol}\n• *Net Payout:* ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Recipient Wallet:* \`${rawUser.walletFriendly}\`\n• *Jetton Contract:* \`${cfg.token.contractAddress}\``
       ).catch(() => {});
       notifyAdminsNewWithdraw(cfg, rawUser, wdRecord).catch(() => {});
 
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
         ok: true,
-        message: `💸 Withdraw ${amount.toLocaleString('en-US')} ${cfg.token.symbol} diproses! (Fee: ${feeCoins} • Bersih: ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol})`,
+        message: `💸 Withdrawal of ${amount.toLocaleString('en-US')} ${cfg.token.symbol} submitted! (Fee: ${feeCoins} • Net: ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol})`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1879,28 +1879,28 @@ function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
   const sym = escHtml(cfg.token.symbol || 'MAXIMA');
   const memberStr = formatMemberLabelHtml(userObj || wd, wd.userId);
   return [
-    `💸 <b>PERMINTAAN WITHDRAW MEMBER</b>`,
+    `💸 <b>MEMBER WITHDRAWAL REQUEST</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `🆔 <b>ID:</b> <code>${escHtml(wd.id)}</code>`,
     `👤 <b>Member:</b> ${memberStr}`,
-    `💰 <b>Jumlah Withdraw:</b> ${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}`,
-    `🧾 <b>Biaya (Fee):</b> -${Number(wd.feeCoins).toLocaleString('en-US')} ${sym}`,
-    `✅ <b>BERSIH DIKIRIM:</b> <code>${wd.netAmount}</code> <b>${sym}</b>`,
+    `💰 <b>Requested Amount:</b> ${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}`,
+    `🧾 <b>Fee:</b> -${Number(wd.feeCoins).toLocaleString('en-US')} ${sym}`,
+    `✅ <b>NET PAYOUT:</b> <code>${wd.netAmount}</code> <b>${sym}</b>`,
     ``,
-    `👛 <b>Wallet TON Tujuan (Ketuk untuk Copy):</b>`,
+    `👛 <b>Recipient TON Wallet (Tap to Copy):</b>`,
     `<code>${escHtml(wd.walletAddress)}</code>`,
     ``,
-    `🕒 <b>Waktu:</b> ${fmtUtcTime(wd.createdAt)}`,
+    `🕒 <b>Time:</b> ${fmtUtcTime(wd.createdAt)}`,
     `📋 <b>Status:</b> ${escHtml(wd.status)}`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `<i>Setelah Anda transfer ${Number(wd.netAmount).toLocaleString('en-US')} ${sym} ke wallet di atas, klik tombol PAID agar otomatis diumumkan ke ${escHtml(getPayoutChannel(cfg))}:</i>`,
+    `<i>After transferring ${Number(wd.netAmount).toLocaleString('en-US')} ${sym} to the wallet above, tap PAID to automatically announce it on ${escHtml(getPayoutChannel(cfg))}:</i>`,
   ].join('\n');
 }
 
 function buildWithdrawAdminKeyboard(wdId) {
   return [
-    [{ text: '✅ Tandai PAID & Post @MAXIMAPAYOUT', callback_data: `wd_paid:${wdId}` }],
-    [{ text: '❌ Tolak & Kembalikan Saldo', callback_data: `wd_rej:${wdId}` }],
+    [{ text: '✅ Mark PAID & Post @MAXIMAPAYOUT', callback_data: `wd_paid:${wdId}` }],
+    [{ text: '❌ Reject & Refund Balance', callback_data: `wd_rej:${wdId}` }],
   ];
 }
 
@@ -1916,30 +1916,30 @@ async function notifyAdminsNewPresale(cfg, rawUser, receipt) {
   const totalTon = Number(db.presale?.totalTonRaised || 0);
   const totalSold = Number(db.presale?.totalCoinsSold || 0);
   const html = [
-    `🚀 <b>PEMBELIAN PRESALE BARU!</b>`,
+    `🚀 <b>NEW PRESALE PURCHASE!</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `🆔 <b>ID Presale:</b> <code>${escHtml(receipt.id)}</code>`,
+    `🆔 <b>Presale ID:</b> <code>${escHtml(receipt.id)}</code>`,
     `👤 <b>Member:</b> ${formatMemberLabelHtml(rawUser, receipt.userId)}`,
-    `💎 <b>Paket Dibayar:</b> <b>${receipt.tonPaid} GRAM</b>`,
-    `🪙 <b>Koin Diterima:</b> +${Number(receipt.coinsReceived).toLocaleString('en-US')} ${sym}`,
-    `👛 <b>Wallet Pembayar:</b>`,
+    `💎 <b>Package Paid:</b> <b>${receipt.tonPaid} GRAM</b>`,
+    `🪙 <b>Coins Received:</b> +${Number(receipt.coinsReceived).toLocaleString('en-US')} ${sym}`,
+    `👛 <b>Buyer Wallet:</b>`,
     `<code>${escHtml(receipt.walletAddress)}</code>`,
-    `🕒 <b>Waktu:</b> ${fmtUtcTime(receipt.createdAt)}`,
+    `🕒 <b>Time:</b> ${fmtUtcTime(receipt.createdAt)}`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `📊 <b>Total Presale Terkumpul:</b> <b>${totalTon} GRAM</b> (${totalSold.toLocaleString('en-US')} / ${maxPool.toLocaleString('en-US')} ${sym})`,
+    `📊 <b>Total Presale Raised:</b> <b>${totalTon} GRAM</b> (${totalSold.toLocaleString('en-US')} / ${maxPool.toLocaleString('en-US')} ${sym})`,
   ].join('\n');
-  await notifyAdminsHtml(cfg, html, [[{ text: '🚀 Lihat Semua Data Presale', callback_data: 'adm:presale' }]]);
+  await notifyAdminsHtml(cfg, html, [[{ text: '🚀 View All Presale Data', callback_data: 'adm:presale' }]]);
 }
 
 async function notifyAdminsWalletVerified(cfg, rawUser) {
   const feeTon = cfg.wallet?.verificationFeeTon ?? 0.1;
   const html = [
-    `🛡️ <b>VERIFIKASI WALLET (${feeTon} GRAM) BARU!</b>`,
+    `🛡️ <b>NEW WALLET VERIFICATION (${feeTon} GRAM)!</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `👤 <b>Member:</b> ${formatMemberLabelHtml(rawUser, rawUser.userId)}`,
-    `👛 <b>Wallet Terverifikasi:</b>`,
+    `👛 <b>Verified Wallet:</b>`,
     `<code>${escHtml(rawUser.walletFriendly || rawUser.walletAddress)}</code>`,
-    `🕒 <b>Waktu:</b> ${fmtUtcTime(rawUser.verifiedAt)}`,
+    `🕒 <b>Time:</b> ${fmtUtcTime(rawUser.verifiedAt)}`,
   ].join('\n');
   await notifyAdminsHtml(cfg, html);
 }
@@ -1967,29 +1967,29 @@ function buildAdminDashboardPayload(cfg) {
   const uniquePresaleWallets = Object.keys((db.presale && db.presale.walletTonSpent) || {}).length;
 
   const html = [
-    `🛠️ <b>PANEL ADMIN · MAXIMA MINING APP</b>`,
+    `🛠️ <b>ADMIN PANEL · MAXIMA MINING APP</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `👥 <b>Total Member:</b> ${usersArr.length.toLocaleString('en-US')} akun`,
-    `👛 <b>Wallet Terkoneksi:</b> ${connectedCount.toLocaleString('en-US')} member`,
-    `🛡️ <b>Wallet Terverifikasi (0.1 GRAM):</b> ${verifiedCount.toLocaleString('en-US')} member`,
+    `👥 <b>Total Members:</b> ${usersArr.length.toLocaleString('en-US')} accounts`,
+    `👛 <b>Connected Wallets:</b> ${connectedCount.toLocaleString('en-US')} members`,
+    `🛡️ <b>Verified Wallets (0.1 GRAM):</b> ${verifiedCount.toLocaleString('en-US')} members`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `🚀 <b>RINGKASAN PRESALE</b>`,
-    `• <b>Transaksi Presale:</b> ${purchases.length.toLocaleString('en-US')} pembelian (${uniquePresaleWallets} wallet)`,
-    `• <b>Total GRAM Masuk:</b> <b>${totalTon} GRAM</b>`,
-    `• <b>Total Koin Terjual:</b> ${totalSold.toLocaleString('en-US')} ${sym}`,
+    `🚀 <b>PRESALE SUMMARY</b>`,
+    `• <b>Presale Transactions:</b> ${purchases.length.toLocaleString('en-US')} purchases (${uniquePresaleWallets} wallets)`,
+    `• <b>Total GRAM Raised:</b> <b>${totalTon} GRAM</b>`,
+    `• <b>Total Coins Sold:</b> ${totalSold.toLocaleString('en-US')} ${sym}`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `💸 <b>RINGKASAN WITHDRAW</b>`,
-    `• <b>Menunggu Dikirim (Pending):</b> <b>${pendingWds.length} antrean</b> (${pendingNetSum.toLocaleString('en-US')} ${sym})`,
-    `• <b>Selesai Dikirim (Paid):</b> <b>${paidWds.length} transaksi</b> (${paidNetSum.toLocaleString('en-US')} ${sym})`,
+    `💸 <b>WITHDRAWAL SUMMARY</b>`,
+    `• <b>Pending Withdrawals:</b> <b>${pendingWds.length} queued</b> (${pendingNetSum.toLocaleString('en-US')} ${sym})`,
+    `• <b>Completed Withdrawals (Paid):</b> <b>${paidWds.length} paid</b> (${paidNetSum.toLocaleString('en-US')} ${sym})`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `<i>Perintah cepat: /admin · /withdrawals · /presale · /stats</i>`,
+    `<i>Quick commands: /admin · /withdrawals · /presale · /stats</i>`,
   ].join('\n');
 
   const keyboard = [
-    [{ text: `💸 Antrean Withdraw (${pendingWds.length} Pending)`, callback_data: 'adm:wd_pending' }],
-    [{ text: `🚀 Daftar Member Presale (${purchases.length})`, callback_data: 'adm:presale' }],
-    [{ text: `✅ Riwayat Withdraw Paid (${paidWds.length})`, callback_data: 'adm:wd_paid' }],
-    [{ text: '🔄 Refresh Statistik', callback_data: 'adm:stats' }],
+    [{ text: `💸 Pending Withdrawals (${pendingWds.length} Queued)`, callback_data: 'adm:wd_pending' }],
+    [{ text: `🚀 Presale Buyers (${purchases.length})`, callback_data: 'adm:presale' }],
+    [{ text: `✅ Paid Withdrawals (${paidWds.length})`, callback_data: 'adm:wd_paid' }],
+    [{ text: '🔄 Refresh Stats', callback_data: 'adm:stats' }],
   ];
 
   return { html, keyboard };
@@ -2003,8 +2003,8 @@ async function sendAdminPendingWithdrawals(cfg, chatId) {
     await notifyTelegramUserHtml(
       cfg,
       chatId,
-      `✅ <b>Tidak ada antrean withdraw yang menunggu saat ini.</b>\nSemua permintaan withdraw member sudah diproses.`,
-      [[{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }]]
+      `✅ <b>There are no pending withdrawal requests right now.</b>\nAll member withdrawal requests have been processed.`,
+      [[{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }]]
     );
     return;
   }
@@ -2013,7 +2013,7 @@ async function sendAdminPendingWithdrawals(cfg, chatId) {
   await notifyTelegramUserHtml(
     cfg,
     chatId,
-    `⏳ <b>DAFTAR ANTREAN WITHDRAW (${pendingWds.length} Menunggu)</b>\nMenampilkan ${batch.length} antrean teratas. Ketuk alamat wallet untuk menyalin, lalu klik tombol <b>PAID</b> setelah koin dikirim:`
+    `⏳ <b>PENDING WITHDRAWAL QUEUE (${pendingWds.length} Pending)</b>\nShowing top ${batch.length} queued requests. Tap the wallet address to copy, then click <b>PAID</b> after sending the coins:`
   );
 
   for (const wd of batch) {
@@ -2039,26 +2039,26 @@ async function sendAdminPaidWithdrawals(cfg, chatId) {
     await notifyTelegramUserHtml(
       cfg,
       chatId,
-      `📭 <b>Belum ada riwayat withdraw berstatus PAID.</b>`,
-      [[{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }]]
+      `📭 <b>No PAID withdrawal history yet.</b>`,
+      [[{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }]]
     );
     return;
   }
 
   const lines = [
-    `✅ <b>15 RIWAYAT WITHDRAW PAID TERAKHIR</b>`,
+    `✅ <b>LAST 15 PAID WITHDRAWALS</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
   ];
   paidWds.forEach((w, idx) => {
     const u = db.users[String(w.userId)];
     const name = escHtml((u && (u.firstName || u.username)) || w.firstName || w.username || w.userId);
     lines.push(
-      `<b>${idx + 1}. ${name}</b> (ID: <code>${escHtml(w.userId)}</code>)\n   • Bersih: <b>${Number(w.netAmount).toLocaleString('en-US')} ${sym}</b> ➔ <code>${escHtml(maskWalletShort(w.walletAddress))}</code>\n   • Dibayar: ${fmtUtcTime(w.paidAt || w.createdAt)}`
+      `<b>${idx + 1}. ${name}</b> (ID: <code>${escHtml(w.userId)}</code>)\n   • Net: <b>${Number(w.netAmount).toLocaleString('en-US')} ${sym}</b> ➔ <code>${escHtml(maskWalletShort(w.walletAddress))}</code>\n   • Paid: ${fmtUtcTime(w.paidAt || w.createdAt)}`
     );
   });
 
   await notifyTelegramUserHtml(cfg, chatId, lines.join('\n'), [
-    [{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }],
+    [{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }],
   ]);
 }
 
@@ -2073,21 +2073,21 @@ async function sendAdminPresaleList(cfg, chatId) {
     await notifyTelegramUserHtml(
       cfg,
       chatId,
-      `🚀 <b>DATA MEMBER PRESALE MAXIMA</b>\n━━━━━━━━━━━━━━━━━━━━━━\nBelum ada transaksi pembelian presale saat ini.`,
-      [[{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }]]
+      `🚀 <b>MAXIMA PRESALE BUYERS</b>\n━━━━━━━━━━━━━━━━━━━━━━\nNo presale purchase transactions yet.`,
+      [[{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }]]
     );
     return;
   }
 
   const recent = purchases.slice(-20).reverse();
   const lines = [
-    `🚀 <b>DAFTAR MEMBER PRESALE MAXIMA</b>`,
+    `🚀 <b>MAXIMA PRESALE BUYERS LIST</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `💎 <b>Total Terkumpul:</b> <b>${totalTon} GRAM</b>`,
-    `🪙 <b>Total Koin Terjual:</b> <b>${totalSold.toLocaleString('en-US')} ${sym}</b>`,
-    `👥 <b>Total Transaksi:</b> ${purchases.length} (${uniqueWallets} wallet unik)`,
+    `💎 <b>Total Raised:</b> <b>${totalTon} GRAM</b>`,
+    `🪙 <b>Total Coins Sold:</b> <b>${totalSold.toLocaleString('en-US')} ${sym}</b>`,
+    `👥 <b>Total Transactions:</b> ${purchases.length} (${uniqueWallets} unique wallets)`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `<b>${recent.length} Transaksi Presale Terbaru:</b>`,
+    `<b>Latest ${recent.length} Presale Purchases:</b>`,
     ``,
   ];
 
@@ -2095,12 +2095,12 @@ async function sendAdminPresaleList(cfg, chatId) {
     const u = db.users[String(p.userId)];
     const memberStr = formatMemberLabelHtml(u || p, p.userId);
     lines.push(
-      `<b>${idx + 1}.</b> ${memberStr}\n   • Paket: <b>${p.tonPaid} GRAM</b> ➔ +${Number(p.coinsReceived).toLocaleString('en-US')} ${sym}\n   • Wallet: <code>${escHtml(p.walletAddress)}</code>\n   • Waktu: ${fmtUtcTime(p.createdAt)}`
+      `<b>${idx + 1}.</b> ${memberStr}\n   • Package: <b>${p.tonPaid} GRAM</b> ➔ +${Number(p.coinsReceived).toLocaleString('en-US')} ${sym}\n   • Wallet: <code>${escHtml(p.walletAddress)}</code>\n   • Time: ${fmtUtcTime(p.createdAt)}`
     );
   });
 
   await notifyTelegramUserHtml(cfg, chatId, lines.join('\n'), [
-    [{ text: '⬅️ Kembali ke Panel Admin', callback_data: 'adm:stats' }],
+    [{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }],
   ]);
 }
 
@@ -2155,7 +2155,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
   if (!isAdminUser(cfg, fromId)) {
     await tgCall(cfg.botToken, 'answerCallbackQuery', {
       callback_query_id: cq.id,
-      text: '⛔ Akses khusus Admin.',
+      text: '⛔ Admin access only.',
       show_alert: true,
     }).catch(() => null);
     return;
@@ -2206,7 +2206,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     if (!wd) {
       await tgCall(cfg.botToken, 'answerCallbackQuery', {
         callback_query_id: cq.id,
-        text: 'Data withdraw tidak ditemukan!',
+        text: 'Withdrawal record not found!',
         show_alert: true,
       }).catch(() => null);
       return;
@@ -2214,7 +2214,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     if (!isWithdrawPending(wd)) {
       await tgCall(cfg.botToken, 'answerCallbackQuery', {
         callback_query_id: cq.id,
-        text: `Withdraw ini sudah diproses (${wd.status})!`,
+        text: `This withdrawal has already been processed (${wd.status})!`,
         show_alert: true,
       }).catch(() => null);
       return;
@@ -2242,11 +2242,11 @@ async function handleAdminCallbackQuery(cfg, cq) {
       cfg,
       wd.userId,
       [
-        `✅ <b>Withdraw ${sym} Berhasil Dikirim!</b>`,
+        `✅ <b>${sym} Withdrawal Sent!</b>`,
         `━━━━━━━━━━━━━━━━━━━━━━`,
         `• <b>ID:</b> <code>${escHtml(wd.id)}</code>`,
-        `• <b>Jumlah Bersih Dikirim:</b> <b>${Number(wd.netAmount).toLocaleString('en-US')} ${sym}</b>`,
-        `• <b>Wallet Tujuan:</b> <code>${escHtml(wd.walletAddress)}</code>`,
+        `• <b>Net Amount Sent:</b> <b>${Number(wd.netAmount).toLocaleString('en-US')} ${sym}</b>`,
+        `• <b>Recipient Wallet:</b> <code>${escHtml(wd.walletAddress)}</code>`,
         `• <b>Status:</b> <b>PAID ✅</b>`,
       ].join('\n')
     ).catch(() => null);
@@ -2256,8 +2256,8 @@ async function handleAdminCallbackQuery(cfg, cq) {
     const payoutCh = escHtml(getPayoutChannel(cfg));
     const postNote =
       chRes && chRes.ok
-        ? `✅ <b>SELESAI:</b> Ditandai <b>PAID ✅</b> & otomatis diposting ke <b>${payoutCh}</b>!`
-        : `✅ Ditandai <b>PAID ✅</b> (Gagal post ke ${payoutCh}: ${escHtml((chRes && chRes.description) || 'cek izin bot')})`;
+        ? `✅ <b>COMPLETED:</b> Marked <b>PAID ✅</b> & automatically posted to <b>${payoutCh}</b>!`
+        : `✅ Marked <b>PAID ✅</b> (Failed to post to ${payoutCh}: ${escHtml((chRes && chRes.description) || 'check bot permissions')})`;
 
     if (chatId && msgId) {
       await tgCall(cfg.botToken, 'editMessageText', {
@@ -2271,7 +2271,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
 
     await tgCall(cfg.botToken, 'answerCallbackQuery', {
       callback_query_id: cq.id,
-      text: chRes && chRes.ok ? '✅ PAID & Terposting ke @MAXIMAPAYOUT!' : '✅ Ditandai PAID!',
+      text: chRes && chRes.ok ? '✅ PAID & Posted to @MAXIMAPAYOUT!' : '✅ Marked PAID!',
     }).catch(() => null);
     return;
   }
@@ -2282,7 +2282,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     if (!wd) {
       await tgCall(cfg.botToken, 'answerCallbackQuery', {
         callback_query_id: cq.id,
-        text: 'Data withdraw tidak ditemukan!',
+        text: 'Withdrawal record not found!',
         show_alert: true,
       }).catch(() => null);
       return;
@@ -2290,7 +2290,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     if (!isWithdrawPending(wd)) {
       await tgCall(cfg.botToken, 'answerCallbackQuery', {
         callback_query_id: cq.id,
-        text: `Withdraw ini sudah diproses (${wd.status})!`,
+        text: `This withdrawal has already been processed (${wd.status})!`,
         show_alert: true,
       }).catch(() => null);
       return;
@@ -2320,14 +2320,14 @@ async function handleAdminCallbackQuery(cfg, cq) {
     await notifyTelegramUserHtml(
       cfg,
       wd.userId,
-      `❌ <b>Withdraw Dibatalkan & Saldo Dikembalikan</b>\n\nPermintaan withdraw <code>${escHtml(wd.id)}</code> dibatalkan oleh Admin dan saldo penuh <b>+${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> telah dikembalikan ke akun aplikasi Anda.`
+      `❌ <b>Withdrawal Cancelled & Balance Refunded</b>\n\nYour withdrawal request <code>${escHtml(wd.id)}</code> was cancelled by Admin and the full amount of <b>+${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> has been refunded to your in-app balance.`
     ).catch(() => null);
 
     if (chatId && msgId) {
       await tgCall(cfg.botToken, 'editMessageText', {
         chat_id: chatId,
         message_id: msgId,
-        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n❌ <b>DIBATALKAN:</b> Saldo +${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym} telah dikembalikan ke member.`,
+        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n❌ <b>CANCELLED:</b> Balance +${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym} has been refunded to the member.`,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
       }).catch(() => null);
@@ -2335,7 +2335,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
 
     await tgCall(cfg.botToken, 'answerCallbackQuery', {
       callback_query_id: cq.id,
-      text: '❌ Withdraw ditolak & saldo dikembalikan ke member.',
+      text: '❌ Withdrawal rejected & balance refunded to member.',
     }).catch(() => null);
   }
 }
@@ -2361,7 +2361,7 @@ async function handleTelegramUpdate(cfg, u) {
   // Admin-Only Commands (/admin, /stats, /withdrawals, /wd, /presale)
   if (['/admin', '/stats', '/withdrawals', '/wd', '/presale'].includes(cmd)) {
     if (!isAdminUser(cfg, senderId)) {
-      await notifyTelegramUserHtml(cfg, chatId, '⛔ Perintah ini khusus untuk Admin.');
+      await notifyTelegramUserHtml(cfg, chatId, '⛔ This command is for Admins only.');
       return;
     }
     if (cmd === '/withdrawals' || cmd === '/wd') {
@@ -2411,7 +2411,7 @@ async function handleTelegramUpdate(cfg, u) {
         ];
 
     if (isAdminUser(cfg, senderId)) {
-      keyboard.push([{ text: '🛠️ Panel Admin (Withdraw & Presale)', callback_data: 'adm:stats' }]);
+      keyboard.push([{ text: '🛠️ Admin Panel (Withdrawals & Presale)', callback_data: 'adm:stats' }]);
     }
 
     await tgCall(cfg.botToken, 'sendMessage', {
@@ -2429,7 +2429,7 @@ async function handleTelegramUpdate(cfg, u) {
         `💼 <b>Combined Holding:</b> ${view.combinedHolding.toFixed(2)} ${sym}`,
         `  ├─ <b>In-App Holding:</b> ${view.inAppHolding.toFixed(2)} ${sym}`,
         `  └─ <b>On-Chain Wallet:</b> ${view.onChainHolding.toFixed(2)} ${sym}`,
-        `👥 <b>Active Referrals:</b> ${view.referralStats.activeCount} (+200 ${sym}/aktif + 10% mining)`,
+        `👥 <b>Active Referrals:</b> ${view.referralStats.activeCount} (+200 ${sym}/active + 10% mining)`,
         `━━━━━━━━━━━━━━━━━━━━━━`,
         `🔗 <b>Referral Link:</b>`,
         `<code>${escHtml(view.referralLink)}</code>`,
@@ -2457,12 +2457,12 @@ async function handleTelegramUpdate(cfg, u) {
 async function registerBotCommandsForAdmins(cfg) {
   if (!cfg.botToken) return;
   const adminCommands = [
-    { command: 'admin', description: '🛠️ Buka Panel Admin (Withdraw & Presale)' },
-    { command: 'withdrawals', description: '💸 Daftar Antrean Withdraw Member' },
-    { command: 'presale', description: '🚀 Daftar Pembeli Presale MAXIMA' },
-    { command: 'stats', description: '📊 Ringkasan Statistik Aplikasi' },
-    { command: 'start', description: '⛏️ Buka MAXIMA MINING APP' },
-    { command: 'contract', description: '💎 Kontrak Resmi TON Jetton MAXIMA' },
+    { command: 'admin', description: '🛠️ Open Admin Panel (Withdrawals & Presale)' },
+    { command: 'withdrawals', description: '💸 Pending Member Withdrawals' },
+    { command: 'presale', description: '🚀 MAXIMA Presale Buyers List' },
+    { command: 'stats', description: '📊 App Statistics Summary' },
+    { command: 'start', description: '⛏️ Open MAXIMA MINING APP' },
+    { command: 'contract', description: '💎 Official MAXIMA TON Jetton Contract' },
   ];
   for (const adminId of getAdminIds(cfg)) {
     if (/^\d+$/.test(adminId)) {
@@ -2479,13 +2479,13 @@ async function startTelegramBotPolling(cfg) {
 
   const me = await tgCall(cfg.botToken, 'getMe').catch(() => null);
   if (!me || !me.ok) {
-    console.log('⚠️  [Telegram Bot] botToken belum diisi/valid. Mode Web App berjalan penuh.');
+    console.log('⚠️  [Telegram Bot] botToken not configured/valid. Web App mode is running.');
     return;
   }
 
   cfg.botUsername = me.result.username;
   saveBotUsernameToConfig(me.result.username);
-  console.log(`🤖 [Telegram Bot] Aktif sebagai @${cfg.botUsername}`);
+  console.log(`🤖 [Telegram Bot] Active as @${cfg.botUsername}`);
 
   await registerBotCommandsForAdmins(cfg).catch(() => null);
 
@@ -2498,7 +2498,7 @@ async function startTelegramBotPolling(cfg) {
         web_app: { url: cleanPublicUrl },
       },
     }).catch(() => null);
-    console.log(`📲 [Telegram Mini App] Menu Button otomatis terpasang ke ${cleanPublicUrl}`);
+    console.log(`📲 [Telegram Mini App] Menu Button automatically set to ${cleanPublicUrl}`);
 
     const whUrl = `${cleanPublicUrl}/api/telegram/webhook`;
     const whRes = await tgCall(cfg.botToken, 'setWebhook', {
@@ -2506,14 +2506,14 @@ async function startTelegramBotPolling(cfg) {
       allowed_updates: ['message', 'callback_query'],
     }).catch(() => null);
     if (whRes && whRes.ok) {
-      console.log(`🔗 [Telegram Webhook] Aktif pada ${whUrl}`);
+      console.log(`🔗 [Telegram Webhook] Active at ${whUrl}`);
       return;
     }
   } else {
     const whInfo = await tgCall(cfg.botToken, 'getWebhookInfo').catch(() => null);
     const activeWhUrl = whInfo && whInfo.ok && whInfo.result ? String(whInfo.result.url || '') : '';
     if (activeWhUrl.startsWith('https://')) {
-      console.log(`🌐 [Telegram Bot] Cloud Webhook aktif di ${activeWhUrl} (server lokal tidak menimpa webhook cloud).`);
+      console.log(`🌐 [Telegram Bot] Cloud Webhook active at ${activeWhUrl} (local server will not overwrite cloud webhook).`);
       return;
     }
   }
