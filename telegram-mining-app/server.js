@@ -313,6 +313,30 @@ function hashTxRef(str) {
   return crypto.createHash('sha256').update(String(str || '')).digest('hex');
 }
 
+function signBrowserAuth(cfg, userId) {
+  const secret = String(cfg?.botToken || 'maxima_mining_browser_handoff_v2');
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`maxima_tg_${String(userId || '')}`)
+    .digest('hex')
+    .slice(0, 24);
+}
+
+function buildBrowserConnectUrl(cfg, user) {
+  const cleanBase = String(cfg.publicAppUrl || `http://localhost:${cfg.port || 3000}`)
+    .trim()
+    .replace(/\/+$/, '');
+  const uid = String(user.userId || '');
+  const sig = signBrowserAuth(cfg, uid);
+  const params = new URLSearchParams({
+    tg_uid: uid,
+    tg_un: String(user.username || ''),
+    tg_fn: String(user.firstName || ''),
+    tg_sig: sig,
+  });
+  return `${cleanBase}/?${params.toString()}`;
+}
+
 // ================= UTC DATE HELPERS (00:00 UTC DAILY RESET) =================
 function getUtcDateStr(ms = Date.now()) {
   return new Date(ms).toISOString().slice(0, 10);
@@ -465,9 +489,9 @@ async function fetchOnChainJettonBalance(cfg, walletRaw) {
   return cached ? cached.balance : 0;
 }
 
-async function fetchRecentCreatorTransactions(cfg) {
+async function fetchRecentCreatorTransactions(cfg, forceRefresh = false) {
   const now = Date.now();
-  if (now - creatorTxCache.time < 20000) {
+  if (!forceRefresh && now - creatorTxCache.time < 6000 && creatorTxCache.txs.length > 0) {
     return creatorTxCache.txs;
   }
   const creatorRaw =
@@ -476,9 +500,9 @@ async function fetchRecentCreatorTransactions(cfg) {
   if (!creatorRaw) return [];
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4500);
+    const timer = setTimeout(() => ctrl.abort(), 5000);
     const res = await fetch(
-      `https://tonapi.io/v2/blockchain/accounts/${encodeURIComponent(creatorRaw)}/transactions?limit=50`,
+      `https://tonapi.io/v2/blockchain/accounts/${encodeURIComponent(creatorRaw)}/transactions?limit=80`,
       { headers: { Accept: 'application/json' }, signal: ctrl.signal }
     );
     clearTimeout(timer);
@@ -493,16 +517,16 @@ async function fetchRecentCreatorTransactions(cfg) {
 }
 
 // Automatically detect if connected wallet sent 0.1 TON to creator wallet on-chain
-async function tryAutoVerifyFromChain(cfg, user) {
+async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
   if (!user.walletRaw) return false;
   if (user.verifiedWallets && user.verifiedWallets[user.walletRaw]) {
     user.walletVerified = true;
     return false;
   }
   const feeTon = Number(cfg.wallet?.verificationFeeTon || 0.1);
-  const minNano = Math.round(feeTon * 1e9 * 0.94); // allow minor network fwd fee tolerance around 0.1 TON
-  const maxNano = Math.round(feeTon * 1e9 * 1.5); // distinguish 0.1 TON verification from 2-10 TON presale
-  const txs = await fetchRecentCreatorTransactions(cfg);
+  const minNano = Math.round(feeTon * 1e9 * 0.85); // allow network fwd/gas fee tolerance around 0.1 TON
+  const maxNano = Math.round(feeTon * 1e9 * 5.0); // distinguish 0.1 TON verification from 2-10 TON presale
+  const txs = await fetchRecentCreatorTransactions(cfg, forceRefresh);
   for (const tx of txs) {
     if (!tx || !tx.hash || !tx.in_msg) continue;
     const srcRaw = parseTonAddressToRaw(tx.in_msg.source?.address || tx.in_msg.source);
@@ -512,7 +536,7 @@ async function tryAutoVerifyFromChain(cfg, user) {
       db.usedTxRefs[refKey] = { type: 'verify', userId: user.userId, at: Date.now() };
       if (!user.verifiedWallets) user.verifiedWallets = {};
       user.verifiedWallets[user.walletRaw] = {
-        verifiedAt: (tx.utime ? tx.utime * 1000 : Date.now()),
+        verifiedAt: tx.utime ? tx.utime * 1000 : Date.now(),
         txRef: tx.hash,
         source: 'onchain-auto',
       };
@@ -521,11 +545,115 @@ async function tryAutoVerifyFromChain(cfg, user) {
       user.verifiedAt = Date.now();
       checkAndActivateReferral(cfg, user);
       saveDB(true);
+      notifyTelegramUser(
+        cfg,
+        user.userId,
+        `✅ *Wallet Terverifikasi Otomatis (On-Chain)!*\n\nPembayaran verifikasi *${feeTon} GRAM* dari wallet Anda berhasil terdeteksi. Fitur *Withdraw ${cfg.token.symbol}* kini aktif!`
+      ).catch(() => {});
       notifyAdminsWalletVerified(cfg, user).catch(() => {});
       return true;
     }
   }
   return false;
+}
+
+// Automatically detect if connected wallet sent 2, 4, 6, 8, or 10 TON for Presale on-chain
+async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
+  if (!user.walletRaw) return null;
+  const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-05T23:59:59Z');
+  if (Number.isFinite(presaleEndsAtMs) && Date.now() >= presaleEndsAtMs) return null;
+
+  const packages = Array.isArray(cfg.presale?.packages) ? cfg.presale.packages : [];
+  if (!packages.length) return null;
+
+  const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 10);
+  const maxTotalCoins = Number(cfg.presale?.maxTotalPresaleCoins || 20000000);
+  const txs = await fetchRecentCreatorTransactions(cfg, forceRefresh);
+
+  let creditedPkg = null;
+
+  for (const tx of txs) {
+    if (!tx || !tx.hash || !tx.in_msg) continue;
+    const srcRaw = parseTonAddressToRaw(tx.in_msg.source?.address || tx.in_msg.source);
+    if (srcRaw !== user.walletRaw) continue;
+
+    const refKey = `chain_ps_${tx.hash}`;
+    if (db.usedTxRefs[refKey]) continue;
+
+    const valNano = Number(tx.in_msg.value || 0);
+    if (valNano < 1.85 * 1e9) continue;
+
+    const matchedPkg = packages.find((p) => {
+      const targetNano = p.ton * 1e9;
+      return Math.abs(valNano - targetNano) <= targetNano * 0.04;
+    });
+    if (!matchedPkg) continue;
+
+    const txTimeMs = tx.utime ? tx.utime * 1000 : Date.now();
+    ensureUserSchema(user);
+
+    // Check if this transaction was already credited via immediate TON Connect BOC within 15 minutes
+    const existingBocReceipt = (user.presalePurchases || []).find(
+      (p) =>
+        Number(p.tonPaid) === Number(matchedPkg.ton) &&
+        !p.txHash &&
+        Math.abs(Number(p.createdAt || 0) - txTimeMs) < 15 * 60 * 1000
+    );
+    if (existingBocReceipt) {
+      existingBocReceipt.txHash = tx.hash;
+      db.usedTxRefs[refKey] = {
+        type: 'presale',
+        userId: user.userId,
+        ton: matchedPkg.ton,
+        at: txTimeMs,
+        linkedReceipt: existingBocReceipt.id,
+      };
+      saveDB(true);
+      continue;
+    }
+
+    const currentWalletTon = Number(db.presale.walletTonSpent[user.walletRaw] || 0);
+    if (currentWalletTon + matchedPkg.ton > maxTonWallet + 1e-9) continue;
+    if ((db.presale.totalCoinsSold || 0) + matchedPkg.coins > maxTotalCoins) continue;
+
+    accruePendingMining(cfg, user);
+    db.usedTxRefs[refKey] = {
+      type: 'presale',
+      userId: user.userId,
+      ton: matchedPkg.ton,
+      at: Date.now(),
+    };
+    db.presale.walletTonSpent[user.walletRaw] = +(currentWalletTon + matchedPkg.ton).toFixed(4);
+    db.presale.totalTonRaised = +((db.presale.totalTonRaised || 0) + matchedPkg.ton).toFixed(4);
+    db.presale.totalCoinsSold = (db.presale.totalCoinsSold || 0) + matchedPkg.coins;
+    user.balance = +(user.balance + matchedPkg.coins).toFixed(6);
+
+    const receipt = {
+      id: `PS-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      userId: user.userId,
+      username: user.username,
+      firstName: user.firstName,
+      walletAddress: user.walletFriendly,
+      tonPaid: matchedPkg.ton,
+      coinsReceived: matchedPkg.coins,
+      txHash: tx.hash,
+      createdAt: txTimeMs,
+    };
+    user.presalePurchases.push(receipt);
+    db.presale.purchases.push(receipt);
+    saveDB(true);
+
+    notifyTelegramUser(
+      cfg,
+      user.userId,
+      `🚀 *Pembelian Presale Terdeteksi Otomatis (On-Chain)!*\n\n• *Dibayar:* ${matchedPkg.ton} GRAM\n• *Koin Diterima:* +${matchedPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Kuota Wallet Terpakai:* ${db.presale.walletTonSpent[user.walletRaw]} / ${maxTonWallet} GRAM`
+    ).catch(() => {});
+    notifyAdminsNewPresale(cfg, user, receipt).catch(() => {});
+
+    creditedPkg = matchedPkg;
+  }
+
+  return creditedPkg;
 }
 
 // ================= USER MINING ACCRUAL, STATS & REFERRALS =================
@@ -900,6 +1028,7 @@ function getOrCreateUser(cfg, { userId, username, firstName, refBy }) {
     referredBy: user.referredBy,
     isSelfActiveReferral: isUserActiveReferral(user),
     referralLink,
+    browserConnectUrl: buildBrowserConnectUrl(cfg, user),
     presalePurchases: user.presalePurchases || [],
     withdrawals: user.withdrawals || [],
   };
@@ -936,6 +1065,8 @@ function buildSyncPayload(cfg, userView) {
     user: userView,
     config: {
       appName: cfg.appName || 'MAXIMA MINING APP',
+      botUsername: cfg.botUsername || 'MAXIMAMININGBOT',
+      publicAppUrl: cfg.publicAppUrl || '',
       wallet: cfg.wallet,
       token: {
         ...cfg.token,
@@ -983,6 +1114,8 @@ async function sendJson(res, status, data) {
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
     'Cache-Control': 'no-store',
   });
   res.end(JSON.stringify(data));
@@ -1002,6 +1135,16 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer(async (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Max-Age': '86400',
+    });
+    return res.end();
+  }
+
   const cfg = loadConfig();
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
@@ -1052,6 +1195,8 @@ const server = http.createServer(async (req, res) => {
       url: origin,
       name: cfg.appName || 'MAXIMA MINING APP',
       iconUrl: fullIconUrl,
+      termsOfUseUrl: origin,
+      privacyPolicyUrl: origin,
     });
   }
 
@@ -1085,11 +1230,12 @@ const server = http.createServer(async (req, res) => {
     const rawUser = db.users[String(body.userId || 'guest_demo').trim()];
     ensureUserSchema(rawUser);
 
-    // Sync on-chain MAXIMA Jetton balance & check on-chain 0.1 TON verification if wallet connected
+    // Sync on-chain MAXIMA Jetton balance & check on-chain 0.1 TON verification / presale if wallet connected
     if (rawUser.walletRaw) {
       const [onChainBal] = await Promise.all([
         fetchOnChainJettonBalance(cfg, rawUser.walletRaw),
-        !rawUser.walletVerified ? tryAutoVerifyFromChain(cfg, rawUser) : Promise.resolve(false),
+        !rawUser.walletVerified ? tryAutoVerifyFromChain(cfg, rawUser, false) : Promise.resolve(false),
+        tryAutoPresaleFromChain(cfg, rawUser, false),
       ]);
       if (rawUser.onChainHolding !== onChainBal) {
         accruePendingMining(cfg, rawUser);
@@ -1134,8 +1280,9 @@ const server = http.createServer(async (req, res) => {
       const onChainBal = await fetchOnChainJettonBalance(cfg, rawAddr);
       rawUser.onChainHolding = onChainBal;
       if (!rawUser.walletVerified) {
-        await tryAutoVerifyFromChain(cfg, rawUser);
+        await tryAutoVerifyFromChain(cfg, rawUser, true);
       }
+      await tryAutoPresaleFromChain(cfg, rawUser, true);
       checkAndActivateReferral(cfg, rawUser);
 
       const view = getOrCreateUser(cfg, body);
@@ -1384,12 +1531,32 @@ const server = http.createServer(async (req, res) => {
 
       const packageId = String(body.packageId || '').trim();
       const txBoc = String(body.txBoc || '').trim();
+      const prevLevel = rawUser.level || 1;
+
+      // Support on-chain auto-detection if txBoc callback was dropped by Telegram Desktop / WebView
+      if (!txBoc || txBoc.length < 20) {
+        const autoPkg = await tryAutoPresaleFromChain(cfg, rawUser, true);
+        if (autoPkg) {
+          const view = getOrCreateUser(cfg, body);
+          const leveledUp = view.level > prevLevel;
+          return sendJson(res, 200, {
+            ok: true,
+            leveledUp,
+            message: leveledUp
+              ? `🚀 Pembayaran ${autoPkg.ton} GRAM Terdeteksi On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} · Naik ke Level ${view.level}!`
+              : `🚀 Pembayaran ${autoPkg.ton} GRAM Terdeteksi On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} berhasil ditambahkan!`,
+            data: buildSyncPayload(cfg, view),
+          });
+        }
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'Pembayaran presale GRAM belum terdeteksi di blockchain. Pastikan transaksi telah dikonfirmasi dari wallet terkoneksi Anda!',
+        });
+      }
+
       const pkg = (cfg.presale?.packages || []).find((p) => p.id === packageId);
       if (!pkg) {
         return sendJson(res, 400, { ok: false, error: 'Paket presale tidak valid!' });
-      }
-      if (!txBoc || txBoc.length < 20) {
-        return sendJson(res, 400, { ok: false, error: 'Bukti pembayaran transaksi TON (BOC) tidak valid!' });
       }
 
       const bocKey = `boc_${hashTxRef(txBoc)}`;
@@ -1404,7 +1571,7 @@ const server = http.createServer(async (req, res) => {
       if (currentWalletTon + pkg.ton > maxTonWallet + 1e-9) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Maksimal mengikuti presale adalah ${maxTonWallet} TON untuk 1 alamat wallet! Sisa kuota wallet ini: ${Math.max(0, maxTonWallet - currentWalletTon)} TON.`,
+          error: `Maksimal mengikuti presale adalah ${maxTonWallet} GRAM untuk 1 alamat wallet! Sisa kuota wallet ini: ${Math.max(0, maxTonWallet - currentWalletTon)} GRAM.`,
         });
       }
 
@@ -1416,7 +1583,6 @@ const server = http.createServer(async (req, res) => {
       }
 
       accruePendingMining(cfg, rawUser);
-      const prevLevel = rawUser.level || 1;
 
       db.usedTxRefs[bocKey] = { type: 'presale', userId: rawUser.userId, ton: pkg.ton, at: Date.now() };
       db.presale.walletTonSpent[rawUser.walletRaw] = +(currentWalletTon + pkg.ton).toFixed(4);
@@ -1441,7 +1607,7 @@ const server = http.createServer(async (req, res) => {
       notifyTelegramUser(
         cfg,
         rawUser.userId,
-        `🚀 *Pembelian Presale Berhasil!*\n\n• *Dibayar:* ${pkg.ton} TON\n• *Koin Diterima:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Kuota Wallet Terpakai:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} TON`
+        `🚀 *Pembelian Presale Berhasil!*\n\n• *Dibayar:* ${pkg.ton} GRAM\n• *Koin Diterima:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Kuota Wallet Terpakai:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} GRAM`
       ).catch(() => {});
       notifyAdminsNewPresale(cfg, rawUser, receipt).catch(() => {});
 
@@ -1464,19 +1630,19 @@ const server = http.createServer(async (req, res) => {
       }
       const txBoc = String(body.txBoc || '').trim();
       if (!txBoc || txBoc.length < 20) {
-        // Also try on-chain scan if user clicked "Check Verification" after sending 0.1 TON
-        const foundOnChain = await tryAutoVerifyFromChain(cfg, rawUser);
+        // Force fresh on-chain scan if user clicked "Check Verification" after sending 0.1 TON
+        const foundOnChain = await tryAutoVerifyFromChain(cfg, rawUser, true);
         if (foundOnChain || rawUser.walletVerified) {
           const view = getOrCreateUser(cfg, body);
           return sendJson(res, 200, {
             ok: true,
-            message: '✅ Pembayaran 0.1 TON terdeteksi on-chain! Wallet otomatis terverifikasi.',
+            message: '✅ Pembayaran 0.1 GRAM terdeteksi on-chain! Wallet otomatis terverifikasi.',
             data: buildSyncPayload(cfg, view),
           });
         }
         return sendJson(res, 400, {
           ok: false,
-          error: 'Transaksi verifikasi 0.1 TON belum ditemukan. Silakan kirim 0.1 TON melalui popup wallet!',
+          error: 'Transaksi verifikasi 0.1 GRAM belum ditemukan. Pastikan Anda mengirim 0.1 GRAM dari wallet terkoneksi Anda!',
         });
       }
 
@@ -1500,14 +1666,14 @@ const server = http.createServer(async (req, res) => {
       notifyTelegramUser(
         cfg,
         rawUser.userId,
-        `✅ *Wallet Terverifikasi Otomatis!*\n\nPembayaran verifikasi *${cfg.wallet.verificationFeeTon} TON* berhasil dikonfirmasi. Fitur *Withdraw ${cfg.token.symbol}* kini aktif!`
+        `✅ *Wallet Terverifikasi Otomatis!*\n\nPembayaran verifikasi *${cfg.wallet.verificationFeeTon} GRAM* berhasil dikonfirmasi. Fitur *Withdraw ${cfg.token.symbol}* kini aktif!`
       ).catch(() => {});
       notifyAdminsWalletVerified(cfg, rawUser).catch(() => {});
 
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
         ok: true,
-        message: `✅ Verifikasi ${cfg.wallet.verificationFeeTon} TON Berhasil! Wallet Anda otomatis terverifikasi untuk Withdraw.`,
+        message: `✅ Verifikasi ${cfg.wallet.verificationFeeTon} GRAM Berhasil! Wallet Anda otomatis terverifikasi untuk Withdraw.`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -1528,7 +1694,7 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletVerified) {
         return sendJson(res, 403, {
           ok: false,
-          error: `🛡️ Wajib melakukan verifikasi wallet (${feeTon} TON) terlebih dahulu sebelum melakukan Withdraw!`,
+          error: `🛡️ Wajib melakukan verifikasi wallet (${feeTon} GRAM) terlebih dahulu sebelum melakukan Withdraw!`,
         });
       }
       if (!Number.isFinite(amount) || amount < minW) {
@@ -1592,7 +1758,11 @@ const server = http.createServer(async (req, res) => {
     const ext = path.extname(filePath).toLowerCase();
     res.writeHead(200, {
       'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
-      'Cache-Control': 'no-cache',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
     });
     return fs.createReadStream(filePath).pipe(res);
   }
@@ -1750,13 +1920,13 @@ async function notifyAdminsNewPresale(cfg, rawUser, receipt) {
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `🆔 <b>ID Presale:</b> <code>${escHtml(receipt.id)}</code>`,
     `👤 <b>Member:</b> ${formatMemberLabelHtml(rawUser, receipt.userId)}`,
-    `💎 <b>Paket Dibayar:</b> <b>${receipt.tonPaid} TON</b>`,
+    `💎 <b>Paket Dibayar:</b> <b>${receipt.tonPaid} GRAM</b>`,
     `🪙 <b>Koin Diterima:</b> +${Number(receipt.coinsReceived).toLocaleString('en-US')} ${sym}`,
     `👛 <b>Wallet Pembayar:</b>`,
     `<code>${escHtml(receipt.walletAddress)}</code>`,
     `🕒 <b>Waktu:</b> ${fmtUtcTime(receipt.createdAt)}`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `📊 <b>Total Presale Terkumpul:</b> <b>${totalTon} TON</b> (${totalSold.toLocaleString('en-US')} / ${maxPool.toLocaleString('en-US')} ${sym})`,
+    `📊 <b>Total Presale Terkumpul:</b> <b>${totalTon} GRAM</b> (${totalSold.toLocaleString('en-US')} / ${maxPool.toLocaleString('en-US')} ${sym})`,
   ].join('\n');
   await notifyAdminsHtml(cfg, html, [[{ text: '🚀 Lihat Semua Data Presale', callback_data: 'adm:presale' }]]);
 }
@@ -1764,7 +1934,7 @@ async function notifyAdminsNewPresale(cfg, rawUser, receipt) {
 async function notifyAdminsWalletVerified(cfg, rawUser) {
   const feeTon = cfg.wallet?.verificationFeeTon ?? 0.1;
   const html = [
-    `🛡️ <b>VERIFIKASI WALLET (${feeTon} TON) BARU!</b>`,
+    `🛡️ <b>VERIFIKASI WALLET (${feeTon} GRAM) BARU!</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `👤 <b>Member:</b> ${formatMemberLabelHtml(rawUser, rawUser.userId)}`,
     `👛 <b>Wallet Terverifikasi:</b>`,
@@ -1801,11 +1971,11 @@ function buildAdminDashboardPayload(cfg) {
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `👥 <b>Total Member:</b> ${usersArr.length.toLocaleString('en-US')} akun`,
     `👛 <b>Wallet Terkoneksi:</b> ${connectedCount.toLocaleString('en-US')} member`,
-    `🛡️ <b>Wallet Terverifikasi (0.1 TON):</b> ${verifiedCount.toLocaleString('en-US')} member`,
+    `🛡️ <b>Wallet Terverifikasi (0.1 GRAM):</b> ${verifiedCount.toLocaleString('en-US')} member`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `🚀 <b>RINGKASAN PRESALE</b>`,
     `• <b>Transaksi Presale:</b> ${purchases.length.toLocaleString('en-US')} pembelian (${uniquePresaleWallets} wallet)`,
-    `• <b>Total TON Masuk:</b> <b>${totalTon} TON</b>`,
+    `• <b>Total GRAM Masuk:</b> <b>${totalTon} GRAM</b>`,
     `• <b>Total Koin Terjual:</b> ${totalSold.toLocaleString('en-US')} ${sym}`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
     `💸 <b>RINGKASAN WITHDRAW</b>`,
@@ -1913,7 +2083,7 @@ async function sendAdminPresaleList(cfg, chatId) {
   const lines = [
     `🚀 <b>DAFTAR MEMBER PRESALE MAXIMA</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `💎 <b>Total Terkumpul:</b> <b>${totalTon} TON</b>`,
+    `💎 <b>Total Terkumpul:</b> <b>${totalTon} GRAM</b>`,
     `🪙 <b>Total Koin Terjual:</b> <b>${totalSold.toLocaleString('en-US')} ${sym}</b>`,
     `👥 <b>Total Transaksi:</b> ${purchases.length} (${uniqueWallets} wallet unik)`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
@@ -1925,7 +2095,7 @@ async function sendAdminPresaleList(cfg, chatId) {
     const u = db.users[String(p.userId)];
     const memberStr = formatMemberLabelHtml(u || p, p.userId);
     lines.push(
-      `<b>${idx + 1}.</b> ${memberStr}\n   • Paket: <b>${p.tonPaid} TON</b> ➔ +${Number(p.coinsReceived).toLocaleString('en-US')} ${sym}\n   • Wallet: <code>${escHtml(p.walletAddress)}</code>\n   • Waktu: ${fmtUtcTime(p.createdAt)}`
+      `<b>${idx + 1}.</b> ${memberStr}\n   • Paket: <b>${p.tonPaid} GRAM</b> ➔ +${Number(p.coinsReceived).toLocaleString('en-US')} ${sym}\n   • Wallet: <code>${escHtml(p.walletAddress)}</code>\n   • Waktu: ${fmtUtcTime(p.createdAt)}`
     );
   });
 
