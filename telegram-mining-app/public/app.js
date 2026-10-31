@@ -518,8 +518,8 @@
     },
   };
 
-  let currentLang = localStorage.getItem('maxima_lang') || 'id';
-  if (!LANGUAGES.some((l) => l.code === currentLang)) currentLang = 'id';
+  let currentLang = localStorage.getItem('maxima_lang') || 'en';
+  if (!LANGUAGES.some((l) => l.code === currentLang)) currentLang = 'en';
 
   function t(key, vars = {}) {
     const dict = I18N[currentLang] || I18N.en;
@@ -1146,7 +1146,7 @@
       initTonConnect();
     }
     if (!tonConnectUI) {
-      showToast('⏳ Memuat modul TON Connect... Silakan ketuk sekali lagi.');
+      showToast('⏳ Loading TON Connect module... Please tap again.');
       setTimeout(() => {
         initTonConnect();
         if (tonConnectUI) openTonConnect(shouldForceReset);
@@ -1181,7 +1181,7 @@
         explicitDisconnectInProgress = false;
         await tonConnectUI.openModal();
       } catch (_) {
-        showToast('⚠️ Gagal membuka popup TON Connect. Silakan coba lagi.');
+        showToast('⚠️ Failed to open TON Connect popup. Please try again.');
       }
     }
   }
@@ -1746,7 +1746,7 @@
       const msg = String((err && err.message) || err || '').toLowerCase();
       if (msg.includes('reject') || msg.includes('decline') || msg.includes('user_rejects')) {
         stopAutoOnChainPoll();
-        showToast('❌ Transaksi dibatalkan di wallet.');
+        showToast('❌ Transaction cancelled in wallet.');
       }
     }
   }
@@ -1959,7 +1959,7 @@
   if ($('btnRecheckOnChainVerify')) {
     $('btnRecheckOnChainVerify').addEventListener('click', async () => {
       sfxClick();
-      showToast('🔍 Memeriksa transaksi verifikasi 0.1 GRAM di blockchain...');
+      showToast('🔍 Checking 0.1 GRAM verification transaction on-chain...');
       const res = await apiPost('/api/wallet/verify', { txBoc: '' });
       if (res && res.ok) {
         appState = res.data;
@@ -2247,7 +2247,7 @@
             stopAutoOnChainPoll();
             sfxSuccess();
             triggerHaptic('success');
-            showToast('✅ Verifikasi Wallet (0.1 GRAM) terdeteksi otomatis! Withdraw kini aktif.');
+            showToast('✅ Wallet Verification (0.1 GRAM) detected automatically! Withdraw is now active.');
           } else if (
             appState.user &&
             Array.isArray(appState.user.presalePurchases) &&
@@ -2258,7 +2258,7 @@
             sfxLevelUp();
             triggerHaptic('success');
             showToast(
-              `🚀 Presale +${nf.format(latest ? latest.coinsReceived : 0)} MAXIMA terdeteksi otomatis!`
+              `🚀 Presale +${nf.format(latest ? latest.coinsReceived : 0)} MAXIMA detected automatically!`
             );
           }
         }

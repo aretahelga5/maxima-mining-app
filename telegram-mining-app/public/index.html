@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -18,10 +18,10 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Official TON Connect UI SDK (Patched Local Bundle for Telegram Desktop & Mobile + CDN Fallback) -->
   <script
-    src="/tonconnect-ui.min.js?v=20261031-gram2"
+    src="/tonconnect-ui.min.js?v=20261031-en1"
     onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';s.onerror=function(){var u=document.createElement('script');u.src='https://unpkg.com/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';document.head.appendChild(u);};document.head.appendChild(s);"
   ></script>
-  <link rel="stylesheet" href="/style.css?v=20261031-gram2" />
+  <link rel="stylesheet" href="/style.css?v=20261031-en1" />
 </head>
 <body>
   <!-- ================= INITIAL 10-LANGUAGE SELECTION POPUP MODAL ================= -->
@@ -37,7 +37,7 @@
         />
       </div>
       <h2 class="lang-modal-title" id="langModalTitle">MAXIMA MINING APP</h2>
-      <p class="lang-modal-sub" id="langModalSubtitle">Choose Your Language · Pilih Bahasa Anda</p>
+      <p class="lang-modal-sub" id="langModalSubtitle">Choose Your Language</p>
       <div class="lang-modal-grid" id="langModalGrid">
         <!-- Populated dynamically with the 10 most used global languages -->
       </div>
@@ -65,7 +65,7 @@
 
       <div class="header-actions">
         <button class="btn-lang-pill" id="btnOpenLangModal" type="button" title="Language">
-          🌐 <span id="headerLangCode">ID</span>
+          🌐 <span id="headerLangCode">EN</span>
         </button>
         <!-- Official TON Connect Button -->
         <div id="ton-connect-btn"></div>
@@ -99,9 +99,9 @@
         <div class="alert-lock" id="miningWalletGate">
           <div class="alert-lock-icon">🔒</div>
           <div class="alert-lock-body">
-            <strong data-i18n="mining_paused_title">Mining Belum Berjalan (Wallet Belum Terkoneksi)</strong>
+            <strong data-i18n="mining_paused_title">Mining Paused (Wallet Not Connected)</strong>
             <p data-i18n="mining_paused_desc">
-              Hubungkan wallet pribadi Anda secara otomatis via TON Connect agar mesin mining berjalan!
+              Connect your personal TON wallet automatically via TON Connect to start mining!
             </p>
           </div>
           <button type="button" class="btn-gold btn-sm" id="btnGateConnect" data-i18n="btn_connect_auto">
@@ -156,7 +156,7 @@
         <!-- COMBINED PROOF-OF-HOLDING CARD -->
         <div class="game-card">
           <div class="card-kicker" data-i18n="combined_holding_kicker">
-            PROOF-OF-HOLDING (WALLET + IN-APP DIGABUNG)
+            PROOF-OF-HOLDING (WALLET + IN-APP COMBINED)
           </div>
           <div class="big-balance-row">
             <span class="big-balance-num" id="combinedHoldingVal">0.00</span>
@@ -165,11 +165,11 @@
 
           <div class="holding-split-grid">
             <div class="split-box">
-              <span class="split-lbl" data-i18n="inapp_holding_lbl">🏦 Hold di Mining App</span>
+              <span class="split-lbl" data-i18n="inapp_holding_lbl">🏦 Held in Mining App</span>
               <strong class="split-val"><span id="inAppHoldingVal">0.00</span> MAXIMA</strong>
             </div>
             <div class="split-box">
-              <span class="split-lbl" data-i18n="onchain_holding_lbl">👛 Hold di Wallet Terkoneksi</span>
+              <span class="split-lbl" data-i18n="onchain_holding_lbl">👛 Held in Connected Wallet</span>
               <strong class="split-val"><span id="onChainHoldingVal">0.00</span> MAXIMA</strong>
             </div>
           </div>
@@ -184,7 +184,7 @@
               <div class="bar-fill" id="nextLevelBar" style="width: 0%"></div>
             </div>
             <div class="lp-hint" id="nextLevelHint">
-              Hold 101 MAXIMA gabungan untuk naik ke Level 2
+              Need 101 combined MAXIMA (101 more needed)
             </div>
           </div>
         </div>
@@ -193,7 +193,7 @@
         <div class="game-card shift-card">
           <div class="shift-top-row">
             <div>
-              <div class="card-kicker" data-i18n="live_mining_cart_lbl">HASIL MINING BERJALAN</div>
+              <div class="card-kicker" data-i18n="live_mining_cart_lbl">LIVE MINING REWARD</div>
               <div class="pending-counter">
                 <span id="livePendingCoins">0.000000</span>
                 <small>MAXIMA</small>
@@ -209,11 +209,11 @@
             <div class="bar-fill bar-fill-mint" id="shiftProgressBar" style="width: 0%"></div>
           </div>
           <div class="shift-min-note" id="claimMinHint">
-            Syarat klaim kapan saja: minimal 0.10 MAXIMA
+            Claimable anytime once reaching 0.10 MAXIMA
           </div>
 
           <button type="button" class="btn-gold btn-block btn-lg" id="btnClaimMining">
-            🔗 Hubungkan Wallet Pribadi untuk Mulai Mining
+            🔗 Connect Personal TON Wallet to Start Mining
           </button>
         </div>
       </section>
@@ -224,11 +224,11 @@
           <div class="pane-title-row">
             <h2 data-i18n="road_1000_title">🗺️ 1,000 Mining Levels</h2>
             <button type="button" class="pill-action" id="btnJumpMyLevel" data-i18n="btn_my_level">
-              📍 Level Saya
+              📍 My Level
             </button>
           </div>
           <p data-i18n="road_1000_desc">
-            10 Rank (TRAINEE s/d CEO) & 1,000 Level Mining dengan sistem Proof-of-Holding. Semakin banyak MAXIMA yang di-hold (Wallet + App), semakin tinggi Level & TH/s Anda!
+            10 Ranks (TRAINEE to CEO) & 1,000 Mining Levels powered by combined MAXIMA held in your connected Wallet + Mining App.
           </p>
         </div>
 
@@ -251,7 +251,7 @@
             </div>
             <div class="we-stats-grid">
               <div class="we-stat">
-                <span data-i18n="lbl_holding_needed">Holding Dibutuhkan</span>
+                <span data-i18n="lbl_holding_needed">Holding Needed</span>
                 <strong id="weHoldRange">100 – 2.84K MAXIMA</strong>
               </div>
               <div class="we-stat">
@@ -263,7 +263,7 @@
                 <strong id="weDailyRange">5 – 95.25 MAXIMA</strong>
               </div>
               <div class="we-stat">
-                <span data-i18n="lbl_tool_crew">Alat · Kru</span>
+                <span data-i18n="lbl_tool_crew">Tool · Crew</span>
                 <strong id="weToolCrew">Pickaxe · 1</strong>
               </div>
             </div>
@@ -291,11 +291,11 @@
             <button type="button" class="r-chip" data-range="701-800">701–800</button>
             <button type="button" class="r-chip" data-range="801-900">801–900</button>
             <button type="button" class="r-chip" data-range="901-1000">901–1000</button>
-            <button type="button" class="r-chip" data-range="all" data-i18n="btn_all_1000">Semua (1–1000)</button>
+            <button type="button" class="r-chip" data-range="all" data-i18n="btn_all_1000">All (1–1000)</button>
           </div>
         </div>
 
-        <div class="section-subhead" id="levelsListHeading">Daftar Level 1 – 100 (100 Level)</div>
+        <div class="section-subhead" id="levelsListHeading">Levels 1 – 100 (100 Levels)</div>
         <div class="levels-list" id="levelsListContainer">
           <!-- Populated dynamically with levels 1..1000 -->
         </div>
@@ -317,39 +317,39 @@
           <!-- PRESALE COUNTDOWN UNTIL 5 NOVEMBER 2026 -->
           <div class="presale-countdown-box">
             <div class="pc-head">
-              <span data-i18n="presale_ends_lbl">⏳ PRESALE BERAKHIR DALAM</span>
+              <span data-i18n="presale_ends_lbl">⏳ PRESALE ENDS IN</span>
               <span class="pc-date-pill">5 NOV 2026</span>
             </div>
             <div class="pc-grid">
               <div class="pc-unit">
                 <strong id="psCdDays">05</strong>
-                <small data-i18n="cd_days">HARI</small>
+                <small data-i18n="cd_days">DAYS</small>
               </div>
               <div class="pc-sep">:</div>
               <div class="pc-unit">
                 <strong id="psCdHours">00</strong>
-                <small data-i18n="cd_hours">JAM</small>
+                <small data-i18n="cd_hours">HOURS</small>
               </div>
               <div class="pc-sep">:</div>
               <div class="pc-unit">
                 <strong id="psCdMins">00</strong>
-                <small data-i18n="cd_mins">MENIT</small>
+                <small data-i18n="cd_mins">MINS</small>
               </div>
               <div class="pc-sep">:</div>
               <div class="pc-unit">
                 <strong id="psCdSecs">00</strong>
-                <small data-i18n="cd_secs">DETIK</small>
+                <small data-i18n="cd_secs">SECS</small>
               </div>
             </div>
           </div>
 
           <div class="presale-pool-stats">
             <div>
-              <span class="split-lbl" data-i18n="presale_sold_lbl">Terjual Saat Presale</span>
+              <span class="split-lbl" data-i18n="presale_sold_lbl">Total Presale Sold</span>
               <strong class="presale-sold-num"><span id="presaleSoldVal">0</span> / 20,000,000</strong>
             </div>
             <div style="text-align:right">
-              <span class="split-lbl" data-i18n="presale_remaining_lbl">Sisa Kuota Global</span>
+              <span class="split-lbl" data-i18n="presale_remaining_lbl">Remaining Supply</span>
               <strong class="presale-rem-num"><span id="presaleRemVal">20,000,000</span> MAXIMA</strong>
             </div>
           </div>
@@ -359,20 +359,20 @@
           </div>
 
           <div class="presale-quota-row">
-            <span data-i18n="wallet_presale_quota_lbl">Kuota Wallet Anda:</span>
-            <strong id="walletPresaleQuotaText">0 / 10 GRAM (Sisa 10 GRAM)</strong>
+            <span data-i18n="wallet_presale_quota_lbl">Your Wallet Limit (Max 10 GRAM):</span>
+            <strong id="walletPresaleQuotaText">0 / 10 GRAM (10 GRAM left)</strong>
           </div>
         </div>
 
         <!-- 5 OFFICIAL PRESALE PACKAGES (2, 4, 6, 8, 10 GRAM) -->
-        <div class="section-subhead" data-i18n="choose_presale_pkg">Pilih Paket Presale MAXIMA</div>
+        <div class="section-subhead" data-i18n="choose_presale_pkg">Select Presale Package (Max 10 GRAM / Wallet)</div>
         <div class="presale-grid" id="presalePackagesContainer">
           <!-- Rendered dynamically -->
         </div>
 
-        <div class="section-subhead" data-i18n="presale_history_heading">Riwayat Presale Anda</div>
+        <div class="section-subhead" data-i18n="presale_history_heading">Your Presale Purchases</div>
         <div class="list-stack" id="presaleHistoryContainer">
-          <div class="empty-box" data-i18n="no_presale_yet">Belum ada pembelian presale.</div>
+          <div class="empty-box" data-i18n="no_presale_yet">No presale purchases yet.</div>
         </div>
       </section>
 
@@ -380,7 +380,7 @@
       <section class="tab-pane" id="tab-missions">
         <div class="pane-head">
           <div class="pane-title-row">
-            <h2 data-i18n="missions_tab_title">📋 Misi Harian & Referral</h2>
+            <h2 data-i18n="missions_tab_title">📋 Missions & Referrals</h2>
             <span class="utc-pill">🕒 Reset 00:00 UTC (<span id="utcResetCountdown">--:--:--</span>)</span>
           </div>
         </div>
@@ -399,7 +399,7 @@
           </div>
 
           <button type="button" class="btn-gold btn-block" id="btnDailyCheckIn">
-            📅 Check-In Hari Ini (+10 MAXIMA)
+            📅 Check-In Day 1 (+10 MAXIMA)
           </button>
         </div>
 
@@ -413,7 +413,7 @@
 
         <!-- ACTIVE REFERRAL SYSTEM -->
         <div class="section-subhead" style="margin-top:18px" data-i18n="referral_section_heading">
-          👥 Program Referral Teman Aktif (+200 MAXIMA & +10% Mining)
+          👥 Active Referral Crew (+200 MAXIMA & +10% Mining)
         </div>
 
         <div class="game-card ref-rules-card">
@@ -422,52 +422,52 @@
               <span class="ref-perk-icon">🎁</span>
               <div>
                 <strong>+200 MAXIMA</strong>
-                <small data-i18n="ref_perk1_sub">Per Referral Teman Aktif</small>
+                <small data-i18n="ref_perk1_sub">Per Active Referral</small>
               </div>
             </div>
             <div class="ref-perk">
               <span class="ref-perk-icon">⚡</span>
               <div>
                 <strong>+10% Bonus</strong>
-                <small data-i18n="ref_perk2_sub">Dari Hasil Mining Referral Aktif</small>
+                <small data-i18n="ref_perk2_sub">From Active Referral Mining</small>
               </div>
             </div>
           </div>
 
           <div class="ref-conditions-box">
-            <strong data-i18n="ref_strict_title">⚠️ Syarat Wajib Referral Terhitung Aktif:</strong>
+            <strong data-i18n="ref_strict_title">⚠️ Mandatory Active Referral Conditions:</strong>
             <ul>
-              <li data-i18n="ref_cond_1">1. Teman wajib melakukan Check-In Harian 3 hari berturut-turut.</li>
-              <li data-i18n="ref_cond_2">2. Butuh verifikasi wallet untuk referensi.</li>
-              <li class="warn-line" data-i18n="ref_cond_3">Tanpa memenuhi KEDUA syarat di atas, referral tidak dihitung dan tidak mendapat reward.</li>
+              <li data-i18n="ref_cond_1">1. Friend completes 3 consecutive days of Daily Check-In.</li>
+              <li data-i18n="ref_cond_2">2. Wallet verification is required for referral.</li>
+              <li class="warn-line" data-i18n="ref_cond_3">Without BOTH conditions above, referral is NOT counted and earns no reward.</li>
             </ul>
           </div>
 
           <div class="ref-link-box" id="refLinkDisplay">https://t.me/...</div>
           <div class="btn-row-2">
-            <button type="button" class="btn-gold" id="btnShareRefTg" data-i18n="btn_share_tg">📤 Share Telegram</button>
+            <button type="button" class="btn-gold" id="btnShareRefTg" data-i18n="btn_share_tg">📤 Share on Telegram</button>
             <button type="button" class="btn-ghost" id="btnCopyRefLink" data-i18n="btn_copy_link">📋 Copy Link</button>
           </div>
 
           <div class="ref-stats-3">
             <div class="r-stat">
               <strong id="refActiveCountVal">0</strong>
-              <span data-i18n="ref_active_lbl">Referral Aktif</span>
+              <span data-i18n="ref_active_lbl">Active Referrals</span>
             </div>
             <div class="r-stat">
               <strong id="refPendingCountVal">0</strong>
-              <span data-i18n="ref_pending_lbl">Belum Aktif</span>
+              <span data-i18n="ref_pending_lbl">Pending</span>
             </div>
             <div class="r-stat">
               <strong id="refEarnedCoinsVal">+0</strong>
-              <span data-i18n="ref_earned_lbl">Total Bonus MAXIMA</span>
+              <span data-i18n="ref_earned_lbl">MAXIMA Earned</span>
             </div>
           </div>
         </div>
 
-        <div class="section-subhead" data-i18n="friends_progress_heading">Status & Syarat Referral Teman Anda</div>
+        <div class="section-subhead" data-i18n="friends_progress_heading">Invited Friends & Qualification Status</div>
         <div class="list-stack" id="friendsListContainer">
-          <div class="empty-box" data-i18n="no_referrals_yet">Belum ada teman yang diundang.</div>
+          <div class="empty-box" data-i18n="no_referrals_yet">No friends invited yet. Share your link!</div>
         </div>
       </section>
 
@@ -499,12 +499,12 @@
             <span class="pill-mint">TEP-74</span>
           </div>
           <div class="cm-addr-wrap">
-            <small data-i18n="jetton_contract_lbl">ALAMAT KONTRAK TON JETTON:</small>
+            <small data-i18n="jetton_contract_lbl">MAXIMA TON JETTON CONTRACT:</small>
             <code id="fullContractAddr">EQBf0K3oICQZr-UPkiQiP7fMcGXQqq_aQB0jno6mbpssbr45</code>
           </div>
           <div class="btn-row-3">
             <button type="button" class="btn-ghost btn-sm" id="btnCopyContractMain" data-i18n="btn_copy_contract">
-              📋 Copy Kontrak
+              📋 Copy Contract
             </button>
             <a
               class="btn-ghost btn-sm"
@@ -524,21 +524,21 @@
         <!-- STEP 1: AUTOMATIC TON CONNECT -->
         <div class="game-card">
           <div class="step-row-head">
-            <strong data-i18n="step1_auto_wallet">1. Koneksi Otomatis Wallet Pribadi</strong>
+            <strong data-i18n="step1_auto_wallet">1. Automatic Personal Wallet Connection</strong>
             <span class="status-tag" id="walletConnTag">Disconnected</span>
           </div>
           <div class="wallet-info-box" id="walletConnectedInfo">
-            Belum ada wallet terkoneksi. Hubungkan wallet pribadi Anda melalui tombol TON Connect di bawah.
+            No wallet connected. Connect your personal TON wallet using the button below.
           </div>
           <button type="button" class="btn-gold btn-block" id="btnConnectOrDisconnect">
-            🔗 Hubungkan Wallet Pribadi (TON Connect)
+            🔗 Connect Personal Wallet (TON Connect)
           </button>
         </div>
 
         <!-- STEP 2: 0.1 GRAM VERIFICATION -->
         <div class="game-card">
           <div class="step-row-head">
-            <strong data-i18n="step2_verify_ton">2. Verifikasi Wallet (0.1 GRAM)</strong>
+            <strong data-i18n="step2_verify_ton">2. Wallet Verification (0.1 GRAM)</strong>
             <span class="status-tag" id="walletVerifyTag">Unverified</span>
           </div>
           <p class="card-note" data-i18n="verify_explain">
@@ -546,10 +546,10 @@
           </p>
           <div class="btn-row-2">
             <button type="button" class="btn-pink" id="btnVerifyWalletTon">
-              🛡️ Verifikasi 0.1 GRAM
+              🛡️ Verify 0.1 GRAM
             </button>
             <button type="button" class="btn-ghost" id="btnRecheckOnChainVerify" data-i18n="btn_check_onchain">
-              🔄 Cek Status On-Chain
+              🔄 Check On-Chain
             </button>
           </div>
         </div>
@@ -562,9 +562,9 @@
           </div>
 
           <div class="wd-checklist">
-            <div class="wd-chk" id="wdChk1">❌ 1. Wallet Pribadi Terkoneksi Otomatis</div>
-            <div class="wd-chk" id="wdChk2">❌ 2. Verifikasi Wallet 0.1 GRAM Selesai</div>
-            <div class="wd-chk" id="wdChk3">❌ 3. Saldo Aplikasi Minimal 2,000 MAXIMA</div>
+            <div class="wd-chk" id="wdChk1">❌ 1. Personal Wallet Connected Automatically</div>
+            <div class="wd-chk" id="wdChk2">❌ 2. 0.1 GRAM Wallet Verification Completed</div>
+            <div class="wd-chk" id="wdChk3">❌ 3. Min Balance 2,000 MAXIMA</div>
           </div>
 
           <div class="wd-input-group">
@@ -574,56 +574,56 @@
               autocomplete="off"
               id="inputWithdrawAmount"
               class="game-input"
-              placeholder="Jumlah Withdraw (Min. 2000 MAXIMA)..."
+              placeholder="Withdraw Amount (Min 2000 MAXIMA)..."
             />
             <button type="button" class="btn-max" id="btnWithdrawMax">MAX</button>
           </div>
           <div class="wd-preview" id="wdPreviewText">
-            Fee: <b>100 MAXIMA</b> · Diterima Bersih: <b>0 MAXIMA</b>
+            Withdraw Fee: <b>-100 MAXIMA</b> · Net Payout: <b>0 MAXIMA</b>
           </div>
 
           <button type="button" class="btn-gold btn-block" id="btnSubmitWithdraw" disabled data-i18n="btn_withdraw_now">
-            💸 Withdraw MAXIMA ke Wallet Terkoneksi
+            💸 Withdraw MAXIMA Now
           </button>
         </div>
 
-        <div class="section-subhead" data-i18n="wd_history_title">📜 Riwayat Withdraw</div>
+        <div class="section-subhead" data-i18n="wd_history_title">📜 Withdrawal History</div>
         <div class="list-stack" id="withdrawHistoryContainer">
-          <div class="empty-box" data-i18n="no_wd_yet">Belum ada riwayat withdraw.</div>
+          <div class="empty-box" data-i18n="no_wd_yet">No withdrawals yet.</div>
         </div>
 
-        <div class="section-subhead" data-i18n="leaderboard_title">🏆 Top Miners MAXIMA</div>
+        <div class="section-subhead" data-i18n="leaderboard_title">🏆 Top MAXIMA Miners</div>
         <div class="list-stack" id="leaderboardContainer"></div>
       </section>
 
       <!-- ==================== TAB 6: SETTINGS ==================== -->
       <section class="tab-pane" id="tab-settings">
         <div class="pane-head">
-          <h2 data-i18n="settings_tab_title">⚙️ Pengaturan (Settings)</h2>
+          <h2 data-i18n="settings_tab_title">⚙️ Settings</h2>
         </div>
 
         <!-- LANGUAGE SETTINGS -->
         <div class="game-card">
           <div class="step-row-head">
             <strong data-i18n="settings_lang_heading">🌐 Language</strong>
-            <span class="pill-mint" id="settingsLangBadge">ID</span>
+            <span class="pill-mint" id="settingsLangBadge">🇬🇧 EN</span>
           </div>
           <div class="settings-lang-grid" id="settingsLangChips"></div>
           <button type="button" class="btn-ghost btn-block" id="btnReopenLangPopup" style="margin-top:10px" data-i18n="btn_open_lang_popup">
-            🌍 Buka Pop-up Pemilihan Bahasa
+            🌍 Open Language Selection Popup
           </button>
         </div>
 
         <!-- SOUND & AUDIO SETTINGS -->
         <div class="game-card">
           <div class="step-row-head">
-            <strong data-i18n="settings_sound_heading">🔊 Pengaturan Suara & Musik</strong>
+            <strong data-i18n="settings_sound_heading">🔊 Sound & Music Settings</strong>
           </div>
 
           <div class="setting-row">
             <div>
-              <div class="setting-title" data-i18n="sfx_toggle_lbl">🎵 Efek Suara (SFX)</div>
-              <div class="setting-sub" data-i18n="sfx_toggle_sub">Suara saat klaim mining, check-in, presale & naik level</div>
+              <div class="setting-title" data-i18n="sfx_toggle_lbl">🎵 Sound Effects (SFX)</div>
+              <div class="setting-sub" data-i18n="sfx_toggle_sub">Play sounds on claim, check-in, presale & level up</div>
             </div>
             <label class="switch">
               <input type="checkbox" id="toggleSfx" checked />
@@ -633,8 +633,8 @@
 
           <div class="setting-row">
             <div>
-              <div class="setting-title" data-i18n="bgm_toggle_lbl">🎶 Musik Latar Tambang (BGM)</div>
-              <div class="setting-sub" data-i18n="bgm_toggle_sub">Suasana musik ambient tambang ruang angkasa</div>
+              <div class="setting-title" data-i18n="bgm_toggle_lbl">🎶 Ambient Mine Music (BGM)</div>
+              <div class="setting-sub" data-i18n="bgm_toggle_sub">Background cosmic mining atmosphere</div>
             </div>
             <label class="switch">
               <input type="checkbox" id="toggleBgm" />
@@ -644,8 +644,8 @@
 
           <div class="setting-row">
             <div>
-              <div class="setting-title" data-i18n="haptic_toggle_lbl">📳 Getaran Haptic</div>
-              <div class="setting-sub" data-i18n="haptic_toggle_sub">Getaran halus saat interaksi tombol penting</div>
+              <div class="setting-title" data-i18n="haptic_toggle_lbl">📳 Haptic Vibration</div>
+              <div class="setting-sub" data-i18n="haptic_toggle_sub">Tactile feedback on actions</div>
             </div>
             <label class="switch">
               <input type="checkbox" id="toggleHaptic" checked />
@@ -655,21 +655,21 @@
 
           <div class="volume-box">
             <div class="vol-head">
-              <span data-i18n="volume_lbl">🔉 Volume Suara</span>
+              <span data-i18n="volume_lbl">🔉 Master Volume</span>
               <strong id="volumeValText">75%</strong>
             </div>
             <input type="range" id="sliderVolume" min="0" max="100" value="75" class="vol-slider" />
           </div>
 
           <button type="button" class="btn-ghost btn-block" id="btnTestSound" data-i18n="btn_test_sound">
-            🔔 Tes Suara MAXIMA
+            🔔 Test Sound Effect
           </button>
         </div>
 
         <!-- ACCOUNT SUMMARY -->
         <div class="game-card">
           <div class="step-row-head">
-            <strong data-i18n="account_info_heading">👤 Informasi Akun & Kontrak</strong>
+            <strong data-i18n="account_info_heading">👤 Account & Contract Info</strong>
           </div>
           <div class="meta-list">
             <div><span>App:</span> <strong>MAXIMA MINING APP</strong></div>
@@ -698,7 +698,7 @@
       </button>
       <button type="button" class="nav-btn" data-tab="tab-missions">
         <span class="nav-ico">📋</span>
-        <span class="nav-txt" data-i18n="nav_missions">Misi</span>
+        <span class="nav-txt" data-i18n="nav_missions">Missions</span>
       </button>
       <button type="button" class="nav-btn" data-tab="tab-wallet">
         <span class="nav-ico">👛</span>
@@ -714,6 +714,6 @@
   <!-- Toast Notification -->
   <div class="toast-msg" id="toastBox"></div>
 
-  <script src="/app.js?v=20261031-gram2"></script>
+  <script src="/app.js?v=20261031-en1"></script>
 </body>
 </html>
