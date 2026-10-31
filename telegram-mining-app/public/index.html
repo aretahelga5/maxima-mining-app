@@ -16,9 +16,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Official TON Connect UI SDK (Automatic Wallet Connection Only) -->
-  <script src="https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js"></script>
-  <link rel="stylesheet" href="/style.css" />
+  <!-- Official TON Connect UI SDK (Patched Local Bundle for Telegram Desktop & Mobile + CDN Fallback) -->
+  <script
+    src="/tonconnect-ui.min.js?v=20261031-gram2"
+    onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';s.onerror=function(){var u=document.createElement('script');u.src='https://unpkg.com/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';document.head.appendChild(u);};document.head.appendChild(s);"
+  ></script>
+  <link rel="stylesheet" href="/style.css?v=20261031-gram2" />
 </head>
 <body>
   <!-- ================= INITIAL 10-LANGUAGE SELECTION POPUP MODAL ================= -->
@@ -303,13 +306,13 @@
         <div class="pane-head">
           <h2 data-i18n="presale_title">🚀 MAXIMA Official Presale</h2>
           <p data-i18n="presale_desc">
-            Dapatkan koin MAXIMA secara instan untuk menaikkan Level & Mining Power Anda! Pembayaran otomatis melalui popup wallet pribadi Anda.
+            Swap GRAM for MAXIMA to boost your Level & Mining Power instantly!
           </p>
         </div>
 
         <!-- GLOBAL PRESALE PROGRESS & WALLET QUOTA -->
         <div class="game-card presale-hero-card">
-          <div class="presale-rate-badge">🔥 1 TON = 2,000 MAXIMA · MAX 10 TON / WALLET</div>
+          <div class="presale-rate-badge">🔥 1 GRAM = 2,000 MAXIMA · MAX 10 GRAM / WALLET</div>
 
           <!-- PRESALE COUNTDOWN UNTIL 5 NOVEMBER 2026 -->
           <div class="presale-countdown-box">
@@ -357,11 +360,11 @@
 
           <div class="presale-quota-row">
             <span data-i18n="wallet_presale_quota_lbl">Kuota Wallet Anda:</span>
-            <strong id="walletPresaleQuotaText">0 / 10 TON (Sisa 10 TON)</strong>
+            <strong id="walletPresaleQuotaText">0 / 10 GRAM (Sisa 10 GRAM)</strong>
           </div>
         </div>
 
-        <!-- 5 OFFICIAL PRESALE PACKAGES (2, 4, 6, 8, 10 TON) -->
+        <!-- 5 OFFICIAL PRESALE PACKAGES (2, 4, 6, 8, 10 GRAM) -->
         <div class="section-subhead" data-i18n="choose_presale_pkg">Pilih Paket Presale MAXIMA</div>
         <div class="presale-grid" id="presalePackagesContainer">
           <!-- Rendered dynamically -->
@@ -471,9 +474,9 @@
       <!-- ==================== TAB 5: WALLET & WITHDRAW ==================== -->
       <section class="tab-pane" id="tab-wallet">
         <div class="pane-head">
-          <h2 data-i18n="wallet_tab_title">👛 Wallet Pribadi & Withdraw</h2>
+          <h2 data-i18n="wallet_tab_title">👛 Wallet & Withdraw</h2>
           <p data-i18n="wallet_tab_desc">
-            Hubungkan wallet pribadi Anda via TON Connect dan lakukan verifikasi 0.1 TON untuk mengaktifkan Withdraw!
+            Connect your personal TON wallet via TON Connect and verify your wallet to unlock Withdraw.
           </p>
         </div>
 
@@ -532,18 +535,18 @@
           </button>
         </div>
 
-        <!-- STEP 2: 0.1 TON VERIFICATION -->
+        <!-- STEP 2: 0.1 GRAM VERIFICATION -->
         <div class="game-card">
           <div class="step-row-head">
-            <strong data-i18n="step2_verify_ton">2. Verifikasi Wallet (0.1 TON)</strong>
+            <strong data-i18n="step2_verify_ton">2. Verifikasi Wallet (0.1 GRAM)</strong>
             <span class="status-tag" id="walletVerifyTag">Unverified</span>
           </div>
           <p class="card-note" data-i18n="verify_explain">
-            Lakukan verifikasi otomatis (0.1 TON) melalui popup wallet pribadi Anda untuk mengaktifkan fitur Withdraw.
+            Complete 0.1 GRAM verification wallet to unlock Withdraw.
           </p>
           <div class="btn-row-2">
             <button type="button" class="btn-pink" id="btnVerifyWalletTon">
-              🛡️ Verifikasi 0.1 TON
+              🛡️ Verifikasi 0.1 GRAM
             </button>
             <button type="button" class="btn-ghost" id="btnRecheckOnChainVerify" data-i18n="btn_check_onchain">
               🔄 Cek Status On-Chain
@@ -560,7 +563,7 @@
 
           <div class="wd-checklist">
             <div class="wd-chk" id="wdChk1">❌ 1. Wallet Pribadi Terkoneksi Otomatis</div>
-            <div class="wd-chk" id="wdChk2">❌ 2. Verifikasi Wallet 0.1 TON Selesai</div>
+            <div class="wd-chk" id="wdChk2">❌ 2. Verifikasi Wallet 0.1 GRAM Selesai</div>
             <div class="wd-chk" id="wdChk3">❌ 3. Saldo Aplikasi Minimal 2,000 MAXIMA</div>
           </div>
 
@@ -711,6 +714,6 @@
   <!-- Toast Notification -->
   <div class="toast-msg" id="toastBox"></div>
 
-  <script src="/app.js"></script>
+  <script src="/app.js?v=20261031-gram2"></script>
 </body>
 </html>

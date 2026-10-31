@@ -2052,3 +2052,149 @@ input[type="number"] {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ================= TON CONNECT WIDGET & SMART TX MODAL ================= */
+#tc-widget-root,
+tc-root {
+  z-index: 999999 !important;
+  position: relative;
+}
+
+.tx-modal-card {
+  max-width: 440px;
+  max-height: 92vh;
+  overflow-y: auto;
+  text-align: left;
+  padding: 18px 16px;
+}
+
+.tx-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.tx-modal-title {
+  font-family: var(--font-game);
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.tx-modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tx-modal-sub {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.tx-summary-box {
+  background: rgba(5, 7, 11, 0.82);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.tx-sum-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tx-sum-row span {
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 10px;
+}
+
+.tx-sum-row code {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--sky);
+  word-break: break-all;
+}
+
+.tx-status-banner {
+  background: rgba(16, 232, 153, 0.11);
+  border: 1px solid rgba(16, 232, 153, 0.38);
+  color: var(--mint);
+  border-radius: 12px;
+  padding: 8px 11px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.tx-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.tx-qr-section {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: rgba(5, 7, 11, 0.76);
+  border: 1px dashed var(--line-strong);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.tx-qr-wrap {
+  width: 112px;
+  height: 112px;
+  border-radius: 11px;
+  background: #ffffff;
+  padding: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tx-qr-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tx-qr-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tx-qr-info strong {
+  display: block;
+  font-size: 11px;
+  color: var(--gold);
+  margin-bottom: 3px;
+}
+
+.tx-qr-info p {
+  font-size: 10px;
+  color: var(--silver);
+  line-height: 1.35;
+  font-weight: 600;
+}

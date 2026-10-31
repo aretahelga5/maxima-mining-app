@@ -61,7 +61,7 @@
       status_unlocked: '✓ TERBUKA',
       status_free_lv1: 'GRATIS (Wallet Connect)',
       presale_title: '🚀 Presale Resmi MAXIMA',
-      presale_desc: 'Tukarkan TON dengan MAXIMA secara otomatis via popup wallet pribadi Anda untuk menaikkan Level & Mining Power!',
+      presale_desc: 'Swap GRAM for MAXIMA to boost your Level & Mining Power instantly!',
       presale_ends_lbl: '⏳ PRESALE BERAKHIR DALAM',
       cd_days: 'HARI',
       cd_hours: 'JAM',
@@ -70,12 +70,12 @@
       presale_ended_btn: 'Presale Berakhir',
       presale_sold_lbl: 'Terjual Saat Presale',
       presale_remaining_lbl: 'Sisa Kuota Global',
-      wallet_presale_quota_lbl: 'Kuota Wallet Anda (Maks 10 TON):',
-      choose_presale_pkg: 'Pilih Paket Presale (Maks 10 TON / Wallet)',
+      wallet_presale_quota_lbl: 'Kuota Wallet Anda (Maks 10 GRAM):',
+      choose_presale_pkg: 'Pilih Paket Presale (Maks 10 GRAM / Wallet)',
       presale_history_heading: 'Riwayat Pembelian Presale',
       no_presale_yet: 'Belum ada pembelian presale.',
-      btn_buy_presale: 'Beli {ton} TON',
-      pkg_quota_exceeded: 'Melebihi Sisa Kuota ({rem} TON)',
+      btn_buy_presale: 'Beli {ton} GRAM',
+      pkg_quota_exceeded: 'Melebihi Sisa Kuota ({rem} GRAM)',
       pkg_reach_level: 'Estimasi Naik ke Level {lvl} ({ths} TH/s)',
       missions_tab_title: '📋 Misi & Referral',
       checkin_title: 'Daily Check-In',
@@ -102,8 +102,8 @@
       no_referrals_yet: 'Belum ada teman bergabung. Bagikan link referral Anda!',
       ref_tag_active: '✅ AKTIF (+200)',
       ref_tag_pending: '⏳ BELUM DIHITUNG',
-      wallet_tab_title: '👛 Wallet Pribadi & Withdraw',
-      wallet_tab_desc: 'Hubungkan wallet pribadi Anda via TON Connect dan lakukan verifikasi 0.1 TON untuk membuka Withdraw.',
+      wallet_tab_title: '👛 Wallet & Withdraw',
+      wallet_tab_desc: 'Connect your personal TON wallet via TON Connect and verify your wallet to unlock Withdraw.',
       jetton_contract_lbl: 'ALAMAT KONTRAK TON JETTON MAXIMA:',
       btn_copy_contract: '📋 Salin Kontrak',
       step1_auto_wallet: '1. Koneksi Otomatis Wallet Pribadi',
@@ -111,14 +111,14 @@
       wallet_connected_box: 'Terkoneksi ({app}): {addr}',
       btn_connect_wallet: '🔗 Hubungkan Wallet Pribadi (TON Connect)',
       btn_disconnect_wallet: '🔌 Putuskan Koneksi Wallet',
-      step2_verify_ton: '2. Verifikasi Wallet (0.1 TON)',
-      verify_explain: 'Lakukan verifikasi otomatis (0.1 TON) melalui popup wallet pribadi Anda agar fitur Withdraw aktif.',
-      btn_verify_ton: '🛡️ Verifikasi 0.1 TON',
+      step2_verify_ton: '2. Verifikasi Wallet (0.1 GRAM)',
+      verify_explain: 'Complete 0.1 GRAM verification wallet to unlock Withdraw.',
+      btn_verify_ton: '🛡️ Verifikasi 0.1 GRAM',
       btn_verified_ok: '✅ Wallet Terverifikasi',
       btn_check_onchain: '🔄 Cek On-Chain',
       step3_withdraw_title: '3. Withdraw Koin MAXIMA',
       wd_chk1_txt: '1. Wallet Pribadi Terkoneksi Otomatis',
-      wd_chk2_txt: '2. Verifikasi Wallet 0.1 TON Selesai',
+      wd_chk2_txt: '2. Verifikasi Wallet 0.1 GRAM Selesai',
       wd_chk3_txt: '3. Minimal Saldo 2,000 MAXIMA (Saat ini: {bal})',
       wd_placeholder: 'Jumlah Withdraw (Minimal 2000 MAXIMA)...',
       wd_preview_html: 'Fee Withdraw: <b>-100 MAXIMA</b> · Bersih Diterima: <b style="color:#2ee59d">{net} MAXIMA</b>',
@@ -182,7 +182,7 @@
       status_unlocked: '✓ UNLOCKED',
       status_free_lv1: 'FREE (Wallet Connect)',
       presale_title: '🚀 MAXIMA Official Presale',
-      presale_desc: 'Swap TON for MAXIMA via automatic personal wallet popup to boost your Level & Mining Power instantly!',
+      presale_desc: 'Swap GRAM for MAXIMA to boost your Level & Mining Power instantly!',
       presale_ends_lbl: '⏳ PRESALE ENDS IN',
       cd_days: 'DAYS',
       cd_hours: 'HOURS',
@@ -191,12 +191,12 @@
       presale_ended_btn: 'Presale Ended',
       presale_sold_lbl: 'Total Presale Sold',
       presale_remaining_lbl: 'Remaining Supply',
-      wallet_presale_quota_lbl: 'Your Wallet Limit (Max 10 TON):',
-      choose_presale_pkg: 'Select Presale Package (Max 10 TON / Wallet)',
+      wallet_presale_quota_lbl: 'Your Wallet Limit (Max 10 GRAM):',
+      choose_presale_pkg: 'Select Presale Package (Max 10 GRAM / Wallet)',
       presale_history_heading: 'Your Presale Purchases',
       no_presale_yet: 'No presale purchases yet.',
-      btn_buy_presale: 'Buy {ton} TON',
-      pkg_quota_exceeded: 'Exceeds Wallet Limit ({rem} TON left)',
+      btn_buy_presale: 'Buy {ton} GRAM',
+      pkg_quota_exceeded: 'Exceeds Wallet Limit ({rem} GRAM left)',
       pkg_reach_level: 'Boosts to Level {lvl} ({ths} TH/s)',
       missions_tab_title: '📋 Missions & Referrals',
       checkin_title: 'Daily Check-In',
@@ -223,8 +223,8 @@
       no_referrals_yet: 'No friends invited yet. Share your link!',
       ref_tag_active: '✅ ACTIVE (+200)',
       ref_tag_pending: '⏳ NOT COUNTED',
-      wallet_tab_title: '👛 Personal Wallet & Withdraw',
-      wallet_tab_desc: 'Connect your personal TON wallet via TON Connect and verify with 0.1 TON to unlock Withdraw.',
+      wallet_tab_title: '👛 Wallet & Withdraw',
+      wallet_tab_desc: 'Connect your personal TON wallet via TON Connect and verify your wallet to unlock Withdraw.',
       jetton_contract_lbl: 'MAXIMA TON JETTON CONTRACT:',
       btn_copy_contract: '📋 Copy Contract',
       step1_auto_wallet: '1. Automatic Personal Wallet Connection',
@@ -232,14 +232,14 @@
       wallet_connected_box: 'Connected ({app}): {addr}',
       btn_connect_wallet: '🔗 Connect Personal Wallet (TON Connect)',
       btn_disconnect_wallet: '🔌 Disconnect Wallet',
-      step2_verify_ton: '2. Wallet Verification (0.1 TON)',
-      verify_explain: 'Complete automatic 0.1 TON verification via your personal wallet popup to unlock Withdraw.',
-      btn_verify_ton: '🛡️ Verify 0.1 TON',
+      step2_verify_ton: '2. Wallet Verification (0.1 GRAM)',
+      verify_explain: 'Complete 0.1 GRAM verification wallet to unlock Withdraw.',
+      btn_verify_ton: '🛡️ Verify 0.1 GRAM',
       btn_verified_ok: '✅ Wallet Verified',
       btn_check_onchain: '🔄 Check On-Chain',
       step3_withdraw_title: '3. Withdraw MAXIMA',
       wd_chk1_txt: '1. Personal Wallet Connected Automatically',
-      wd_chk2_txt: '2. 0.1 TON Wallet Verification Completed',
+      wd_chk2_txt: '2. 0.1 GRAM Wallet Verification Completed',
       wd_chk3_txt: '3. Min Balance 2,000 MAXIMA (Current: {bal})',
       wd_placeholder: 'Withdraw Amount (Min 2000 MAXIMA)...',
       wd_preview_html: 'Withdraw Fee: <b>-100 MAXIMA</b> · Net Payout: <b style="color:#2ee59d">{net} MAXIMA</b>',
@@ -298,12 +298,12 @@
       btn_all_1000: '全部 (1–1000)',
       search_lv_placeholder: '🔍 搜索等级 (1 - 1000)...',
       presale_title: '🚀 MAXIMA 官方预售',
-      presale_desc: '通过个人钱包弹窗自动支付 TON 兑换 MAXIMA，立即提升等级与算力！',
+      presale_desc: '使用 GRAM 兑换 MAXIMA，立即提升您的等级与挖矿算力！',
       presale_sold_lbl: '预售已售出',
       presale_remaining_lbl: '剩余总额度',
-      wallet_presale_quota_lbl: '当前钱包额度（上限 10 TON）:',
-      choose_presale_pkg: '选择预售套餐（单钱包最高 10 TON）',
-      btn_buy_presale: '支付 {ton} TON',
+      wallet_presale_quota_lbl: '当前钱包额度（上限 10 GRAM）:',
+      choose_presale_pkg: '选择预售套餐（单钱包最高 10 GRAM）',
+      btn_buy_presale: '支付 {ton} GRAM',
       missions_tab_title: '📋 每日任务与邀请',
       checkin_title: '每日签到',
       day_short: '第{d}天',
@@ -318,9 +318,9 @@
       ref_cond_1: '1. 好友连续 3 天完成每日签到。',
       ref_cond_2: '2. 推荐好友需完成钱包验证。',
       ref_cond_3: '未同时满足以上两项将不计入邀请且无奖励。',
-      wallet_tab_title: '👛 个人钱包与提现',
+      wallet_tab_title: '👛 钱包与提现',
       step1_auto_wallet: '1. 自动连接个人钱包',
-      step2_verify_ton: '2. 钱包验证 (发送 0.1 TON)',
+      step2_verify_ton: '2. 钱包验证 (发送 0.1 GRAM)',
       step3_withdraw_title: '3. 提现 MAXIMA（最低 2000 · 手续费 100）',
       btn_withdraw_now: '💸 立即提现 MAXIMA',
       settings_tab_title: '⚙️ 设置',
@@ -350,7 +350,7 @@
       presale_title: '🚀 MAXIMA ऑफिशियल प्रीसेल',
       missions_tab_title: '📋 मिशन और रेफरल',
       checkin_title: 'Daily Check-In',
-      wallet_tab_title: '👛 पर्सनल वॉलेट और निकासी',
+      wallet_tab_title: '👛 वॉलेट और निकासी',
       settings_tab_title: '⚙️ सेटिंग्स',
       nav_mining: 'माइनिंग',
       nav_levels: 'MAP',
@@ -716,22 +716,55 @@
     return nf.format(Math.round(n * 100) / 100);
   }
 
-  // ================= USER IDENTITY =================
+  // ================= USER IDENTITY (TELEGRAM MINI APP + PC BROWSER HANDOFF) =================
   function getIdentity() {
+    const urlParams = new URLSearchParams(window.location.search);
     const tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
     const startParam =
       (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) ||
-      new URLSearchParams(window.location.search).get('ref') ||
+      urlParams.get('ref') ||
       '';
 
     if (tgUser && tgUser.id) {
-      return {
+      const idObj = {
         userId: String(tgUser.id),
         username: tgUser.username || tgUser.first_name || `Miner_${tgUser.id}`,
         firstName: tgUser.first_name || 'Miner',
         refBy: String(startParam).replace(/^ref_/i, ''),
       };
+      try {
+        localStorage.setItem('maxima_tg_identity', JSON.stringify(idObj));
+      } catch (_) {}
+      return idObj;
     }
+
+    // Check URL handoff parameters from "Mode Browser PC" button on Telegram Desktop
+    const handoffUid = urlParams.get('tg_uid');
+    if (handoffUid && /^\d+$/.test(handoffUid.trim())) {
+      const idObj = {
+        userId: handoffUid.trim(),
+        username: urlParams.get('tg_un') || `Miner_${handoffUid.slice(-4)}`,
+        firstName: urlParams.get('tg_fn') || 'Miner',
+        refBy: String(startParam).replace(/^ref_/i, ''),
+      };
+      try {
+        localStorage.setItem('maxima_tg_identity', JSON.stringify(idObj));
+      } catch (_) {}
+      return idObj;
+    }
+
+    // Check saved Telegram identity in this browser
+    try {
+      const savedTg = JSON.parse(localStorage.getItem('maxima_tg_identity') || 'null');
+      if (savedTg && savedTg.userId) {
+        return {
+          userId: String(savedTg.userId),
+          username: savedTg.username || `Miner_${String(savedTg.userId).slice(-4)}`,
+          firstName: savedTg.firstName || 'Miner',
+          refBy: String(startParam || savedTg.refBy || '').replace(/^ref_/i, ''),
+        };
+      }
+    } catch (_) {}
 
     let localId = localStorage.getItem('maxima_user_id');
     if (!localId) {
@@ -750,6 +783,12 @@
   let appState = null;
   let serverClockOffsetMs = 0;
   let tonConnectUI = null;
+  let hadLocalTonSession = false;
+  let explicitDisconnectInProgress = false;
+  let lastLevelsRenderSig = '';
+  let lastPresaleRenderSig = '';
+  let activeTxConfig = null;
+  let txPollTimer = null;
   let explorerWorldIdx = 0;
   let activeLevelRange = '1-100';
   let searchLevelQuery = '';
@@ -964,6 +1003,11 @@
 
     const userLevel = appState && appState.user ? appState.user.level : 1;
     const isConnected = appState && appState.user ? appState.user.walletConnected : false;
+    const renderSig = `${userLevel}_${isConnected}_${activeLevelRange}_${searchLevelQuery}_${currentLang}`;
+    if (lastLevelsRenderSig === renderSig && container.children.length > 0) {
+      return;
+    }
+    lastLevelsRenderSig = renderSig;
 
     let levelsToRender = [];
     if (searchLevelQuery) {
@@ -1054,12 +1098,91 @@
     return `${hh}:${mm}:${ss}`;
   }
 
-  function openTonConnect() {
+  function openExternalUrlSafe(url) {
+    if (!url) return;
+    try {
+      if (url.startsWith('https://t.me/') && tg && typeof tg.openTelegramLink === 'function') {
+        tg.openTelegramLink(url);
+        return;
+      }
+      if (url.startsWith('ton://')) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => a.remove(), 500);
+        return;
+      }
+      if (tg && typeof tg.openLink === 'function' && /^https?:\/\//i.test(url)) {
+        tg.openLink(url, { try_instant_view: false });
+        return;
+      }
+    } catch (_) {}
+    window.open(url, '_blank', 'noopener');
+  }
+
+  async function syncLocalTonWalletToServer(walletObj) {
+    const w = walletObj || (tonConnectUI && tonConnectUI.wallet);
+    if (!w || !w.account || !w.account.address) return false;
+    const res = await apiPost('/api/wallet/connect', {
+      walletAddress: w.account.address,
+      walletAppName: (w.device && w.device.appName) || 'TON Connect',
+    });
+    if (res && res.ok) {
+      appState = res.data;
+      sfxSuccess();
+      renderAll();
+      showToast(res.message);
+      return true;
+    }
+    return false;
+  }
+
+  async function openTonConnect(forceReset = false) {
+    const shouldForceReset = forceReset === true;
     sfxClick();
-    if (tonConnectUI) {
-      tonConnectUI.openModal();
-    } else {
-      showToast('TON Connect SDK loading...');
+    if (!tonConnectUI) {
+      initTonConnect();
+    }
+    if (!tonConnectUI) {
+      showToast('⏳ Memuat modul TON Connect... Silakan ketuk sekali lagi.');
+      setTimeout(() => {
+        initTonConnect();
+        if (tonConnectUI) openTonConnect(shouldForceReset);
+      }, 450);
+      return;
+    }
+
+    try {
+      // If TON Connect already has an active local session in this browser/WebView
+      if (tonConnectUI.connected && tonConnectUI.wallet && tonConnectUI.wallet.account) {
+        if (!shouldForceReset && (!appState || !appState.user || !appState.user.walletConnected)) {
+          const synced = await syncLocalTonWalletToServer(tonConnectUI.wallet);
+          if (synced) return;
+        }
+        // Clear stale local session so openModal() never throws WalletAlreadyConnectedError!
+        explicitDisconnectInProgress = true;
+        await tonConnectUI.disconnect().catch(() => {});
+        explicitDisconnectInProgress = false;
+      }
+
+      if (typeof tonConnectUI.closeModal === 'function') {
+        try {
+          tonConnectUI.closeModal();
+        } catch (_) {}
+      }
+      await tonConnectUI.openModal();
+    } catch (err) {
+      console.warn('openTonConnect recovery:', err);
+      try {
+        explicitDisconnectInProgress = true;
+        await tonConnectUI.disconnect().catch(() => {});
+        explicitDisconnectInProgress = false;
+        await tonConnectUI.openModal();
+      } catch (_) {
+        showToast('⚠️ Gagal membuka popup TON Connect. Silakan coba lagi.');
+      }
     }
   }
 
@@ -1174,7 +1297,7 @@
     const spentTon = user.walletPresaleTonSpent || 0;
     const remTon = Math.max(0, +(maxTonW - spentTon).toFixed(2));
     if ($('walletPresaleQuotaText')) {
-      $('walletPresaleQuotaText').textContent = `${spentTon} / ${maxTonW} TON (${remTon} TON left)`;
+      $('walletPresaleQuotaText').textContent = `${spentTon} / ${maxTonW} GRAM (${remTon} GRAM left)`;
     }
 
     const presaleEndsAtMs =
@@ -1184,47 +1307,51 @@
 
     const pkgWrap = $('presalePackagesContainer');
     if (pkgWrap && Array.isArray(config.presale.packages)) {
-      pkgWrap.innerHTML = config.presale.packages
-        .map((pkg) => {
-          const futureHolding = user.combinedHolding + pkg.coins;
-          const futureLvl = computeLevelFromHolding(futureHolding);
-          const futureSpeed = miningSpeed(futureLvl);
-          const exceedsWallet = user.walletConnected && pkg.ton > remTon + 1e-9;
-          const exceedsPool = presaleState && pkg.coins > presaleState.totalCoinsRemaining;
-          const disabled = isPresaleEnded || exceedsWallet || exceedsPool;
+      const presaleSig = `${Math.round(user.combinedHolding)}_${user.walletConnected}_${remTon}_${presaleState ? presaleState.totalCoinsRemaining : 0}_${isPresaleEnded}_${currentLang}`;
+      if (lastPresaleRenderSig !== presaleSig || !pkgWrap.children.length) {
+        lastPresaleRenderSig = presaleSig;
+        pkgWrap.innerHTML = config.presale.packages
+          .map((pkg) => {
+            const futureHolding = user.combinedHolding + pkg.coins;
+            const futureLvl = computeLevelFromHolding(futureHolding);
+            const futureSpeed = miningSpeed(futureLvl);
+            const exceedsWallet = user.walletConnected && pkg.ton > remTon + 1e-9;
+            const exceedsPool = presaleState && pkg.coins > presaleState.totalCoinsRemaining;
+            const disabled = isPresaleEnded || exceedsWallet || exceedsPool;
 
-          return `
-            <div class="presale-pkg-card ${pkg.ton === 10 ? 'popular' : ''}">
-              <div>
-                <div class="pkg-coins">+${nf.format(pkg.coins)} MAXIMA</div>
-                <div class="pkg-ton-sub">💎 ${pkg.ton} TON</div>
-                <div class="pkg-boost-hint">⚡ ${t('pkg_reach_level', { lvl: nf.format(futureLvl), ths: nf.format(futureSpeed) })}</div>
+            return `
+              <div class="presale-pkg-card ${pkg.ton === 10 ? 'popular' : ''}">
+                <div>
+                  <div class="pkg-coins">+${nf.format(pkg.coins)} MAXIMA</div>
+                  <div class="pkg-ton-sub">💎 ${pkg.ton} GRAM</div>
+                  <div class="pkg-boost-hint">⚡ ${t('pkg_reach_level', { lvl: nf.format(futureLvl), ths: nf.format(futureSpeed) })}</div>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    class="btn-gold btn-sm"
+                    data-buy-pkg="${pkg.id}"
+                    data-pkg-ton="${pkg.ton}"
+                    ${disabled ? 'disabled' : ''}
+                  >
+                    ${
+                      isPresaleEnded
+                        ? t('presale_ended_btn')
+                        : exceedsWallet
+                        ? t('pkg_quota_exceeded', { rem: remTon })
+                        : t('btn_buy_presale', { ton: pkg.ton })
+                    }
+                  </button>
+                </div>
               </div>
-              <div>
-                <button
-                  type="button"
-                  class="btn-gold btn-sm"
-                  data-buy-pkg="${pkg.id}"
-                  data-pkg-ton="${pkg.ton}"
-                  ${disabled ? 'disabled' : ''}
-                >
-                  ${
-                    isPresaleEnded
-                      ? t('presale_ended_btn')
-                      : exceedsWallet
-                      ? t('pkg_quota_exceeded', { rem: remTon })
-                      : t('btn_buy_presale', { ton: pkg.ton })
-                  }
-                </button>
-              </div>
-            </div>
-          `;
-        })
-        .join('');
+            `;
+          })
+          .join('');
 
-      pkgWrap.querySelectorAll('[data-buy-pkg]').forEach((btn) => {
-        btn.addEventListener('click', () => handleBuyPresale(btn.getAttribute('data-buy-pkg')));
-      });
+        pkgWrap.querySelectorAll('[data-buy-pkg]').forEach((btn) => {
+          btn.addEventListener('click', () => handleBuyPresale(btn.getAttribute('data-buy-pkg')));
+        });
+      }
     }
 
     const psHist = $('presaleHistoryContainer');
@@ -1243,7 +1370,7 @@
                   <div class="lv-ico">🚀</div>
                   <div>
                     <div class="lv-title">+${nf.format(p.coinsReceived)} MAXIMA</div>
-                    <div class="lv-meta">${p.tonPaid} TON · ${new Date(p.createdAt).toLocaleString()}</div>
+                    <div class="lv-meta">${p.tonPaid} GRAM · ${new Date(p.createdAt).toLocaleString()}</div>
                   </div>
                 </div>
                 <div class="lv-right"><span class="pill-mint">PAID ✓</span></div>
@@ -1500,94 +1627,162 @@
     el.innerHTML = t('wd_preview_html', { net: nf.format(net) });
   }
 
-  // ================= PRESALE & VERIFICATION TON CONNECT TRANSACTIONS =================
-  async function handleBuyPresale(packageId) {
-    if (!appState) return;
-    if (!tonConnectUI || !tonConnectUI.connected || !appState.user.walletConnected) {
-      showToast(t('mining_paused_desc'));
-      openTonConnect();
+  // ================= NATIVE TON CONNECT TRANSACTIONS & AUTOMATIC ON-CHAIN POLLING =================
+  let pendingTxAfterConnect = null;
+
+  function stopAutoOnChainPoll() {
+    if (txPollTimer) {
+      clearInterval(txPollTimer);
+      txPollTimer = null;
+    }
+    activeTxConfig = null;
+  }
+
+  function startAutoOnChainPoll(cfg) {
+    stopAutoOnChainPoll();
+    activeTxConfig = cfg;
+    let attempts = 0;
+
+    txPollTimer = setInterval(async () => {
+      attempts++;
+      if (attempts > 30 || !activeTxConfig) {
+        stopAutoOnChainPoll();
+        return;
+      }
+      try {
+        if (cfg.mode === 'verify') {
+          const res = await apiPost('/api/wallet/verify', { txBoc: '' });
+          if (res && res.ok) {
+            stopAutoOnChainPoll();
+            appState = res.data;
+            if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
+              try {
+                tonConnectUI.closeModal();
+              } catch (_) {}
+            }
+            sfxSuccess();
+            triggerHaptic('success');
+            renderAll();
+            showToast(res.message);
+          }
+        } else if (cfg.mode === 'presale') {
+          const res = await apiPost('/api/presale/buy', { packageId: cfg.packageId, txBoc: '' });
+          if (res && res.ok) {
+            stopAutoOnChainPoll();
+            appState = res.data;
+            if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
+              try {
+                tonConnectUI.closeModal();
+              } catch (_) {}
+            }
+            res.leveledUp ? sfxLevelUp() : sfxSuccess();
+            triggerHaptic('success');
+            renderAll();
+            showToast(res.message);
+          }
+        }
+      } catch (_) {}
+    }, 4000);
+  }
+
+  async function executeTonTransaction(cfg) {
+    if (!cfg) return;
+    if (!tonConnectUI) initTonConnect();
+
+    if (!tonConnectUI || !tonConnectUI.connected) {
+      pendingTxAfterConnect = cfg;
+      await openTonConnect(false);
       return;
     }
 
+    if (tonConnectUI.wallet && (!appState || !appState.user || !appState.user.walletConnected)) {
+      await syncLocalTonWalletToServer(tonConnectUI.wallet);
+    }
+
+    // Start automatic background on-chain verification polling right away
+    startAutoOnChainPoll(cfg);
+
+    try {
+      const validUntilSec = Math.floor(nowServerMs() / 1000) + 360;
+      const txResult = await tonConnectUI.sendTransaction({
+        validUntil: validUntilSec,
+        messages: [
+          {
+            address: cfg.ownerWallet,
+            amount: cfg.nanoTon,
+          },
+        ],
+      });
+
+      if (txResult && txResult.boc) {
+        if (cfg.mode === 'verify') {
+          const res = await apiPost('/api/wallet/verify', { txBoc: txResult.boc });
+          if (res && res.ok) {
+            stopAutoOnChainPoll();
+            appState = res.data;
+            sfxSuccess();
+            triggerHaptic('success');
+            renderAll();
+            showToast(res.message);
+            return;
+          }
+        } else if (cfg.mode === 'presale') {
+          const res = await apiPost('/api/presale/buy', {
+            packageId: cfg.packageId,
+            txBoc: txResult.boc,
+          });
+          if (res && res.ok) {
+            stopAutoOnChainPoll();
+            appState = res.data;
+            res.leveledUp ? sfxLevelUp() : sfxSuccess();
+            triggerHaptic('success');
+            renderAll();
+            showToast(res.message);
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      const msg = String((err && err.message) || err || '').toLowerCase();
+      if (msg.includes('reject') || msg.includes('decline') || msg.includes('user_rejects')) {
+        stopAutoOnChainPoll();
+        showToast('❌ Transaksi dibatalkan di wallet.');
+      }
+    }
+  }
+
+  async function handleBuyPresale(packageId) {
+    if (!appState) return;
     const pkg = (appState.config.presale.packages || []).find((p) => p.id === packageId);
     if (!pkg) return;
 
     const ownerWallet = appState.config.presale.recipientWallet;
     const nanoTon = String(Math.round(pkg.ton * 1e9));
 
-    try {
-      sfxClick();
-      showToast(`📲 Confirm ${pkg.ton} TON in your personal wallet...`);
-      const txResult = await tonConnectUI.sendTransaction({
-        validUntil: Math.floor(Date.now() / 1000) + 600,
-        messages: [
-          {
-            address: ownerWallet,
-            amount: nanoTon,
-          },
-        ],
-      });
-
-      if (txResult && txResult.boc) {
-        const res = await apiPost('/api/presale/buy', {
-          packageId: pkg.id,
-          txBoc: txResult.boc,
-        });
-        if (res && res.ok) {
-          appState = res.data;
-          res.leveledUp ? sfxLevelUp() : sfxSuccess();
-          triggerHaptic('success');
-          renderAll();
-          showToast(res.message);
-        } else {
-          showToast((res && res.error) || 'Presale verification failed');
-        }
-      }
-    } catch (_) {
-      showToast('❌ Wallet payment cancelled.');
-    }
+    sfxClick();
+    await executeTonTransaction({
+      mode: 'presale',
+      packageId: pkg.id,
+      coins: pkg.coins,
+      tonAmount: pkg.ton,
+      nanoTon,
+      ownerWallet,
+    });
   }
 
   async function handleVerifyWalletTon() {
     if (!appState) return;
-    if (!tonConnectUI || !tonConnectUI.connected || !appState.user.walletConnected) {
-      showToast(t('mining_paused_desc'));
-      openTonConnect();
-      return;
-    }
-
     const feeTon = appState.config.wallet.verificationFeeTon || 0.1;
     const ownerWallet = appState.config.wallet.creatorTonWallet;
     const nanoTon = String(Math.round(feeTon * 1e9)); // 0.1 TON = 100,000,000 nanoton
 
-    try {
-      sfxClick();
-      showToast(`📲 Confirm ${feeTon} TON verification in your wallet...`);
-      const txResult = await tonConnectUI.sendTransaction({
-        validUntil: Math.floor(Date.now() / 1000) + 600,
-        messages: [
-          {
-            address: ownerWallet,
-            amount: nanoTon,
-          },
-        ],
-      });
-
-      if (txResult && txResult.boc) {
-        const res = await apiPost('/api/wallet/verify', { txBoc: txResult.boc });
-        if (res && res.ok) {
-          appState = res.data;
-          sfxSuccess();
-          triggerHaptic('success');
-          renderAll();
-          showToast(res.message);
-        } else {
-          showToast((res && res.error) || 'Verification failed');
-        }
-      }
-    } catch (_) {
-      showToast('❌ Verification transaction cancelled.');
-    }
+    sfxClick();
+    await executeTonTransaction({
+      mode: 'verify',
+      tonAmount: feeTon,
+      nanoTon,
+      ownerWallet,
+    });
   }
 
   // ================= EVENT LISTENERS =================
@@ -1738,20 +1933,33 @@
   // Wallet Tab Controls
   if ($('btnConnectOrDisconnect')) {
     $('btnConnectOrDisconnect').addEventListener('click', async () => {
-      if (tonConnectUI && tonConnectUI.connected) {
-        sfxClick();
-        await tonConnectUI.disconnect();
+      sfxClick();
+      const isServerConnected = Boolean(appState && appState.user && appState.user.walletConnected);
+      if (isServerConnected) {
+        explicitDisconnectInProgress = true;
+        if (tonConnectUI && tonConnectUI.connected) {
+          await tonConnectUI.disconnect().catch(() => {});
+        }
+        const res = await apiPost('/api/wallet/disconnect');
+        explicitDisconnectInProgress = false;
+        if (res && res.ok) {
+          appState = res.data;
+          renderAll();
+          showToast(res.message);
+        }
       } else {
-        openTonConnect();
+        openTonConnect(false);
       }
     });
   }
+
   if ($('btnVerifyWalletTon')) {
     $('btnVerifyWalletTon').addEventListener('click', handleVerifyWalletTon);
   }
   if ($('btnRecheckOnChainVerify')) {
     $('btnRecheckOnChainVerify').addEventListener('click', async () => {
       sfxClick();
+      showToast('🔍 Memeriksa transaksi verifikasi 0.1 GRAM di blockchain...');
       const res = await apiPost('/api/wallet/verify', { txBoc: '' });
       if (res && res.ok) {
         appState = res.data;
@@ -1919,28 +2127,38 @@
     }
   }, 250);
 
-  // ================= OFFICIAL TON CONNECT INITIALIZATION =================
+  // ================= OFFICIAL TON CONNECT INITIALIZATION (DESKTOP & MOBILE READY) =================
+  let tonInitRetries = 0;
   function initTonConnect() {
+    if (tonConnectUI) return tonConnectUI;
     try {
       if (window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI) {
         tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
           manifestUrl: `${window.location.origin}/tonconnect-manifest.json`,
           buttonRootId: 'ton-connect-btn',
+          uiPreferences: {
+            theme: 'DARK',
+          },
+          actionsConfiguration: {
+            twaReturnUrl: 'https://t.me/MAXIMAMININGBOT',
+            modals: ['before', 'success', 'error'],
+            notifications: ['before', 'success', 'error'],
+          },
         });
 
         tonConnectUI.onStatusChange(async (wallet) => {
           if (wallet && wallet.account && wallet.account.address) {
-            const res = await apiPost('/api/wallet/connect', {
-              walletAddress: wallet.account.address,
-              walletAppName: (wallet.device && wallet.device.appName) || 'TON Connect',
-            });
-            if (res && res.ok) {
-              appState = res.data;
-              sfxSuccess();
-              renderAll();
-              showToast(res.message);
+            hadLocalTonSession = true;
+            await syncLocalTonWalletToServer(wallet);
+            if (pendingTxAfterConnect) {
+              const nextTx = pendingTxAfterConnect;
+              pendingTxAfterConnect = null;
+              setTimeout(() => {
+                executeTonTransaction(nextTx);
+              }, 300);
             }
-          } else {
+          } else if (hadLocalTonSession && !explicitDisconnectInProgress) {
+            hadLocalTonSession = false;
             const res = await apiPost('/api/wallet/disconnect');
             if (res && res.ok) {
               appState = res.data;
@@ -1949,10 +2167,30 @@
             }
           }
         });
+
+        if (tonConnectUI.connectionRestored && typeof tonConnectUI.connectionRestored.then === 'function') {
+          tonConnectUI.connectionRestored
+            .then(async (restored) => {
+              if (restored && tonConnectUI.wallet && tonConnectUI.wallet.account) {
+                hadLocalTonSession = true;
+                if (!appState || !appState.user || !appState.user.walletConnected) {
+                  await syncLocalTonWalletToServer(tonConnectUI.wallet);
+                }
+              }
+            })
+            .catch(() => {});
+        }
+        return tonConnectUI;
       }
     } catch (err) {
       console.warn('TON Connect UI warning:', err);
     }
+
+    if (tonInitRetries < 25) {
+      tonInitRetries++;
+      setTimeout(initTonConnect, 350);
+    }
+    return null;
   }
 
   // ================= BOOTSTRAP =================
@@ -1961,16 +2199,26 @@
     applyTranslations();
     initAudioSettingsUI();
 
-    const sync = await apiPost('/api/user/sync');
-    if (sync && sync.ok) {
-      appState = sync.data;
-      explorerWorldIdx = Math.min(9, Math.floor(((appState.user.level || 1) - 1) / 100));
-      activeLevelRange = `${explorerWorldIdx * 100 + 1}-${explorerWorldIdx * 100 + 100}`;
-      syncRangeChipsUI();
-      renderAll();
-    }
-
+    // Initialize TON Connect immediately without waiting for network sync!
     initTonConnect();
+
+    try {
+      const sync = await apiPost('/api/user/sync');
+      if (sync && sync.ok) {
+        appState = sync.data;
+        explorerWorldIdx = Math.min(9, Math.floor(((appState.user.level || 1) - 1) / 100));
+        activeLevelRange = `${explorerWorldIdx * 100 + 1}-${explorerWorldIdx * 100 + 100}`;
+        syncRangeChipsUI();
+        renderAll();
+
+        // If local TON Connect session is active but server wasn't synced yet, sync it now
+        if (tonConnectUI && tonConnectUI.connected && tonConnectUI.wallet && !appState.user.walletConnected) {
+          await syncLocalTonWalletToServer(tonConnectUI.wallet);
+        }
+      }
+    } catch (err) {
+      console.warn('Initial sync warning:', err);
+    }
 
     // Unlock Web Audio BGM upon first user tap if BGM was toggled on
     document.addEventListener(
@@ -1981,16 +2229,41 @@
       { once: true }
     );
 
-    // Periodic background sync (every 12s)
+    // Periodic background sync & automatic on-chain detection (every 10s)
     setInterval(async () => {
       try {
+        const wasVerified = Boolean(appState && appState.user && appState.user.walletVerified);
+        const prevPresaleCount =
+          appState && appState.user && Array.isArray(appState.user.presalePurchases)
+            ? appState.user.presalePurchases.length
+            : 0;
+
         const res = await apiPost('/api/user/sync');
         if (res && res.ok) {
           appState = res.data;
           renderAll();
+
+          if (!wasVerified && appState.user && appState.user.walletVerified) {
+            stopAutoOnChainPoll();
+            sfxSuccess();
+            triggerHaptic('success');
+            showToast('✅ Verifikasi Wallet (0.1 GRAM) terdeteksi otomatis! Withdraw kini aktif.');
+          } else if (
+            appState.user &&
+            Array.isArray(appState.user.presalePurchases) &&
+            appState.user.presalePurchases.length > prevPresaleCount
+          ) {
+            stopAutoOnChainPoll();
+            const latest = appState.user.presalePurchases[appState.user.presalePurchases.length - 1];
+            sfxLevelUp();
+            triggerHaptic('success');
+            showToast(
+              `🚀 Presale +${nf.format(latest ? latest.coinsReceived : 0)} MAXIMA terdeteksi otomatis!`
+            );
+          }
         }
       } catch (_) {}
-    }, 12000);
+    }, 10000);
   }
 
   boot();
