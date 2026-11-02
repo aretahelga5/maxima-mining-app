@@ -5,7 +5,9 @@
   "publicAppUrl": "https://maxima-mining-app.onrender.com",
   "port": 3000,
   "admin": {
-    "telegramIds": ["8464908276"],
+    "telegramIds": [
+      "8464908276"
+    ],
     "payoutChannel": "@MAXIMAPAYOUT"
   },
   "wallet": {
@@ -18,14 +20,14 @@
   "token": {
     "name": "MAXIMA",
     "symbol": "MAXIMA",
-    "contractAddress": "EQBf0K3oICQZr-UPkiQiP7fMcGXQqq_aQB0jno6mbpssbr45",
+    "contractAddress": "UQBf0K3oICQZr-UPkiQiP7fMcGXQqq_aQB0jno6mbpssbuP8",
     "rawAddress": "0:5fd0ade8202419afe50f9224223fb7cc7065d0aaafda401d239e8ea66e9b2c6e",
     "decimals": 9,
     "totalSupply": "2000000000",
     "description": "MAXIMA MINING APP - Official TON Jetton Mining Game",
     "image": "https://bcassetcdn.com/public/blog-ms/production/sites/2/2024/06/Letter-M-logo-design-logo-mark-brand-identity-branding-by-Aditya-Chhatrala.png",
-    "explorerUrl": "https://tonviewer.com/EQBf0K3oICQZr-UPkiQiP7fMcGXQqq_aQB0jno6mbpssbr45",
-    "tonscanUrl": "https://tonscan.org/jetton/EQBf0K3oICQZr-UPkiQiP7fMcGXQqq_aQB0jno6mbpssbr45"
+    "explorerUrl": "https://tonviewer.com/UQBf0K3oICQZr-UPkiQiP7fMcGXQqq_aQB0jno6mbpssbuP8",
+    "tonscanUrl": "https://tonscan.org/jetton/UQBf0K3oICQZr-UPkiQiP7fMcGXQqq_aQB0jno6mbpssbuP8"
   },
   "mining": {
     "maxLevel": 1000,
@@ -68,11 +70,31 @@
     "maxTotalPresaleCoins": 20000000,
     "coinsPerTon": 2000,
     "packages": [
-      { "id": "pkg_2", "ton": 2, "coins": 4000 },
-      { "id": "pkg_4", "ton": 4, "coins": 8000 },
-      { "id": "pkg_6", "ton": 6, "coins": 12000 },
-      { "id": "pkg_8", "ton": 8, "coins": 16000 },
-      { "id": "pkg_10", "ton": 10, "coins": 20000 }
+      {
+        "id": "pkg_2",
+        "ton": 2,
+        "coins": 4000
+      },
+      {
+        "id": "pkg_4",
+        "ton": 4,
+        "coins": 8000
+      },
+      {
+        "id": "pkg_6",
+        "ton": 6,
+        "coins": 12000
+      },
+      {
+        "id": "pkg_8",
+        "ton": 8,
+        "coins": 16000
+      },
+      {
+        "id": "pkg_10",
+        "ton": 10,
+        "coins": 20000
+      }
     ]
   }
 }

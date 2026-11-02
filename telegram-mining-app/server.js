@@ -453,67 +453,119 @@ function getAll1000Levels() {
 
 // ================= ON-CHAIN JETTON BALANCE & VERIFICATION TX SCANNER =================
 const jettonBalanceCache = new Map();
-let creatorTxCache = { time: 0, txs: [] };
+let creatorTxCache = { time: 0, txs: [], fetchedOnce: false };
+let creatorTxInFlight = null;
+
+function buildTonApiHeaders() {
+  const headers = { Accept: 'application/json' };
+  const apiKey = String(process.env.TONAPI_KEY || '').trim();
+  if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+  return headers;
+}
 
 async function fetchOnChainJettonBalance(cfg, walletRaw) {
-  if (!walletRaw || !cfg.token?.contractAddress) return 0;
+  const rawWallet = parseTonAddressToRaw(walletRaw);
+  const rawContract =
+    parseTonAddressToRaw(cfg.token?.rawAddress) ||
+    parseTonAddressToRaw(cfg.token?.contractAddress);
+  if (!rawWallet || !rawContract) return null;
+
   const now = Date.now();
-  const cached = jettonBalanceCache.get(walletRaw);
+  const cached = jettonBalanceCache.get(rawWallet);
   if (cached && now - cached.time < 25000) {
     return cached.balance;
   }
+
+  const parseRawAmount = (rawAmount, dec) => {
+    const rawBal = rawAmount ? BigInt(String(rawAmount)) : 0n;
+    const decimals = Number(dec ?? cfg.token?.decimals ?? 9);
+    const divisor = 10n ** BigInt(decimals);
+    const whole = rawBal / divisor;
+    const rem = rawBal % divisor;
+    return Number(whole) + Number(rem) / 10 ** decimals;
+  };
+
+  // 1. Primary: TonAPI v2 (menggunakan Raw Address untuk wallet & contract)
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4500);
+    const timer = setTimeout(() => ctrl.abort(), 5000);
     const res = await fetch(
-      `https://tonapi.io/v2/accounts/${encodeURIComponent(walletRaw)}/jettons/${encodeURIComponent(cfg.token.contractAddress)}`,
+      `https://tonapi.io/v2/accounts/${encodeURIComponent(rawWallet)}/jettons/${encodeURIComponent(rawContract)}`,
+      { headers: buildTonApiHeaders(), signal: ctrl.signal }
+    );
+    clearTimeout(timer);
+    if (res.ok) {
+      const data = await res.json();
+      const balance = parseRawAmount(data.balance, data.jetton?.decimals);
+      jettonBalanceCache.set(rawWallet, { balance, time: now });
+      return balance;
+    }
+    if (res.status === 404) {
+      jettonBalanceCache.set(rawWallet, { balance: 0, time: now });
+      return 0;
+    }
+  } catch (_) {}
+
+  // 2. Fallback Otomatis: Toncenter API v3 (jika TonAPI terkena rate-limit 429 di Render)
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const res = await fetch(
+      `https://toncenter.com/api/v3/jetton/wallets?owner_address=${encodeURIComponent(rawWallet)}&jetton_address=${encodeURIComponent(rawContract)}&limit=5`,
       { headers: { Accept: 'application/json' }, signal: ctrl.signal }
     );
     clearTimeout(timer);
     if (res.ok) {
       const data = await res.json();
-      const rawBal = data.balance ? BigInt(data.balance) : 0n;
-      const decimals = Number(cfg.token.decimals || 9);
-      const divisor = 10n ** BigInt(decimals);
-      const whole = rawBal / divisor;
-      const rem = rawBal % divisor;
-      const balance = Number(whole) + Number(rem) / 10 ** decimals;
-      jettonBalanceCache.set(walletRaw, { balance, time: now });
+      const wallets = Array.isArray(data.jetton_wallets) ? data.jetton_wallets : [];
+      let totalRaw = 0n;
+      for (const w of wallets) {
+        if (w && w.balance) totalRaw += BigInt(String(w.balance));
+      }
+      const balance = parseRawAmount(totalRaw.toString(), cfg.token?.decimals);
+      jettonBalanceCache.set(rawWallet, { balance, time: now });
       return balance;
     }
-    if (res.status === 404) {
-      jettonBalanceCache.set(walletRaw, { balance: 0, time: now });
-      return 0;
-    }
   } catch (_) {}
-  return cached ? cached.balance : 0;
+
+  return cached ? cached.balance : null;
 }
 
 async function fetchRecentCreatorTransactions(cfg, forceRefresh = false) {
   const now = Date.now();
-  if (!forceRefresh && now - creatorTxCache.time < 6000 && creatorTxCache.txs.length > 0) {
+  if (!forceRefresh && creatorTxCache.fetchedOnce && now - creatorTxCache.time < 20000) {
     return creatorTxCache.txs;
+  }
+  if (creatorTxInFlight && !forceRefresh) {
+    return creatorTxInFlight;
   }
   const creatorRaw =
     parseTonAddressToRaw(cfg.wallet?.creatorRawAddress) ||
     parseTonAddressToRaw(cfg.wallet?.creatorTonWallet);
   if (!creatorRaw) return [];
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 5000);
-    const res = await fetch(
-      `https://tonapi.io/v2/blockchain/accounts/${encodeURIComponent(creatorRaw)}/transactions?limit=80`,
-      { headers: { Accept: 'application/json' }, signal: ctrl.signal }
-    );
-    clearTimeout(timer);
-    if (res.ok) {
-      const data = await res.json();
-      const txs = Array.isArray(data.transactions) ? data.transactions : [];
-      creatorTxCache = { time: now, txs };
-      return txs;
-    }
-  } catch (_) {}
-  return creatorTxCache.txs;
+
+  creatorTxInFlight = (async () => {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
+      const res = await fetch(
+        `https://tonapi.io/v2/blockchain/accounts/${encodeURIComponent(creatorRaw)}/transactions?limit=80`,
+        { headers: buildTonApiHeaders(), signal: ctrl.signal }
+      );
+      clearTimeout(timer);
+      if (res.ok) {
+        const data = await res.json();
+        const txs = Array.isArray(data.transactions) ? data.transactions : [];
+        creatorTxCache = { time: Date.now(), txs, fetchedOnce: true };
+        return txs;
+      }
+    } catch (_) {}
+    return creatorTxCache.txs;
+  })().finally(() => {
+    creatorTxInFlight = null;
+  });
+
+  return creatorTxInFlight;
 }
 
 // Automatically detect if connected wallet sent 0.1 TON to creator wallet on-chain
@@ -1232,12 +1284,12 @@ const server = http.createServer(async (req, res) => {
 
     // Sync on-chain MAXIMA Jetton balance & check on-chain 0.1 TON verification / presale if wallet connected
     if (rawUser.walletRaw) {
-      const [onChainBal] = await Promise.all([
-        fetchOnChainJettonBalance(cfg, rawUser.walletRaw),
-        !rawUser.walletVerified ? tryAutoVerifyFromChain(cfg, rawUser, false) : Promise.resolve(false),
-        tryAutoPresaleFromChain(cfg, rawUser, false),
-      ]);
-      if (rawUser.onChainHolding !== onChainBal) {
+      const onChainBal = await fetchOnChainJettonBalance(cfg, rawUser.walletRaw);
+      if (!rawUser.walletVerified) {
+        await tryAutoVerifyFromChain(cfg, rawUser, false);
+      }
+      await tryAutoPresaleFromChain(cfg, rawUser, false);
+      if (onChainBal !== null && rawUser.onChainHolding !== onChainBal) {
         accruePendingMining(cfg, rawUser);
         rawUser.onChainHolding = onChainBal;
         saveDB(true);
@@ -1278,7 +1330,9 @@ const server = http.createServer(async (req, res) => {
       }
 
       const onChainBal = await fetchOnChainJettonBalance(cfg, rawAddr);
-      rawUser.onChainHolding = onChainBal;
+      if (onChainBal !== null) {
+        rawUser.onChainHolding = onChainBal;
+      }
       if (!rawUser.walletVerified) {
         await tryAutoVerifyFromChain(cfg, rawUser, true);
       }
