@@ -18,10 +18,10 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Official TON Connect UI SDK (Patched Local Bundle for Telegram Desktop & Mobile + CDN Fallback) -->
   <script
-    src="/tonconnect-ui.min.js?v=20261031-en1"
+    src="/tonconnect-ui.min.js?v=20261103-ps100"
     onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';s.onerror=function(){var u=document.createElement('script');u.src='https://unpkg.com/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';document.head.appendChild(u);};document.head.appendChild(s);"
   ></script>
-  <link rel="stylesheet" href="/style.css?v=20261031-en1" />
+  <link rel="stylesheet" href="/style.css?v=20261103-ps100" />
 </head>
 <body>
   <!-- ================= INITIAL 10-LANGUAGE SELECTION POPUP MODAL ================= -->
@@ -312,7 +312,7 @@
 
         <!-- GLOBAL PRESALE PROGRESS & WALLET QUOTA -->
         <div class="game-card presale-hero-card">
-          <div class="presale-rate-badge">🔥 1 GRAM = 2,000 MAXIMA · MAX 10 GRAM / WALLET</div>
+          <div class="presale-rate-badge">🔥 1 GRAM = 2,000 MAXIMA · MAX 100 GRAM / WALLET</div>
 
           <!-- PRESALE COUNTDOWN UNTIL 5 NOVEMBER 2026 -->
           <div class="presale-countdown-box">
@@ -359,13 +359,13 @@
           </div>
 
           <div class="presale-quota-row">
-            <span data-i18n="wallet_presale_quota_lbl">Your Wallet Limit (Max 10 GRAM):</span>
-            <strong id="walletPresaleQuotaText">0 / 10 GRAM (10 GRAM left)</strong>
+            <span data-i18n="wallet_presale_quota_lbl">Your Wallet Limit (Max 100 GRAM):</span>
+            <strong id="walletPresaleQuotaText">0 / 100 GRAM (100 GRAM left)</strong>
           </div>
         </div>
 
-        <!-- 5 OFFICIAL PRESALE PACKAGES (2, 4, 6, 8, 10 GRAM) -->
-        <div class="section-subhead" data-i18n="choose_presale_pkg">Select Presale Package (Max 10 GRAM / Wallet)</div>
+        <!-- 7 OFFICIAL PRESALE PACKAGES (2, 4, 6, 8, 10, 20, 100 GRAM) -->
+        <div class="section-subhead" data-i18n="choose_presale_pkg">Select Presale Package (Max 100 GRAM / Wallet)</div>
         <div class="presale-grid" id="presalePackagesContainer">
           <!-- Rendered dynamically -->
         </div>
@@ -714,6 +714,6 @@
   <!-- Toast Notification -->
   <div class="toast-msg" id="toastBox"></div>
 
-  <script src="/app.js?v=20261031-en1"></script>
+  <script src="/app.js?v=20261103-ps100"></script>
 </body>
 </html>

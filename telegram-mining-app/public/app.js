@@ -70,8 +70,8 @@
       presale_ended_btn: 'Presale Berakhir',
       presale_sold_lbl: 'Terjual Saat Presale',
       presale_remaining_lbl: 'Sisa Kuota Global',
-      wallet_presale_quota_lbl: 'Kuota Wallet Anda (Maks 10 GRAM):',
-      choose_presale_pkg: 'Pilih Paket Presale (Maks 10 GRAM / Wallet)',
+      wallet_presale_quota_lbl: 'Kuota Wallet Anda (Maks 100 GRAM):',
+      choose_presale_pkg: 'Pilih Paket Presale (Maks 100 GRAM / Wallet)',
       presale_history_heading: 'Riwayat Pembelian Presale',
       no_presale_yet: 'Belum ada pembelian presale.',
       btn_buy_presale: 'Beli {ton} GRAM',
@@ -191,8 +191,8 @@
       presale_ended_btn: 'Presale Ended',
       presale_sold_lbl: 'Total Presale Sold',
       presale_remaining_lbl: 'Remaining Supply',
-      wallet_presale_quota_lbl: 'Your Wallet Limit (Max 10 GRAM):',
-      choose_presale_pkg: 'Select Presale Package (Max 10 GRAM / Wallet)',
+      wallet_presale_quota_lbl: 'Your Wallet Limit (Max 100 GRAM):',
+      choose_presale_pkg: 'Select Presale Package (Max 100 GRAM / Wallet)',
       presale_history_heading: 'Your Presale Purchases',
       no_presale_yet: 'No presale purchases yet.',
       btn_buy_presale: 'Buy {ton} GRAM',
@@ -301,8 +301,8 @@
       presale_desc: '使用 GRAM 兑换 MAXIMA，立即提升您的等级与挖矿算力！',
       presale_sold_lbl: '预售已售出',
       presale_remaining_lbl: '剩余总额度',
-      wallet_presale_quota_lbl: '当前钱包额度（上限 10 GRAM）:',
-      choose_presale_pkg: '选择预售套餐（单钱包最高 10 GRAM）',
+      wallet_presale_quota_lbl: '当前钱包额度（上限 100 GRAM）:',
+      choose_presale_pkg: '选择预售套餐（单钱包最高 100 GRAM）',
       btn_buy_presale: '支付 {ton} GRAM',
       missions_tab_title: '📋 每日任务与邀请',
       checkin_title: '每日签到',
@@ -518,12 +518,16 @@
     },
   };
 
+  if (!localStorage.getItem('maxima_default_en_v2')) {
+    localStorage.setItem('maxima_lang', 'en');
+    localStorage.setItem('maxima_default_en_v2', '1');
+  }
   let currentLang = localStorage.getItem('maxima_lang') || 'en';
   if (!LANGUAGES.some((l) => l.code === currentLang)) currentLang = 'en';
 
   function t(key, vars = {}) {
     const dict = I18N[currentLang] || I18N.en;
-    let str = dict[key] || I18N.en[key] || I18N.id[key] || key;
+    let str = dict[key] || I18N.en[key] || key;
     Object.keys(vars).forEach((k) => {
       str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), vars[k]);
     });
@@ -1293,7 +1297,7 @@
       if ($('presaleRemVal')) $('presaleRemVal').textContent = nf.format(presaleState.totalCoinsRemaining);
       if ($('presaleGlobalBar')) $('presaleGlobalBar').style.width = `${Math.max(1, presaleState.progressPct)}%`;
     }
-    const maxTonW = config.presale.maxTonPerWallet || 10;
+    const maxTonW = config.presale.maxTonPerWallet || 100;
     const spentTon = user.walletPresaleTonSpent || 0;
     const remTon = Math.max(0, +(maxTonW - spentTon).toFixed(2));
     if ($('walletPresaleQuotaText')) {
@@ -1320,7 +1324,7 @@
             const disabled = isPresaleEnded || exceedsWallet || exceedsPool;
 
             return `
-              <div class="presale-pkg-card ${pkg.ton === 10 ? 'popular' : ''}">
+              <div class="presale-pkg-card ${pkg.ton === 100 ? 'popular' : ''}">
                 <div>
                   <div class="pkg-coins">+${nf.format(pkg.coins)} MAXIMA</div>
                   <div class="pkg-ton-sub">💎 ${pkg.ton} GRAM</div>
