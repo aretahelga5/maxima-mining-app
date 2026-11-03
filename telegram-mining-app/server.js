@@ -146,6 +146,8 @@ let cloudFlushPendingAgain = false;
 let cloudDebounceTimer = null;
 let lastCloudJson = '';
 let lastCloudPingAt = 0;
+let lastCloudErrorAt = 0;
+let lastCloudWriteAt = 0;
 
 function getUpstashCreds() {
   const url = String(process.env.UPSTASH_REDIS_REST_URL || '')
@@ -181,6 +183,7 @@ async function upstashCommand(creds, cmdArray) {
 async function ensureCloudDBLoaded() {
   const creds = getUpstashCreds();
   if (!creds || cloudDbLoaded) return;
+  if (Date.now() - lastCloudErrorAt < 15000) return;
   if (cloudLoadInFlight) return cloudLoadInFlight;
 
   cloudLoadInFlight = (async () => {
@@ -206,6 +209,7 @@ async function ensureCloudDBLoaded() {
         console.log('☁️  [Cloud DB] Upstash Redis connected & permanent database initialized!');
       }
     } catch (err) {
+      lastCloudErrorAt = Date.now();
       console.warn('⚠️  [Cloud DB] Failed to load from Upstash Redis (will retry automatically):', err.message);
     } finally {
       cloudLoadInFlight = null;
@@ -269,7 +273,7 @@ function saveDB(immediateCloud = false) {
     cloudDebounceTimer = setTimeout(() => {
       cloudDebounceTimer = null;
       flushCloudDB().catch(() => {});
-    }, 8000);
+    }, 30000);
     if (cloudDebounceTimer.unref) cloudDebounceTimer.unref();
   }
 }
@@ -1171,7 +1175,10 @@ function parseBody(req) {
 }
 
 async function sendJson(res, status, data) {
-  if (status === 200 && (res._flushCloud || process.env.VERCEL)) {
+  if (status === 200 && res._flushCloud) {
+    await flushCloudDB();
+  } else if (status === 200 && process.env.VERCEL && Date.now() - lastCloudWriteAt > 25000) {
+    lastCloudWriteAt = Date.now();
     await flushCloudDB();
   }
   const bodyBuf = Buffer.from(JSON.stringify(data), 'utf8');
@@ -1248,6 +1255,17 @@ const server = http.createServer(async (req, res) => {
     await ensureCloudDBLoaded();
     const update = await parseBody(req);
     if (cfg.botToken && update && typeof update === 'object') {
+      if (getUpstashCreds() && !cloudDbLoaded) {
+        const chatId = update.message && update.message.chat && update.message.chat.id;
+        if (chatId) {
+          await notifyTelegramUserHtml(
+            cfg,
+            chatId,
+            `🛠️ <b>MAXIMA MINING APP — Server Maintenance</b>\n━━━━━━━━━━━━━━━━━━━━━━\nWe are currently upgrading our server & syncing the member database.\n\n✅ <b>All member balances, levels, referrals & presale records are 100% safe.</b>\n⏳ Mining will resume automatically as soon as the database sync is complete!`
+          ).catch(() => {});
+        }
+        return sendJson(res, 200, { ok: true, maintenance: true });
+      }
       await handleTelegramUpdate(cfg, update).catch(() => {});
     }
     return sendJson(res, 200, { ok: true });
@@ -1300,6 +1318,13 @@ const server = http.createServer(async (req, res) => {
   // POST API Endpoints
   if (req.method === 'POST' && pathname.startsWith('/api/')) {
     await ensureCloudDBLoaded();
+    if (getUpstashCreds() && !cloudDbLoaded) {
+      return sendJson(res, 503, {
+        ok: false,
+        maintenance: true,
+        error: '🛠️ Server Maintenance: Syncing member database. All balances are 100% safe, please wait...',
+      });
+    }
     res._flushCloud = pathname !== '/api/user/sync';
     const body = await parseBody(req);
     getOrCreateUser(cfg, body);
@@ -1826,6 +1851,17 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Static files from public/ (with Gzip compression & ETag caching to save ~90% Render bandwidth)
+  if (pathname === '/' || pathname === '/index.html') {
+    await ensureCloudDBLoaded();
+    if (getUpstashCreds() && !cloudDbLoaded) {
+      const maintHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>MAXIMA MINING APP · Maintenance</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#080a0e;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;padding:20px;text-align:center}.card{max-width:400px;background:#121722;border:1.5px solid rgba(245,196,81,.45);border-radius:22px;padding:28px 22px;box-shadow:0 20px 50px rgba(0,0,0,.8)}h1{font-size:20px;color:#f5c451;margin:12px 0 8px}p{font-size:14px;line-height:1.55;color:#cbd5e1;margin:8px 0}.badge{display:inline-block;margin-top:12px;padding:6px 14px;border-radius:99px;background:rgba(16,232,153,.15);color:#10e899;font-weight:700;font-size:12px}</style></head><body><div class="card"><div style="font-size:44px">🛠️</div><h1>SERVER UPGRADE IN PROGRESS</h1><p>MAXIMA MINING APP is currently upgrading server capacity and syncing the member database.</p><div class="badge">✅ All Member Balances & Levels Are 100% Safe</div></div></body></html>`;
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store',
+      });
+      return res.end(maintHtml);
+    }
+  }
   const relPath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   const filePath = path.resolve(PUBLIC_DIR, relPath);
   if (!filePath.startsWith(path.resolve(PUBLIC_DIR))) {
