@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const zlib = require('zlib');
 
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const ENV_PATH = path.join(__dirname, '.env');
@@ -22,7 +23,11 @@ if (fs.existsSync(ENV_PATH)) {
     }
   } catch (_) {}
 }
-const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, 'data');
+const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : process.env.VERCEL
+  ? '/tmp/maxima-data'
+  : path.join(__dirname, 'data');
 const DB_PATH = path.join(DATA_DIR, 'database.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const LOCAL_LOGO_CANDIDATES = ['logo.png', 'logo.webp', 'logo.jpg', 'logo.jpeg', 'logo.svg'];
@@ -43,9 +48,11 @@ function resolveAppLogoUrl(cfg) {
   return configured || 'https://ton.org/download/ton_symbol.png';
 }
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (_) {}
 
 let runtimeBotUsername = '';
 
@@ -59,6 +66,10 @@ function loadConfig() {
   const autoCloudUrl =
     process.env.PUBLIC_APP_URL ||
     process.env.RENDER_EXTERNAL_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : '') ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '') ||
+    (process.env.SPACE_HOST ? `https://${process.env.SPACE_HOST}` : '') ||
+    (process.env.KOYEB_PUBLIC_DOMAIN ? `https://${process.env.KOYEB_PUBLIC_DOMAIN}` : '') ||
     (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : '');
   if (autoCloudUrl) {
     cfg.publicAppUrl = String(autoCloudUrl).trim().replace(/\/+$/, '');
@@ -1160,17 +1171,27 @@ function parseBody(req) {
 }
 
 async function sendJson(res, status, data) {
-  if (res._flushCloud && status === 200) {
+  if (status === 200 && (res._flushCloud || process.env.VERCEL)) {
     await flushCloudDB();
   }
-  res.writeHead(status, {
+  const bodyBuf = Buffer.from(JSON.stringify(data), 'utf8');
+  const acceptEncoding = String((res._reqHeaders && res._reqHeaders['accept-encoding']) || '');
+  const canGzip = bodyBuf.length > 512 && /\bgzip\b/i.test(acceptEncoding);
+  const outBuf = canGzip ? zlib.gzipSync(bodyBuf, { level: 6 }) : bodyBuf;
+  const headers = {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
     'Cache-Control': 'no-store',
-  });
-  res.end(JSON.stringify(data));
+    'Content-Length': outBuf.length,
+  };
+  if (canGzip) {
+    headers['Content-Encoding'] = 'gzip';
+    headers['Vary'] = 'Accept-Encoding';
+  }
+  res.writeHead(status, headers);
+  res.end(outBuf);
 }
 
 const MIME_TYPES = {
@@ -1186,7 +1207,10 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
 };
 
+const staticAssetCache = new Map();
+
 const server = http.createServer(async (req, res) => {
+  res._reqHeaders = req.headers || {};
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
@@ -1801,7 +1825,7 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // Static files from public/
+  // Static files from public/ (with Gzip compression & ETag caching to save ~90% Render bandwidth)
   const relPath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   const filePath = path.resolve(PUBLIC_DIR, relPath);
   if (!filePath.startsWith(path.resolve(PUBLIC_DIR))) {
@@ -1809,16 +1833,45 @@ const server = http.createServer(async (req, res) => {
     return res.end('Forbidden');
   }
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    const stat = fs.statSync(filePath);
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, {
+    const etag = `W/"${stat.size}-${Math.floor(stat.mtimeMs)}"`;
+
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304, {
+        ETag: etag,
+        'Cache-Control': ext === '.html' ? 'public, max-age=60, must-revalidate' : 'public, max-age=604800',
+      });
+      return res.end();
+    }
+
+    let cached = staticAssetCache.get(filePath);
+    if (!cached || cached.etag !== etag) {
+      const rawBuf = fs.readFileSync(filePath);
+      const isCompressible = ['.html', '.css', '.js', '.json', '.svg'].includes(ext);
+      const gzBuf = isCompressible ? zlib.gzipSync(rawBuf, { level: 9 }) : null;
+      cached = { etag, rawBuf, gzBuf };
+      staticAssetCache.set(filePath, cached);
+    }
+
+    const acceptEncoding = String(req.headers['accept-encoding'] || '');
+    const useGzip = Boolean(cached.gzBuf && /\bgzip\b/i.test(acceptEncoding));
+    const bodyBuf = useGzip ? cached.gzBuf : cached.rawBuf;
+
+    const headers = {
       'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-      Pragma: 'no-cache',
-      Expires: '0',
-    });
-    return fs.createReadStream(filePath).pipe(res);
+      ETag: etag,
+      'Cache-Control': ext === '.html' ? 'public, max-age=60, must-revalidate' : 'public, max-age=604800',
+      'Content-Length': bodyBuf.length,
+    };
+    if (useGzip) {
+      headers['Content-Encoding'] = 'gzip';
+      headers['Vary'] = 'Accept-Encoding';
+    }
+    res.writeHead(200, headers);
+    return res.end(bodyBuf);
   }
 
   res.writeHead(404);
@@ -2590,6 +2643,36 @@ async function startTelegramBotPolling(cfg) {
   }
 }
 
+let vercelWebhookInitialized = false;
+
+async function ensureServerlessWebhook(cfg, req) {
+  if (vercelWebhookInitialized || !cfg.botToken) return;
+  vercelWebhookInitialized = true;
+  try {
+    const host = String((req && req.headers && req.headers.host) || '').trim();
+    const baseUrl = String(
+      process.env.PUBLIC_APP_URL ||
+        (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : '') ||
+        (host ? `https://${host}` : cfg.publicAppUrl || '')
+    )
+      .trim()
+      .replace(/\/+$/, '');
+    if (!baseUrl.startsWith('https://')) return;
+    await tgCall(cfg.botToken, 'setChatMenuButton', {
+      menu_button: {
+        type: 'web_app',
+        text: '⛏️ MAXIMA APP',
+        web_app: { url: baseUrl },
+      },
+    }).catch(() => null);
+    await tgCall(cfg.botToken, 'setWebhook', {
+      url: `${baseUrl}/api/telegram/webhook`,
+      allowed_updates: ['message', 'callback_query'],
+    }).catch(() => null);
+    await registerBotCommandsForAdmins(cfg).catch(() => null);
+  } catch (_) {}
+}
+
 const initialCfg = loadConfig();
 const PORT = initialCfg.port || 3000;
 
@@ -2606,7 +2689,14 @@ if (require.main === module) {
   });
 }
 
-module.exports = {
+const requestHandler = (req, res) => {
+  if (process.env.VERCEL && !vercelWebhookInitialized) {
+    ensureServerlessWebhook(loadConfig(), req).catch(() => {});
+  }
+  return server.emit('request', req, res);
+};
+
+Object.assign(requestHandler, {
   server,
   db,
   ensureCloudDBLoaded,
@@ -2617,4 +2707,6 @@ module.exports = {
   computeLevelFromHolding,
   parseTonAddressToRaw,
   rawToFriendlyTon,
-};
+});
+
+module.exports = requestHandler;
