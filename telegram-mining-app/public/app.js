@@ -2233,8 +2233,9 @@
       { once: true }
     );
 
-    // Periodic background sync & automatic on-chain detection (every 10s)
+    // Periodic background sync & automatic on-chain detection (every 30s when tab is visible to save bandwidth)
     setInterval(async () => {
+      if (document.hidden) return;
       try {
         const wasVerified = Boolean(appState && appState.user && appState.user.walletVerified);
         const prevPresaleCount =
@@ -2267,7 +2268,7 @@
           }
         }
       } catch (_) {}
-    }, 10000);
+    }, 30000);
   }
 
   boot();
