@@ -609,7 +609,7 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
   return false;
 }
 
-// Automatically detect if connected wallet sent 2, 4, 6, 8, or 10 TON for Presale on-chain
+// Automatically detect if connected wallet sent 2, 4, 6, 8, 10, 20, or 100 TON for Presale on-chain
 async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
   if (!user.walletRaw) return null;
   const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-05T23:59:59Z');
@@ -618,7 +618,7 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
   const packages = Array.isArray(cfg.presale?.packages) ? cfg.presale.packages : [];
   if (!packages.length) return null;
 
-  const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 10);
+  const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 100);
   const maxTotalCoins = Number(cfg.presale?.maxTotalPresaleCoins || 20000000);
   const txs = await fetchRecentCreatorTransactions(cfg, forceRefresh);
 
@@ -1073,7 +1073,7 @@ function getOrCreateUser(cfg, { userId, username, firstName, refBy }) {
     walletVerified: Boolean(user.walletVerified),
     verifiedAt: user.verifiedAt,
     walletPresaleTonSpent: walletPresaleTon,
-    walletPresaleTonRemaining: Math.max(0, (cfg.presale?.maxTonPerWallet || 10) - walletPresaleTon),
+    walletPresaleTonRemaining: Math.max(0, (cfg.presale?.maxTonPerWallet || 100) - walletPresaleTon),
     checkIn: computeCheckInPreview(cfg, user),
     dailyChannels: computeDailyChannelsStatus(cfg, user),
     referralStats: computeReferralDetails(cfg, user),
@@ -1566,7 +1566,7 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
-    // 7. Presale Purchase (2/4/6/8/10 TON -> 4K/8K/12K/16K/20K MAXIMA; Max 10 TON/wallet; Max 20,000,000 MAXIMA total)
+    // 7. Presale Purchase (2/4/6/8/10/20/100 TON -> 4K/8K/12K/16K/20K/40K/200K MAXIMA; Max 100 TON/wallet; Max 20,000,000 MAXIMA total)
     if (pathname === '/api/presale/buy') {
       if (!rawUser.walletRaw) {
         return sendJson(res, 403, {
@@ -1618,7 +1618,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 400, { ok: false, error: 'This transaction has already been processed!' });
       }
 
-      const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 10);
+      const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 100);
       const maxTotalCoins = Number(cfg.presale?.maxTotalPresaleCoins || 20000000);
       const currentWalletTon = Number(db.presale.walletTonSpent[rawUser.walletRaw] || 0);
 

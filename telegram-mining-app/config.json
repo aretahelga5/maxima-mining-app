@@ -66,7 +66,7 @@
   "presale": {
     "recipientWallet": "UQDUe_P76bjHJ9EIUk8KLnFVRhbHf9_g7lJXHXgchYpZy4R1",
     "endsAt": "2026-11-05T23:59:59Z",
-    "maxTonPerWallet": 10,
+    "maxTonPerWallet": 100,
     "maxTotalPresaleCoins": 20000000,
     "coinsPerTon": 2000,
     "packages": [
@@ -94,6 +94,16 @@
         "id": "pkg_10",
         "ton": 10,
         "coins": 20000
+      },
+      {
+        "id": "pkg_20",
+        "ton": 20,
+        "coins": 40000
+      },
+      {
+        "id": "pkg_100",
+        "ton": 100,
+        "coins": 200000
       }
     ]
   }
