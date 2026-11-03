@@ -2,7 +2,7 @@
   "appName": "MAXIMA MINING APP",
   "botToken": "",
   "botUsername": "MAXIMAMININGBOT",
-  "publicAppUrl": "https://maxima-mining-app.onrender.com",
+  "publicAppUrl": "https://maxima-mining-app.vercel.app",
   "port": 3000,
   "admin": {
     "telegramIds": [

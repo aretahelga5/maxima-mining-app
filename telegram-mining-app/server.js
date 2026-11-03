@@ -183,7 +183,6 @@ async function upstashCommand(creds, cmdArray) {
 async function ensureCloudDBLoaded() {
   const creds = getUpstashCreds();
   if (!creds || cloudDbLoaded) return;
-  if (Date.now() - lastCloudErrorAt < 15000) return;
   if (cloudLoadInFlight) return cloudLoadInFlight;
 
   cloudLoadInFlight = (async () => {
@@ -209,7 +208,6 @@ async function ensureCloudDBLoaded() {
         console.log('☁️  [Cloud DB] Upstash Redis connected & permanent database initialized!');
       }
     } catch (err) {
-      lastCloudErrorAt = Date.now();
       console.warn('⚠️  [Cloud DB] Failed to load from Upstash Redis (will retry automatically):', err.message);
     } finally {
       cloudLoadInFlight = null;
@@ -548,7 +546,7 @@ async function fetchOnChainJettonBalance(cfg, walletRaw) {
 
 async function fetchRecentCreatorTransactions(cfg, forceRefresh = false) {
   const now = Date.now();
-  if (!forceRefresh && creatorTxCache.fetchedOnce && now - creatorTxCache.time < 20000) {
+  if (!forceRefresh && creatorTxCache.fetchedOnce && now - creatorTxCache.time < 30000) {
     return creatorTxCache.txs;
   }
   if (creatorTxInFlight && !forceRefresh) {
@@ -561,18 +559,35 @@ async function fetchRecentCreatorTransactions(cfg, forceRefresh = false) {
 
   creatorTxInFlight = (async () => {
     try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 5000);
-      const res = await fetch(
-        `https://tonapi.io/v2/blockchain/accounts/${encodeURIComponent(creatorRaw)}/transactions?limit=80`,
-        { headers: buildTonApiHeaders(), signal: ctrl.signal }
-      );
-      clearTimeout(timer);
-      if (res.ok) {
+      const allTxs = [];
+      let beforeLt = '';
+      const maxPages = creatorTxCache.fetchedOnce ? 1 : 4;
+      for (let page = 0; page < maxPages; page++) {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 5000);
+        const ltQuery = beforeLt ? `&before_lt=${encodeURIComponent(beforeLt)}` : '';
+        const res = await fetch(
+          `https://tonapi.io/v2/blockchain/accounts/${encodeURIComponent(creatorRaw)}/transactions?limit=100${ltQuery}`,
+          { headers: buildTonApiHeaders(), signal: ctrl.signal }
+        );
+        clearTimeout(timer);
+        if (!res.ok) break;
         const data = await res.json();
-        const txs = Array.isArray(data.transactions) ? data.transactions : [];
-        creatorTxCache = { time: Date.now(), txs, fetchedOnce: true };
-        return txs;
+        const batch = Array.isArray(data.transactions) ? data.transactions : [];
+        if (!batch.length) break;
+        allTxs.push(...batch);
+        beforeLt = batch[batch.length - 1].lt;
+        if (batch.length < 100) break;
+      }
+      if (allTxs.length) {
+        if (creatorTxCache.fetchedOnce && creatorTxCache.txs.length > allTxs.length) {
+          const seen = new Set(allTxs.map((t) => t && t.hash));
+          for (const oldTx of creatorTxCache.txs) {
+            if (oldTx && oldTx.hash && !seen.has(oldTx.hash)) allTxs.push(oldTx);
+          }
+        }
+        creatorTxCache = { time: Date.now(), txs: allTxs, fetchedOnce: true };
+        return allTxs;
       }
     } catch (_) {}
     return creatorTxCache.txs;
@@ -592,7 +607,7 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
   }
   const feeTon = Number(cfg.wallet?.verificationFeeTon || 0.1);
   const minNano = Math.round(feeTon * 1e9 * 0.85); // allow network fwd/gas fee tolerance around 0.1 TON
-  const maxNano = Math.round(feeTon * 1e9 * 5.0); // distinguish 0.1 TON verification from 2-10 TON presale
+  const maxNano = Math.round(feeTon * 1e9 * 5.0); // distinguish 0.1 TON verification from 2-100 TON presale
   const txs = await fetchRecentCreatorTransactions(cfg, forceRefresh);
   for (const tx of txs) {
     if (!tx || !tx.hash || !tx.in_msg) continue;
@@ -600,24 +615,28 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
     const val = Number(tx.in_msg.value || 0);
     const refKey = `chain_${tx.hash}`;
     if (srcRaw === user.walletRaw && val >= minNano && val <= maxNano && !db.usedTxRefs[refKey]) {
-      db.usedTxRefs[refKey] = { type: 'verify', userId: user.userId, at: Date.now() };
+      const txTimeMs = tx.utime ? tx.utime * 1000 : Date.now();
+      const isRecentTx = Date.now() - txTimeMs < 30 * 60 * 1000;
+      db.usedTxRefs[refKey] = { type: 'verify', userId: user.userId, at: txTimeMs };
       if (!user.verifiedWallets) user.verifiedWallets = {};
       user.verifiedWallets[user.walletRaw] = {
-        verifiedAt: tx.utime ? tx.utime * 1000 : Date.now(),
+        verifiedAt: txTimeMs,
         txRef: tx.hash,
         source: 'onchain-auto',
       };
       user.walletVerified = true;
       user.everVerifiedWallet = true;
-      user.verifiedAt = Date.now();
+      user.verifiedAt = txTimeMs;
       checkAndActivateReferral(cfg, user);
       saveDB(true);
-      notifyTelegramUser(
-        cfg,
-        user.userId,
-        `✅ *Wallet Automatically Verified (On-Chain)!*\n\nYour *${feeTon} GRAM* verification payment was detected on-chain. *Withdraw ${cfg.token.symbol}* is now unlocked!`
-      ).catch(() => {});
-      notifyAdminsWalletVerified(cfg, user).catch(() => {});
+      if (isRecentTx) {
+        notifyTelegramUser(
+          cfg,
+          user.userId,
+          `✅ *Wallet Automatically Verified (On-Chain)!*\n\nYour *${feeTon} GRAM* verification payment was detected on-chain. *Withdraw ${cfg.token.symbol}* is now unlocked!`
+        ).catch(() => {});
+        notifyAdminsWalletVerified(cfg, user).catch(() => {});
+      }
       return true;
     }
   }
@@ -710,12 +729,14 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
     db.presale.purchases.push(receipt);
     saveDB(true);
 
-    notifyTelegramUser(
-      cfg,
-      user.userId,
-      `🚀 *Presale Purchase Automatically Detected (On-Chain)!*\n\n• *Paid:* ${matchedPkg.ton} GRAM\n• *Coins Received:* +${matchedPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[user.walletRaw]} / ${maxTonWallet} GRAM`
-    ).catch(() => {});
-    notifyAdminsNewPresale(cfg, user, receipt).catch(() => {});
+    if (Date.now() - txTimeMs < 30 * 60 * 1000) {
+      notifyTelegramUser(
+        cfg,
+        user.userId,
+        `🚀 *Presale Purchase Automatically Detected (On-Chain)!*\n\n• *Paid:* ${matchedPkg.ton} GRAM\n• *Coins Received:* +${matchedPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[user.walletRaw]} / ${maxTonWallet} GRAM`
+      ).catch(() => {});
+      notifyAdminsNewPresale(cfg, user, receipt).catch(() => {});
+    }
 
     creditedPkg = matchedPkg;
   }
@@ -1021,17 +1042,20 @@ function getOrCreateUser(cfg, { userId, username, firstName, refBy }) {
   const user = db.users[id];
   ensureUserSchema(user);
 
-  // Link referral on first creation (NO instant reward! Must complete 3-day check-in + 0.1 TON wallet verification!)
-  if (isNew && refBy && String(refBy) !== id && db.users[String(refBy)]) {
-    const inviter = db.users[String(refBy)];
+  // Link referral on creation or first sync with refBy (supports out-of-order restoration if friend syncs before inviter!)
+  const cleanRefBy = refBy ? String(refBy).trim().replace(/^ref_/i, '') : '';
+  if (cleanRefBy && cleanRefBy !== id && !user.referredBy) {
+    user.referredBy = cleanRefBy;
+  }
+  if (user.referredBy && db.users[String(user.referredBy)]) {
+    const inviter = db.users[String(user.referredBy)];
     ensureUserSchema(inviter);
     const already = inviter.referrals.some((r) => String(r.userId) === id);
     if (!already) {
-      user.referredBy = String(refBy);
       inviter.referrals.push({
         userId: id,
         name: user.firstName || user.username,
-        joinedAt: Date.now(),
+        joinedAt: user.createdAt || Date.now(),
       });
     }
   }
@@ -1255,17 +1279,6 @@ const server = http.createServer(async (req, res) => {
     await ensureCloudDBLoaded();
     const update = await parseBody(req);
     if (cfg.botToken && update && typeof update === 'object') {
-      if (getUpstashCreds() && !cloudDbLoaded) {
-        const chatId = update.message && update.message.chat && update.message.chat.id;
-        if (chatId) {
-          await notifyTelegramUserHtml(
-            cfg,
-            chatId,
-            `🛠️ <b>MAXIMA MINING APP — Server Maintenance</b>\n━━━━━━━━━━━━━━━━━━━━━━\nWe are currently upgrading our server & syncing the member database.\n\n✅ <b>All member balances, levels, referrals & presale records are 100% safe.</b>\n⏳ Mining will resume automatically as soon as the database sync is complete!`
-          ).catch(() => {});
-        }
-        return sendJson(res, 200, { ok: true, maintenance: true });
-      }
       await handleTelegramUpdate(cfg, update).catch(() => {});
     }
     return sendJson(res, 200, { ok: true });
@@ -1318,13 +1331,6 @@ const server = http.createServer(async (req, res) => {
   // POST API Endpoints
   if (req.method === 'POST' && pathname.startsWith('/api/')) {
     await ensureCloudDBLoaded();
-    if (getUpstashCreds() && !cloudDbLoaded) {
-      return sendJson(res, 503, {
-        ok: false,
-        maintenance: true,
-        error: '🛠️ Server Maintenance: Syncing member database. All balances are 100% safe, please wait...',
-      });
-    }
     res._flushCloud = pathname !== '/api/user/sync';
     const body = await parseBody(req);
     getOrCreateUser(cfg, body);
@@ -1851,17 +1857,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Static files from public/ (with Gzip compression & ETag caching to save ~90% Render bandwidth)
-  if (pathname === '/' || pathname === '/index.html') {
-    await ensureCloudDBLoaded();
-    if (getUpstashCreds() && !cloudDbLoaded) {
-      const maintHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>MAXIMA MINING APP · Maintenance</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#080a0e;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;padding:20px;text-align:center}.card{max-width:400px;background:#121722;border:1.5px solid rgba(245,196,81,.45);border-radius:22px;padding:28px 22px;box-shadow:0 20px 50px rgba(0,0,0,.8)}h1{font-size:20px;color:#f5c451;margin:12px 0 8px}p{font-size:14px;line-height:1.55;color:#cbd5e1;margin:8px 0}.badge{display:inline-block;margin-top:12px;padding:6px 14px;border-radius:99px;background:rgba(16,232,153,.15);color:#10e899;font-weight:700;font-size:12px}</style></head><body><div class="card"><div style="font-size:44px">🛠️</div><h1>SERVER UPGRADE IN PROGRESS</h1><p>MAXIMA MINING APP is currently upgrading server capacity and syncing the member database.</p><div class="badge">✅ All Member Balances & Levels Are 100% Safe</div></div></body></html>`;
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'no-store',
-      });
-      return res.end(maintHtml);
-    }
-  }
   const relPath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
   const filePath = path.resolve(PUBLIC_DIR, relPath);
   if (!filePath.startsWith(path.resolve(PUBLIC_DIR))) {
