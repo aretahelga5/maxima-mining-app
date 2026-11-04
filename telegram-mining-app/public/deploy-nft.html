@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1-Click Deploy · MAXIMA Genesis NFT Smart Contract (TON Mainnet)</title>
+  <script src="/tonconnect-ui.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';document.head.appendChild(s);"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: radial-gradient(80% 50% at 50% 0%, rgba(245,196,81,0.14) 0%, transparent 70%), #080a0e;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 22px 16px 48px;
+      line-height: 1.5;
+    }
+    .card {
+      background: linear-gradient(180deg, #121826 0%, #090c14 100%);
+      border: 1.5px solid rgba(245, 196, 81, 0.65);
+      border-radius: 20px;
+      padding: 22px 18px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+    }
+    h1 { font-size: 20px; margin: 0 0 6px; color: #f5c451; }
+    .sub { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; }
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      color: #fbbf24;
+    }
+    .badge-status.live {
+      background: rgba(16, 232, 153, 0.16);
+      border-color: rgba(16, 232, 153, 0.55);
+      color: #10e899;
+    }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; }
+    code {
+      display: block;
+      background: #05070c;
+      border: 1px dashed rgba(255,255,255,0.2);
+      padding: 10px 12px;
+      border-radius: 11px;
+      color: #38bdf8;
+      font-size: 12px;
+      word-break: break-all;
+    }
+    .btn-deploy {
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      border: 0;
+      background: linear-gradient(90deg, #f5c451, #f59e0b);
+      color: #090b10;
+      font-weight: 900;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 12px;
+      box-shadow: 0 8px 24px rgba(245, 196, 81, 0.35);
+    }
+    .btn-deploy:disabled { opacity: 0.55; cursor: not-allowed; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .links a, .links button {
+      flex: 1;
+      min-width: 140px;
+      text-align: center;
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .msg { margin-top: 14px; font-size: 13px; font-weight: 700; color: #10e899; }
+    ul.rules { font-size: 12px; color: #cbd5e1; padding-left: 18px; margin: 14px 0 0; }
+    ul.rules li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge-status" id="contractBadge">⏳ Memeriksa Status Kontrak di TON Mainnet...</div>
+    <h1>💎 Deploy Smart Contract NFT MAXIMA (1,000 Supply)</h1>
+    <p class="sub">
+      Halaman resmi Admin untuk mengaktifkan kontrak on-chain <b>MAXIMA Genesis Mining Rigs</b> (TEP-62 / TEP-64 / TEP-66) hanya dengan <b>1 Klik via TON Connect</b> tanpa seed phrase.
+    </p>
+
+    <div id="ton-connect" style="margin: 14px 0;"></div>
+
+    <div class="field">
+      <label>📌 Alamat Kontrak Koleksi NFT (Sudah Otomatis Terpasang di App):</label>
+      <code id="colAddrCode">EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP</code>
+    </div>
+
+    <div class="field">
+      <label>👛 Wallet Owner &amp; Penerima Otomatis 10 GRAM / Mint:</label>
+      <code>UQDUe_P76bjHJ9EIUk8KLnFVRhbHf9_g7lJXHXgchYpZy4R1</code>
+    </div>
+
+    <button class="btn-deploy" id="btnDeploy">
+      🚀 Deploy Smart Contract NFT On-Chain (0.08 TON Gas)
+    </button>
+
+    <div id="statusMsg" class="msg"></div>
+
+    <div class="links">
+      <a href="https://tonviewer.com/EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP" target="_blank" rel="noopener">🔎 Cek di Tonviewer ↗</a>
+      <a href="https://getgems.io/collection/EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP" target="_blank" rel="noopener">💎 Cek di Getgems ↗</a>
+      <a href="/">⛏️ Kembali ke MAXIMA App</a>
+    </div>
+
+    <ul class="rules">
+      <li><b>Max Supply:</b> 1,000 Unique NFTs (#0001 s/d #1000)</li>
+      <li><b>Harga Mint:</b> 10 TON (10 GRAM) diteruskan otomatis ke dompet Owner + ~0.08 TON gas</li>
+      <li><b>Kuota Mint Terkunci On-Chain:</b> Maksimal 5x Mint per Wallet</li>
+      <li><b>Auto-Switch:</b> Begitu kontrak berstatus <b>ACTIVE</b> di TON Mainnet, aplikasi MAXIMA otomatis mengaktifkan Direct On-Chain Smart Contract Minting tanpa perlu ubah kode lagi!</li>
+    </ul>
+  </div>
+
+  <script>
+    const COL_BOUNCE = 'EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP';
+    const COL_NONBOUNCE = 'UQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSQ8K';
+    const COL_RAW = '0:9dea569f3559e8ce385ec9739fb735c1da50403718f2b9be560e5bcb51ecb049';
+    const STATE_INIT_BOC = 'te6cckECOAEAD1EAAgE0ATUCYv8Ajoj0pBP0vPLIC+1TII6cMO2i7fsB0HLXIdIA0gD6QCEQNFBmbwT4YQL4YuHtQ9kCEAICcQMLAgEgBAYB57i13tRNDSAAGONvpA+kDTH9Mf+gDTB9IA0w/TD9QB0AHUAdDUAdAB9AQwECwQKxAqECkQKBAnECYQJRAkECNsHI4q+kD6QNQB0AHUAdAUQzAE0VUCcIED6IISVAvkAHUiEEYQNUQwfwOAMgNt4lUb2zxswYBQJMMchxAcsHbwABb4xtb4wj2zwB0Ns8byIByZMhbrOWAW8iWczJ6DErKwIBIAcJAeO12v2omhpAADHG30gfSBpj+mP/QBpg+kAaYfph+oA6ADqAOhqAOgA+gIYCBYIFYgVCBSIFAgTiBMIEogSCBG2DkcVfSB9IGoA6ADqAOgKIZgCaKqBOECB9EEJKgXyADqRCCMIGqIYP4HAGQG28W2eNmHAIAAZUdDoB57T0faiaGkAAMcbfSB9IGmP6Y/9AGmD6QBph+mH6gDoAOoA6GoA6AD6AhgIFggViBUIFIgUCBOIEwgSiBIIEbYORxV9IH0gagDoAOoA6AohmAJoqoE4QIH0QQkqBfIAOpEIIwgaohg/gcAZAbbxKoXtnjZgwCgFe2zxwWSD5ACL5AFrXZQHXZYICATTIyxfLD8sPy//L/3H5BADIdAHLAhLKB8v/ydAcAgFIDA4B47YLfaiaGkAAMcbfSB9IGmP6Y/9AGmD6QBph+mH6gDoAOoA6GoA6AD6AhgIFggViBUIFIgUCBOIEwgSiBIIEbYORxV9IH0gagDoAOoA6AohmAJoqoE4QIH0QQkqBfIAOpEIIwgaohg/gcAZAbbxbZ42YcA0BSMhxAcsHbwABb4xtb4wj2zxvIgHJkyFus5YBbyJZzMnoMVRq0SsB57epnaiaGkAAMcbfSB9IGmP6Y/9AGmD6QBph+mH6gDoAOoA6GoA6AD6AhgIFggViBUIFIgUCBOIEwgSiBIIEbYORxV9IH0gagDoAOoA6AohmAJoqoE4QIH0QQkqBfIAOpEIIwgaohg/gcAZAbbxKoXtnjZgwDwBEgQELIgJ4QTP0Cm+hlAHXATCSW23iIG6zlSBu8tCAkjBw4gL27UTQ0gABjjb6QPpA0x/TH/oA0wfSANMP0w/UAdAB1AHQ1AHQAfQEMBAsECsQKhApECgQJxAmECUQJBAjbByOKvpA+kDUAdAB1AHQFEMwBNFVAnCBA+iCElQL5AB1IhBGEDVEMH8DgDIDbeINkl8N4CvXScIf4wAL+QEgERYC8gvTHyGCEE1JTlS64wIhghBL2M/8uo5WPFsJ1AHQAdQw0IFjTvhCK8cF8vQQmxCKEHkQaBBXEEYQNUEEA8h/AcoAVbBQvM4ZzhfLHxXLH1AD+gLLB8oAyw/LDwHIzs3IAsjOEs0S9ADNye1U2zHgAYIQaT05ULrjAgsSFAL+MdM/MdM/+gD6QDCBY074Qi7HBfL0ggCZqVM6ufL0Uyq+lDohpAreELwQrBCcEIwQfBBsEFwQTBA8TN4s2zxccFkg+QAi+QBa12UB12WCAgE0yMsXyw/LD8v/y/9x+QQAyHQBywISygfL/8nQVhCCCmJaALyXggpiWgBXEd9wcRwTAuQREds8ARETAchZghB/jELfUAPLH87MyRYFEREFBBESBAMREAMCERACAREQARA2RRVQNMjPhYDKAM+EQM4B+gKAac9AAlxuAW6wk1vPgZ1Yz4aAz4SA9AD0AM+B4vQAyQH7ABCLEHoQaRBYEEcQNkUTUEIqFQG80z8w+EJwgEBUM2UuyFUwghCoywCtUAXLHxPLP8sPyw/OyUEwWm1tQAN/yM+FgMoAz4RAzgH6AoBpz0ACXG4BbrCTW8+BnVjPhoDPhID0APQAz4Hi9ADJAfsAEJtVGBUAYsh/AcoAVbBQvM4ZzhfLHxXLH1AD+gLLB8oAyw/LDwHIzs3IAsjOEs0S9ADNye1U2zEE5ILwwcjr6OQvFFjyaT6L7zRcnAjbjFbSymN76bQ26h9ol2+64wIggvBYDjr/doxkXajEN9N/Ois2ICEZ3goQMaP4NC6ZTsxzSbrjAiCC8FkZr6aZiIYoCSS3ZZNeBqeTPpXerb1CbSqe00P8ObIzuuMCIBcZGTAB8jCCCTEtAHD7AvhCcIEAgohabW1AA3/Iz4WAygDPhEDOAfoCgGnPQAJcbgFusJNbz4GdWM+GgM+EgPQA9ADPgeL0AMkB+wAQm1UYyH8BygBVsFC8zhnOF8sfFcsfUAP6AssHygDLD8sPAcjOzcgCyM4SzRL0AM3J7VQYAEQAAAAATUFYSU1BIE5GVCBDb2xsZWN0aW9uIERlcGxveWVkAaIw+EL4QW8kE18DEL0QrBCbEIoQeRBoEFcQRhA1ECQQI9s8yH8BygBVsFC8zhnOF8sfFcsfUAP6AssHygDLD8sPAcjOzcgCyM4SzRL0AM3J7VQaAfaCAPFCKPL0gUbVU8u58vSCAOaGKoILk4cAoBK+8vQhgQELInhBM/QKb6GUAdcBMJJbbeIgbrOVIG7y0ICSMHDigRuoUxm58vQrpIEBCwKkREBSMHghbpVbWfRZMJjIAc8BQTP0QeIQvRCsECkQjBAnEGwQJRBMQ8BUEg0bBPzbPFxwWSD5ACL5AFrXZQHXZYICATTIyxfLD8sPy//L/3H5BADIdAHLAhLKB8v/ydCCCmJaAHByERPbPAEREgHIWYIQf4xC31ADyx/OzMlGUAQREQQDERIDAhERAgEREgEQNkUVUDTIz4WAygDPhEDOAfoCgGnPQAJcbgFusIocKiwtAQr4KAHbPB0BHojIcAHKAFoCzoEBAc8AyR4CKP8Ajoj0pBP0vPLIC+1TIOMD7UPZHyIBhaZj8/tRNDSAAGOGvpAgQEB1wDSANcsAZFtk/pAAeIB9ARVQGwVjhb6QIEBAdcAWQLRAXBtbfhCJccF8uS+4ts8bFWAgAUIhbrOWISBu8tCAkSTiIW6zliEgbvLQgI6BiOIkVEYwKFkhAAAD9jAB0HLXIdIA0gD6QCEQNFBmbwT4YQL4Yu1E0NIAAY4a+kCBAQHXANIA1ywBkW2T+kAB4gH0BFVAbBWOFvpAgQEB1wBZAtEBcG1t+EIlxwXy5L7iBpJfBuAE1w0f8uCCIYIQf4xC37rjAiGCEF/MPRS64wIBghAvyyaiuiMlKAH2MfpA1DCCAMOC+EImxwXy9CKRW45jMjQ0fyOCCTEtAHD7AnBwgQCCIosIUoDIVSCCEAUTjZFQBMsfEss/zs7JEEgUbVBDbVAzyM+FgMoAz4RAzgH6AoBpz0ACXG4BbrCTW8+BnVjPhoDPhID0APQAz4Hi9ADJAfsA4kA0JABGyH8BygBVQFBFzhKBAQHPAMoAASBulDDPhICSAc7i9ADJ7VQC7jHTP/pA1ywBkW2T+kAB4gH0BDH6APhBbyQQI18DgSXPJ/L0gQwEKiBu8tCAEscF8vQIIG7y0IAjggkxLQBw+wIiwgCUEDlsQeMNJW6zkjUw4w1ANMh/AcoAVUBQRc4SgQEBzwDKAAEgbpQwz4SAkgHO4vQAye1UJicAqHBzVEdMyFUgghAFE42RUATLHxLLP87OyRBFSqAUbVBDbVAzyM+FgMoAz4RAzgH6AoBpz0ACXG4BbrCTW8+BnVjPhoDPhID0APQAz4Hi9ADJAfsABQCqBSBu8tCAcHCBAIIEyAGCENUydttYyx/LP8kQNEEwFG1QQ21QM8jPhYDKAM+EQM4B+gKAac9AAlxuAW6wk1vPgZ1Yz4aAz4SA9AD0AM+B4vQAyQH7AAEO4wJfBvLAgikA/tM/MPhCcIBAVDNWyFUgghCLdxc1UATLHxLLP4EBAc8AzslBMFptbUADf8jPhYDKAM+EQM4B+gKAac9AAlxuAW6wk1vPgZ1Yz4aAz4SA9AD0AM+B4vQAyQH7AEA0yH8BygBVQFBFzhKBAQHPAMoAASBulDDPhICSAc7i9ADJ7VQCnMhvAAFvjG1vjAGOIsghwQCYgC0BywcBowHeAZp6qQymMFQSIMAA5jBopZLLB+TaEcnQ2zyLUuanNvbo2zxvIgHJkyFus5YBbyJZzMnoMSsrALYg10oh10mXIMIAIsIAsY5IA28igH8izzGrAqEFqwJRVbYIIMIAmiCqAhXXGAPOQBTeWW8CU0GhwgCZyAFvAlBEoaoCjhIxM8IAmdQw0CDXSiHXSZJwIOLi6F8DAAZbz4EClori9ADJAfsAcHKIK1E5QTMUbVBDbVAzyM+FgMoAz4RAzgH6AoBpz0ACXG4BbrCTW8+BnVjPhoDPhID0APQAz4Hi9ADJAfsAEJtVGC4vABpYz4aAz4SA9AD0AM+BACYAAAAATUFYSU1BIE5GVCBNSU5UAeSC8Lwx/tQ+aROGwluC1SjCVPiXRDUz+bQG/nHHGRWuzWUQuo5LMDOBY074QirHBfL0EIoQeRBoEFcQRhA1cEQ1Esh/AcoAVbBQvM4ZzhfLHxXLH1AD+gLLB8oAyw/LDwHIzs3IAsjOEs0S9ADNye1U4CAxAeKC8HdJQY5t9YYtwtsJMWZz/stIOf/4Ip5fsA0z7GMoaT6Quo5LMDOBY074QirHBfL0EIoQeRBoEFcQRhA1f0Q1Esh/AcoAVbBQvM4ZzhfLHxXLH1AD+gLLB8oAyw/LDwHIzs3IAsjOEs0S9ADNye1U4DIC/oLw+i//Hr42QcSVTV3RngmjkOQdR4k4MVzpYoHk00+JoTy6j1SBY074QivHBfL0ggkxLQBw+wJwgQCCiCtVIFptbUADf8jPhYDKAM+EQM4B+gKAac9AAlxuAW6wk1vPgZ1Yz4aAz4SA9AD0AM+B4vQAyQH7ABCbVRjgXwzywIIzNAAyAAAAAENvbGxlY3Rpb24gRXhjZXNzIEdhcwBeyH8BygBVsFC8zhnOF8sfFcsfUAP6AssHygDLD8sPAcjOzcgCyM4SzRL0AM3J7VQChUANR78/vpuMcn0QhSTwoucVVGFsd/3+DuUlcdeByFilnLgBqPfn99Nxjk+iEKSeFFziqowtjv+/wdykrjrwOQsUs5c2NwCCaHR0cHM6Ly9tYXhpbWEtbWluaW5nLWFwcC52ZXJjZWwuYXBwL25mdC9tZXRhZGF0YS9jb2xsZWN0aW9uLmpzb24AZGh0dHBzOi8vbWF4aW1hLW1pbmluZy1hcHAudmVyY2VsLmFwcC9uZnQvbWV0YWRhdGEvHc5xfQ==';
+    const DEPLOY_PAYLOAD_BOC = 'te6cckEBAQEADAAAFAAAAABEZXBsb3nJz4lF';
+    const DEPLOY_AMOUNT = '80000000';
+
+    const tc = new TON_CONNECT_UI.TonConnectUI({
+      manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+      buttonRootId: 'ton-connect'
+    });
+
+    async function checkContractActive() {
+      const badge = document.getElementById('contractBadge');
+      const btn = document.getElementById('btnDeploy');
+      try {
+        const r = await fetch('https://tonapi.io/v2/accounts/' + encodeURIComponent(COL_RAW));
+        if (r.ok) {
+          const d = await r.json();
+          if (d && d.status === 'active') {
+            badge.className = 'badge-status live';
+            badge.textContent = '✅ KONTRAK NFT ON-CHAIN SUDAH AKTIF (LIVE DI TON MAINNET)';
+            btn.textContent = '✅ Smart Contract Sudah Aktif di TON Mainnet';
+            btn.disabled = true;
+            fetch('/api/nft/sync-onchain', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: 'admin_deploy_ping' })
+            }).catch(() => {});
+            return true;
+          }
+        }
+      } catch (_) {}
+      badge.className = 'badge-status';
+      badge.textContent = '🟡 Belum Dideploy — Klik Tombol Deploy di Bawah (0.08 TON)';
+      return false;
+    }
+
+    checkContractActive();
+    setInterval(checkContractActive, 7000);
+
+    document.getElementById('btnDeploy').onclick = async () => {
+      const statusEl = document.getElementById('statusMsg');
+      if (!tc.connected) {
+        statusEl.textContent = '🔗 Hubungkan dompet TON Anda terlebih dahulu pada tombol di atas...';
+        await tc.openModal();
+        return;
+      }
+      try {
+        statusEl.textContent = '⏳ Silakan konfirmasi transaksi Deploy (0.08 TON) di aplikasi dompet TON Anda...';
+        const res = await tc.sendTransaction({
+          validUntil: Math.floor(Date.now() / 1000) + 360,
+          messages: [{
+            address: COL_NONBOUNCE,
+            amount: DEPLOY_AMOUNT,
+            stateInit: STATE_INIT_BOC,
+            payload: DEPLOY_PAYLOAD_BOC
+          }]
+        });
+        if (res && res.boc) {
+          statusEl.textContent = '🎉 Transaksi Deploy Terkirim! Menunggu konfirmasi blok TON (~10–15 detik)... Status di atas akan berubah menjadi HIJAU secara otomatis!';
+          setTimeout(checkContractActive, 6000);
+          setTimeout(checkContractActive, 12000);
+          setTimeout(checkContractActive, 20000);
+        }
+      } catch (e) {
+        statusEl.style.color = '#fda4af';
+        statusEl.textContent = '⚠️ Transaksi dibatalkan atau gagal: ' + ((e && e.message) || e);
+        setTimeout(() => { statusEl.style.color = '#10e899'; }, 4000);
+      }
+    };
+  </script>
+</body>
+</html>

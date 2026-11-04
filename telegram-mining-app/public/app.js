@@ -147,9 +147,9 @@
       nav_settings: 'Setelan',
       copied_toast: '📋 Berhasil disalin!',
       nft_win_title: 'MAXIMA GENESIS NFT MINT',
-      nft_owned_lbl: 'Kuota Wallet',
-      nft_power_boost_lbl: 'Boost Power NFT',
-      nft_daily_bonus_lbl: 'Bonus Mint Pertama',
+      nft_owned_lbl: 'Kuota Mint (Maks 5)',
+      nft_power_boost_lbl: 'Boost Aktif (Top 10)',
+      nft_daily_bonus_lbl: 'Reward 1st Mint',
       nft_box_name: 'MAXIMA Genesis Rig NFT',
       nft_win_desc: 'Mint 1 Genesis NFT seharga 10 GRAM (#0001–#1000) untuk mendapat +2% s/d +10% Mining Power permanen sesuai Trait Rarity! Mint pertama yang mendapat Legendary menerima +10.000 MAXIMA, atau Mythic +20.000 MAXIMA. NFT bisa ditransfer & dijual antar pemain!',
       nft_odds_heading: '🏛️ Daftar Koleksi 1.000 Genesis NFT & Mining Power',
@@ -281,17 +281,17 @@
       nav_settings: 'Settings',
       copied_toast: '📋 Copied to clipboard!',
       nft_win_title: 'MAXIMA GENESIS NFT MINT',
-      nft_owned_lbl: 'Wallet Quota',
-      nft_power_boost_lbl: 'NFT Power Boost',
+      nft_owned_lbl: 'Mint Quota (Max 5)',
+      nft_power_boost_lbl: 'Active Boost (Top 10)',
       nft_daily_bonus_lbl: '1st Mint Bonus',
       nft_box_name: 'MAXIMA Genesis Rig NFT',
-      nft_win_desc: 'Mint 1 Genesis NFT for 10 GRAM (#0001–#1000) to gain +2% to +10% permanent Mining Power based on its Rarity & Traits! First-time minters who pull Legendary get +10,000 MAXIMA, or Mythic get +20,000 MAXIMA. All NFTs can be transferred or sold to other players!',
-      nft_odds_heading: '🏛️ Listed Genesis NFT Collection (1,000 Supply)',
-      nft_inventory_heading: '🎒 Your Minted NFTs (Transfer & Sell)',
-      no_nft_owned_yet: 'No NFTs owned yet. Mint a Genesis NFT or buy one from the P2P Market to boost your Mining Power!',
-      btn_spin_gacha: '💎 Mint Genesis NFT · {ton} GRAM ({used}/{max})',
-      btn_gacha_spinning: '💎 Minting Genesis NFT...',
-      btn_gacha_limit_full: '✅ Wallet Mint Quota Full ({max} / {max} NFT)',
+      nft_win_desc: 'Mint 1 Genesis NFT for 10 GRAM (#0001–#1000, max 5 mints/user) for +2% to +10% Mining Power! +10,000 MAXIMA (Legendary) & +20,000 MAXIMA (Mythic) are awarded ONLY on the very first mint. Up to Top 10 highest-rarity NFTs in your wallet grant active boost & auto-update on-chain upon transfer!',
+      nft_odds_heading: '🏛️ Genesis NFT Rarity Tiers & Benefits (1,000 Supply)',
+      nft_inventory_heading: '🎒 Your Wallet NFTs (Top 10 Rarity Active · Transfer & Sell)',
+      no_nft_owned_yet: 'No NFTs in wallet yet. Mint a Genesis NFT (10 GRAM) or receive/buy one to boost your Mining Power!',
+      btn_spin_gacha: '💎 Mint Genesis NFT · {ton} GRAM ({used}/{max} Mints)',
+      btn_gacha_spinning: '💎 Minting Genesis NFT On-Chain...',
+      btn_gacha_limit_full: '✅ Primary Mint Quota Full ({max} / {max} Used)',
       nft_owned_badge: 'OWNED ×{count}',
     },
     zh: {
@@ -1289,9 +1289,26 @@
     try {
       // If TON Connect already has an active local session in this browser/WebView
       if (tonConnectUI.connected && tonConnectUI.wallet && tonConnectUI.wallet.account) {
-        if (!shouldForceReset && (!appState || !appState.user || !appState.user.walletConnected)) {
+        const localRaw = String(tonConnectUI.wallet.account.address || '').trim().toLowerCase();
+        const serverRaw = String((appState && appState.user && appState.user.walletRaw) || '').trim().toLowerCase();
+        if (!shouldForceReset) {
+          if (appState && appState.user && appState.user.walletConnected && localRaw && localRaw === serverRaw) {
+            if (pendingTxAfterConnect) {
+              const nextTx = pendingTxAfterConnect;
+              pendingTxAfterConnect = null;
+              setTimeout(() => executeTonTransaction(nextTx), 120);
+            }
+            return;
+          }
           const synced = await syncLocalTonWalletToServer(tonConnectUI.wallet);
-          if (synced) return;
+          if (synced) {
+            if (pendingTxAfterConnect) {
+              const nextTx = pendingTxAfterConnect;
+              pendingTxAfterConnect = null;
+              setTimeout(() => executeTonTransaction(nextTx), 120);
+            }
+            return;
+          }
         }
         // Clear stale local session so openModal() never throws WalletAlreadyConnectedError!
         explicitDisconnectInProgress = true;
@@ -2068,10 +2085,23 @@
     triggerHaptic('light');
     activeNftAction = { mode, nft };
     $('nftActionPanel').hidden = false;
-    if (mode === 'transfer') {
+    if (mode === 'onchain_transfer') {
+      if ($('nftActionTitle')) {
+        $('nftActionTitle').textContent = `⛓️ On-Chain Transfer ${nft.name} ${nft.serialCode}`;
+      }
+      if ($('nftActionSub')) {
+        $('nftActionSub').textContent = `Send this TEP-62 NFT on-chain via TON Connect (~0.06 TON gas). Its +${nft.powerBoostPct || 2}% Mining Power immediately moves to the new owner wallet:`;
+      }
+      if ($('nftActionInput')) {
+        $('nftActionInput').value = '';
+        $('nftActionInput').placeholder = 'Recipient TON Wallet Address (UQ... / EQ...)';
+        $('nftActionInput').focus();
+      }
+      if ($('btnConfirmNftAction')) $('btnConfirmNftAction').textContent = '⛓️ Send On-Chain';
+    } else if (mode === 'transfer') {
       if ($('nftActionTitle')) $('nftActionTitle').textContent = `📤 Transfer ${nft.name} ${nft.serialCode}`;
       if ($('nftActionSub')) {
-        $('nftActionSub').textContent = `Enter recipient TON Wallet Address (UQ...) or Miner ID to transfer this NFT (+${nft.powerBoostPct || 2}% Mining Power):`;
+        $('nftActionSub').textContent = `Enter recipient TON Wallet Address (UQ...) or Miner ID. Its +${nft.powerBoostPct || 2}% Mining Power transfers to the new owner (old owner loses boost immediately):`;
       }
       if ($('nftActionInput')) {
         $('nftActionInput').value = '';
@@ -2082,7 +2112,7 @@
     } else {
       if ($('nftActionTitle')) $('nftActionTitle').textContent = `🏷️ Sell ${nft.name} ${nft.serialCode} on P2P Market`;
       if ($('nftActionSub')) {
-        $('nftActionSub').textContent = `Set selling price in MAXIMA (Min 500 MAXIMA). Buyer will receive this NFT & its +${nft.powerBoostPct || 2}% Mining Power:`;
+        $('nftActionSub').textContent = `Set selling price in MAXIMA (Min 500 MAXIMA). Buyer receives this NFT & its +${nft.powerBoostPct || 2}% Mining Power (1st-mint bonus is never re-awarded):`;
       }
       if ($('nftActionInput')) {
         $('nftActionInput').value = '';
@@ -2103,7 +2133,69 @@
     const val = String(($('nftActionInput') && $('nftActionInput').value) || '').trim();
     const { mode, nft } = activeNftAction;
     sfxClick();
-    if (mode === 'transfer') {
+    if (mode === 'onchain_transfer') {
+      if (!val || val.length < 15) {
+        showToast('⚠️ Please enter a valid recipient TON Wallet Address (UQ... / EQ...)!');
+        return;
+      }
+      if (!tonConnectUI) initTonConnect();
+      if (!tonConnectUI || !tonConnectUI.connected) {
+        showToast('🔗 Connect your TON Wallet first to sign the on-chain NFT transfer.');
+        await openTonConnect(false);
+        return;
+      }
+      const prep = await apiPost('/api/nft/prepare-onchain-transfer', {
+        nftId: nft.id,
+        serialCode: nft.serialCode,
+        onChainAddress: nft.onChainAddress,
+        recipient: val,
+      });
+      const txMsg = prep && (prep.message || prep.tx);
+      if (!prep || !prep.ok || !txMsg) {
+        showToast((prep && prep.error) || '⚠️ Failed to prepare on-chain NFT transfer.');
+        return;
+      }
+      try {
+        const validUntilSec = Math.floor(Date.now() / 1000) + 360;
+        const txResult = await tonConnectUI.sendTransaction({
+          validUntil: validUntilSec,
+          messages: [
+            {
+              address: txMsg.address,
+              amount: String(txMsg.amount),
+              payload: txMsg.payload,
+            },
+          ],
+        });
+        if (txResult && txResult.boc) {
+          const conf = await apiPost('/api/nft/confirm-onchain-transfer', {
+            nftId: nft.id,
+            serialCode: prep.serialCode || nft.serialCode,
+            destWalletRaw: prep.destWalletRaw || val,
+            recipient: val,
+            onChainAddress: nft.onChainAddress,
+            txBoc: txResult.boc,
+          });
+          if (conf && conf.ok) {
+            appState = conf.data;
+            closeNftActionPanel();
+            sfxSuccess();
+            triggerHaptic('success');
+            renderAll();
+            showToast(conf.message || '⛓️ NFT transferred on-chain & benefits updated!');
+          } else {
+            showToast((conf && conf.error) || 'On-chain transfer broadcast! Syncing ownership...');
+          }
+        }
+      } catch (err) {
+        const msg = String((err && err.message) || err || '').toLowerCase();
+        if (msg.includes('reject') || msg.includes('decline') || msg.includes('cancel') || msg.includes('user_rejects')) {
+          showToast('❌ On-chain NFT transfer cancelled in wallet.');
+        } else {
+          showToast('⚠️ Failed to send on-chain NFT transfer.');
+        }
+      }
+    } else if (mode === 'transfer') {
       if (!val || val.length < 3) {
         showToast('⚠️ Please enter a recipient TON Wallet Address or Miner ID!');
         return;
@@ -2151,20 +2243,28 @@
     if ($('btnOpenNftWindow')) $('btnOpenNftWindow').hidden = false;
     const items =
       Array.isArray(nftCfg.items) && nftCfg.items.length ? nftCfg.items : DEFAULT_NFT_ITEMS;
-    const maxPerWallet = Number(nftCfg.maxPerWallet || 5);
+    const maxMintPerUser = Number(
+      user.nftMaxMintPerUser || nftCfg.maxMintPerUser || nftCfg.maxPerWallet || 5
+    );
+    const maxActiveBenefit = Number(
+      user.nftMaxActiveBenefit || nftCfg.maxActiveBenefitNfts || 10
+    );
     const maxTotalSupply = Number(
       (nftState && nftState.maxTotalSupply) || nftCfg.maxTotalSupply || MAX_TOTAL_NFT_SUPPLY
     );
     const boxPriceTon = Number(nftCfg.boxPriceTon || 10);
     const ownedList = Array.isArray(user.nftPurchases) ? user.nftPurchases : [];
-    const usedCount = ownedList.length;
+    const mintUsedCount =
+      user.nftMintCount !== undefined
+        ? Number(user.nftMintCount)
+        : ownedList.filter((n) => !n.isOnChainSynced).length;
     const totalMinted = Number(
-      nftState && nftState.totalMinted !== undefined ? nftState.totalMinted : usedCount
+      nftState && nftState.totalMinted !== undefined ? nftState.totalMinted : mintUsedCount
     );
     const globalRem = Math.max(0, maxTotalSupply - totalMinted);
     const isSoldOut = totalMinted >= maxTotalSupply;
-    const remCount = Math.max(0, Math.min(maxPerWallet - usedCount, globalRem));
-    const isQuotaFull = usedCount >= maxPerWallet || isSoldOut;
+    const remMintCount = Math.max(0, Math.min(maxMintPerUser - mintUsedCount, globalRem));
+    const isQuotaFull = mintUsedCount >= maxMintPerUser || isSoldOut;
 
     const startMs = getNftStartMs();
     const waitSec = Math.max(0, Math.floor((startMs - nowServerMs()) / 1000));
@@ -2175,39 +2275,71 @@
     }
     if ($('nftSchedTitle')) {
       $('nftSchedTitle').textContent = isMintOpen
-        ? '🟢 GENESIS NFT MINTING & MARKET IS LIVE!'
+        ? '🟢 GENESIS NFT MINTING & ON-CHAIN SYNC LIVE!'
         : '⏳ MINTING OPENS SOON';
     }
     if ($('nftMintCountdownVal')) {
       $('nftMintCountdownVal').textContent = isMintOpen ? 'LIVE NOW' : formatHms(waitSec);
     }
 
+    const activeBenefitCount =
+      user.nftActiveBenefitCount !== undefined
+        ? Number(user.nftActiveBenefitCount)
+        : Math.min(maxActiveBenefit, ownedList.filter((n) => !n.listedForSale).length);
+    const standbyCount =
+      user.nftStandbyCount !== undefined
+        ? Number(user.nftStandbyCount)
+        : Math.max(0, ownedList.length - activeBenefitCount);
+
     const totalBoostPct = Number(
       user.nftBoostPct !== undefined
         ? user.nftBoostPct
-        : ownedList.filter((n) => !n.listedForSale).reduce((acc, n) => acc + Number(n.powerBoostPct || 0), 0)
+        : ownedList
+            .filter((n) => !n.listedForSale)
+            .slice(0, maxActiveBenefit)
+            .reduce((acc, n) => acc + Number(n.powerBoostPct || 0), 0)
     );
-    const firstMintBonusEarned = Number(
-      ownedList.length > 0 ? Number(ownedList[0].instantCoins || 0) : 0
-    );
+    const firstMintBonusEarned =
+      user.nftFirstMintCoinsEarned !== undefined
+        ? Number(user.nftFirstMintCoinsEarned)
+        : ownedList.reduce((acc, n) => acc + Number(n.instantCoins || 0), 0);
+
+    if ($('nftOnChainStatusText')) {
+      const colAddr = (nftState && nftState.collectionAddress) || nftCfg.collectionAddress || '';
+      const shortCol = colAddr ? `${colAddr.slice(0, 6)}...${colAddr.slice(-4)}` : 'Registry + Live TON Watcher';
+      const syncTimeTxt = user.lastNftOnChainSyncAt
+        ? new Date(user.lastNftOnChainSyncAt).toLocaleTimeString()
+        : 'Auto (15s)';
+      $('nftOnChainStatusText').textContent = user.walletConnected
+        ? `Collection: ${shortCol} · Wallet Synced (${syncTimeTxt}) · Top ${maxActiveBenefit} Rarity Active`
+        : `Connect your personal TON Wallet to auto-detect on-chain NFT ownership & activate Mining Boost`;
+    }
 
     if ($('nftFabBoostTag')) {
       $('nftFabBoostTag').textContent =
-        totalBoostPct > 0 ? `+${totalBoostPct}% Power` : `${usedCount}/${maxPerWallet} NFT`;
+        totalBoostPct > 0
+          ? `+${totalBoostPct}% (${activeBenefitCount} NFT)`
+          : `${mintUsedCount}/${maxMintPerUser} Mint`;
     }
     if ($('nftOwnedCountVal')) {
-      $('nftOwnedCountVal').textContent = `${usedCount} / ${maxPerWallet} NFT`;
+      $('nftOwnedCountVal').textContent = `${mintUsedCount} / ${maxMintPerUser} Mint`;
     }
     if ($('nftTotalBoostThsVal')) {
-      $('nftTotalBoostThsVal').textContent = `+${totalBoostPct}% Power`;
+      $('nftTotalBoostThsVal').textContent = `+${totalBoostPct}% (${activeBenefitCount}/${maxActiveBenefit} Top)`;
     }
     if ($('nftTotalDailyCoinsVal')) {
       $('nftTotalDailyCoinsVal').textContent =
-        ownedList.length === 0
-          ? '10K / 20K (1st Mint)'
-          : firstMintBonusEarned > 0
+        firstMintBonusEarned > 0
           ? `+${nf.format(firstMintBonusEarned)} MAXIMA`
+          : mintUsedCount === 0
+          ? '10K / 20K (1st Mint)'
           : '0 MAXIMA';
+    }
+    if ($('nftWalletTotalHeldVal')) {
+      $('nftWalletTotalHeldVal').textContent =
+        standbyCount > 0
+          ? `${activeBenefitCount} Active · ${standbyCount} Standby`
+          : `${activeBenefitCount} Active / ${ownedList.length} Held`;
     }
     if ($('nftOfflineSimBanner')) {
       $('nftOfflineSimBanner').hidden = true;
@@ -2229,8 +2361,8 @@
       quotaPill.textContent = isSoldOut
         ? `SOLD OUT (${nf.format(maxTotalSupply)}/${nf.format(maxTotalSupply)})`
         : isQuotaFull
-        ? `Quota Full (${maxPerWallet}/${maxPerWallet})`
-        : `Remaining: ${remCount} / ${maxPerWallet} Mints`;
+        ? `Mint Quota Full (${mintUsedCount}/${maxMintPerUser})`
+        : `Remaining: ${remMintCount} / ${maxMintPerUser} Mints`;
       quotaPill.classList.toggle('full', isQuotaFull);
     }
 
@@ -2242,8 +2374,8 @@
         : isSoldOut
         ? `⛔ SOLD OUT (1,000 / 1,000 NFTs MINTED)`
         : isQuotaFull
-        ? t('btn_gacha_limit_full', { max: maxPerWallet })
-        : t('btn_spin_gacha', { ton: boxPriceTon, used: usedCount, max: maxPerWallet });
+        ? t('btn_gacha_limit_full', { max: maxMintPerUser })
+        : t('btn_spin_gacha', { ton: boxPriceTon, used: mintUsedCount, max: maxMintPerUser });
     }
 
     const cardsWrap = $('nftCardsContainer');
@@ -2252,7 +2384,7 @@
       ownedList.forEach((p) => {
         countsById[p.nftId] = (countsById[p.nftId] || 0) + 1;
       });
-      const nftSig = `${ownedList.length}_${totalMinted}_${Math.round(user.combinedHolding)}_${currentLang}`;
+      const nftSig = `${ownedList.length}_${mintUsedCount}_${totalMinted}_${Math.round(user.combinedHolding)}_${currentLang}`;
       if (lastNftRenderSig !== nftSig || !cardsWrap.children.length) {
         lastNftRenderSig = nftSig;
         cardsWrap.innerHTML = items
@@ -2307,20 +2439,44 @@
             _origIdx: idx,
             serialCode: n.serialCode || `#${String(idx + 1).padStart(4, '0')}`,
           }))
-          .slice()
-          .reverse()
           .map((n) => {
             const imgSrc = resolveNftImageSrc(n);
-            const isOnChain = Boolean(n.isOnChainSynced);
+            const hasOnChainAddr = Boolean(n.onChainAddress);
+            const isOnChain = Boolean(n.isOnChainSynced || n.isOnChainMinted || hasOnChainAddr);
+            const isBenefitActive = n.benefitActive !== false && !n.listedForSale && user.walletConnected;
+            const statusPillHtml = n.listedForSale
+              ? `<span class="nft-benefit-pill standby">🏷️ ON MARKET (0%)</span>`
+              : !user.walletConnected
+              ? `<span class="nft-benefit-pill standby">🔒 CONNECT WALLET</span>`
+              : isBenefitActive
+              ? `<span class="nft-benefit-pill active">⚡ TOP #${n.benefitRank || 1} ACTIVE</span>`
+              : `<span class="nft-benefit-pill standby">⏸️ STANDBY (&gt;Top ${maxActiveBenefit})</span>`;
+
+            const tierUpper = String(n.tier || '').toUpperCase();
+            const isJackpotTier = tierUpper === 'LEGENDARY' || tierUpper === 'MYTHIC';
+            const firstMintNote =
+              Number(n.instantCoins || 0) > 0
+                ? ` · 🎁 1st Mint Earned: +${nf.format(n.instantCoins)} MAXIMA`
+                : isJackpotTier
+                ? ` · 🔒 1st Mint Bonus Claimed by Original Minter`
+                : '';
+
             return `
-              <div class="lv-row is-unlocked">
+              <div class="lv-row is-unlocked nft-owned-row ${isBenefitActive ? 'is-active-boost' : 'is-standby'}">
                 <div class="lv-left">
                   <div class="lv-ico" style="padding:0;overflow:hidden;">
                     <img src="${imgSrc}" alt="${n.name}" class="nft-art-img" />
                   </div>
                   <div>
-                    <div class="lv-title">${n.name} <b>${n.serialCode}</b> <span class="nft-mini-tier">${n.tier || ''}</span>${isOnChain ? ' <span class="pill-mint">ON-CHAIN</span>' : ''}</div>
-                    <div class="lv-speed">⚡ +${n.powerBoostPct || 2}% Mining Power${Number(n.instantCoins || 0) > 0 ? ` · 🎁 1st Mint Bonus: +${nf.format(n.instantCoins)} MAXIMA` : ''}</div>
+                    <div class="lv-title">
+                      ${n.name} <b>${n.serialCode}</b>
+                      <span class="nft-mini-tier">${n.tier || ''}</span>
+                      ${isOnChain ? '<span class="pill-mint">⛓️ ON-CHAIN</span>' : ''}
+                      ${statusPillHtml}
+                    </div>
+                    <div class="lv-speed">
+                      ⚡ ${isBenefitActive ? `+${n.powerBoostPct || 2}% Active Power` : `+${n.powerBoostPct || 2}% Power (Standby)`}${firstMintNote}
+                    </div>
                     <div class="nft-trait-tags">
                       <span class="nft-trait-pill">🎨 ${n.bgAura || 'Genesis Aura'}</span>
                       <span class="nft-trait-pill">🧬 ${n.dnaHash || '0xMAXIMA'}</span>
@@ -2329,18 +2485,21 @@
                   </div>
                 </div>
                 <div class="lv-right nft-dl-actions">
-                  ${
-                    !isOnChain
-                      ? `<div style="display:flex;gap:4px;">
-                          ${
-                            n.listedForSale
-                              ? `<button type="button" class="nft-dl-btn sell" data-unlist-nft="${n._origIdx}" title="Remove from P2P Market">❌ Unlist (${nf.format(n.listedPriceMaxima)} MAX)</button>`
-                              : `<button type="button" class="nft-dl-btn transfer" data-transfer-nft="${n._origIdx}" title="Transfer NFT to another user">📤 Transfer</button>
-                                 <button type="button" class="nft-dl-btn sell" data-sell-nft="${n._origIdx}" title="Sell NFT on P2P Market">🏷️ Sell</button>`
-                          }
-                        </div>`
-                      : ''
-                  }
+                  <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
+                    ${
+                      hasOnChainAddr && !n.listedForSale
+                        ? `<button type="button" class="nft-dl-btn onchain" data-onchain-transfer-nft="${n._origIdx}" title="Send NFT On-Chain via TON Connect (TEP-62)">⛓️ Send</button>`
+                        : ''
+                    }
+                    ${
+                      !n.isOnChainSynced
+                        ? n.listedForSale
+                          ? `<button type="button" class="nft-dl-btn sell" data-unlist-nft="${n._origIdx}" title="Remove from P2P Market">❌ Unlist (${nf.format(n.listedPriceMaxima)} MAX)</button>`
+                          : `<button type="button" class="nft-dl-btn transfer" data-transfer-nft="${n._origIdx}" title="Transfer NFT & Benefit to another user/wallet">📤 Transfer</button>
+                             <button type="button" class="nft-dl-btn sell" data-sell-nft="${n._origIdx}" title="Sell NFT on P2P Market">🏷️ Sell</button>`
+                        : ''
+                    }
+                  </div>
                   <div style="display:flex;gap:4px;">
                     <button type="button" class="nft-dl-btn" data-dl-nft-png="${n._origIdx}" title="Download Unique 1024x1024 NFT PNG">🖼️ PNG</button>
                     <button type="button" class="nft-dl-btn json" data-dl-nft-json="${n._origIdx}" title="Download TON NFT Metadata JSON">📄 JSON</button>
@@ -2350,6 +2509,13 @@
             `;
           })
           .join('');
+
+        invWrap.querySelectorAll('[data-onchain-transfer-nft]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-onchain-transfer-nft'));
+            if (ownedList[idx]) openNftActionPanel('onchain_transfer', ownedList[idx]);
+          });
+        });
 
         invWrap.querySelectorAll('[data-transfer-nft]').forEach((btn) => {
           btn.addEventListener('click', () => {
@@ -2509,6 +2675,77 @@
     activeTxConfig = null;
   }
 
+  async function checkActiveTxOnce() {
+    if (txVerifyInFlight || !activeTxConfig) return false;
+    const cfg = activeTxConfig;
+    txVerifyInFlight = true;
+    try {
+      if (cfg.mode === 'verify') {
+        const res = await apiPost('/api/wallet/verify', { txBoc: '' });
+        if (res && res.ok && activeTxConfig) {
+          stopAutoOnChainPoll();
+          appState = res.data;
+          if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
+            try {
+              tonConnectUI.closeModal();
+            } catch (_) {}
+          }
+          sfxSuccess();
+          triggerHaptic('success');
+          renderAll();
+          showToast(res.message);
+          return true;
+        }
+      } else if (cfg.mode === 'presale') {
+        const res = await apiPost('/api/presale/buy', { packageId: cfg.packageId, txBoc: '' });
+        if (res && res.ok && activeTxConfig) {
+          stopAutoOnChainPoll();
+          appState = res.data;
+          if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
+            try {
+              tonConnectUI.closeModal();
+            } catch (_) {}
+          }
+          res.leveledUp ? sfxLevelUp() : sfxSuccess();
+          triggerHaptic('success');
+          renderAll();
+          showToast(res.message);
+          return true;
+        }
+      } else if (cfg.mode === 'nft') {
+        const res = await apiPost('/api/nft/buy', { txBoc: '' });
+        if (res && res.ok && activeTxConfig) {
+          stopAutoOnChainPoll();
+          if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
+            try {
+              tonConnectUI.closeModal();
+            } catch (_) {}
+          }
+          if (res.pulledNft) {
+            playGachaRevealAnimation(res.pulledNft, () => {
+              appState = res.data;
+              sfxLevelUp();
+              triggerHaptic('success');
+              renderAll();
+              showToast(res.message);
+            });
+          } else {
+            appState = res.data;
+            sfxLevelUp();
+            triggerHaptic('success');
+            renderAll();
+            showToast(res.message);
+          }
+          return true;
+        }
+      }
+    } catch (_) {
+    } finally {
+      txVerifyInFlight = false;
+    }
+    return false;
+  }
+
   function startAutoOnChainPoll(cfg) {
     stopAutoOnChainPoll();
     activeTxConfig = cfg;
@@ -2517,102 +2754,57 @@
     txPollTimer = setInterval(async () => {
       if (txVerifyInFlight) return;
       attempts++;
-      if (attempts > 30 || !activeTxConfig) {
+      if (attempts > 45 || !activeTxConfig) {
         stopAutoOnChainPoll();
         return;
       }
-      txVerifyInFlight = true;
-      try {
-        if (cfg.mode === 'verify') {
-          const res = await apiPost('/api/wallet/verify', { txBoc: '' });
-          if (res && res.ok && activeTxConfig) {
-            stopAutoOnChainPoll();
-            appState = res.data;
-            if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
-              try {
-                tonConnectUI.closeModal();
-              } catch (_) {}
-            }
-            sfxSuccess();
-            triggerHaptic('success');
-            renderAll();
-            showToast(res.message);
-          }
-        } else if (cfg.mode === 'presale') {
-          const res = await apiPost('/api/presale/buy', { packageId: cfg.packageId, txBoc: '' });
-          if (res && res.ok && activeTxConfig) {
-            stopAutoOnChainPoll();
-            appState = res.data;
-            if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
-              try {
-                tonConnectUI.closeModal();
-              } catch (_) {}
-            }
-            res.leveledUp ? sfxLevelUp() : sfxSuccess();
-            triggerHaptic('success');
-            renderAll();
-            showToast(res.message);
-          }
-        } else if (cfg.mode === 'nft') {
-          const res = await apiPost('/api/nft/buy', { txBoc: '' });
-          if (res && res.ok && activeTxConfig) {
-            stopAutoOnChainPoll();
-            if (tonConnectUI && typeof tonConnectUI.closeModal === 'function') {
-              try {
-                tonConnectUI.closeModal();
-              } catch (_) {}
-            }
-            if (res.pulledNft) {
-              playGachaRevealAnimation(res.pulledNft, () => {
-                appState = res.data;
-                sfxLevelUp();
-                triggerHaptic('success');
-                renderAll();
-                showToast(res.message);
-              });
-            } else {
-              appState = res.data;
-              sfxLevelUp();
-              triggerHaptic('success');
-              renderAll();
-              showToast(res.message);
-            }
-          }
-        }
-      } catch (_) {
-      } finally {
-        txVerifyInFlight = false;
-      }
-    }, 4000);
+      await checkActiveTxOnce();
+    }, 3500);
   }
 
   async function executeTonTransaction(cfg) {
     if (!cfg) return;
     if (!tonConnectUI) initTonConnect();
 
-    if (!tonConnectUI || !tonConnectUI.connected) {
+    if (!tonConnectUI || !tonConnectUI.connected || !tonConnectUI.wallet || !tonConnectUI.wallet.account) {
       pendingTxAfterConnect = cfg;
       await openTonConnect(false);
       return;
     }
 
-    if (tonConnectUI.wallet && (!appState || !appState.user || !appState.user.walletConnected)) {
-      await syncLocalTonWalletToServer(tonConnectUI.wallet);
+    // Ensure local TON Connect wallet matches server-bound wallet before sending TON
+    const localRaw = String(tonConnectUI.wallet.account.address || '').trim().toLowerCase();
+    const serverRaw = String((appState && appState.user && appState.user.walletRaw) || '').trim().toLowerCase();
+    if (!appState || !appState.user || !appState.user.walletConnected || !serverRaw || localRaw !== serverRaw) {
+      const synced = await syncLocalTonWalletToServer(tonConnectUI.wallet);
+      if (!synced) {
+        return;
+      }
     }
+
+    // Record transaction intent non-blockingly (keeps synchronous mobile popup gesture intact!)
+    apiPost('/api/tx/intent', {
+      mode: cfg.mode,
+      packageId: cfg.packageId || '',
+    }).catch(() => {});
 
     // Start automatic background on-chain verification polling right away
     startAutoOnChainPoll(cfg);
 
     try {
-      const validUntilSec = Math.floor(nowServerMs() / 1000) + 360;
+      // Use device clock for TON Connect validUntil so mobile wallets never reject due to clock skew
+      const validUntilSec = Math.floor(Date.now() / 1000) + 360;
+      const msgObj = {
+        address: cfg.ownerWallet,
+        amount: String(cfg.nanoTon),
+      };
+      if (cfg.payloadBoc && typeof cfg.payloadBoc === 'string') {
+        msgObj.payload = cfg.payloadBoc;
+      }
+
       const txResult = await tonConnectUI.sendTransaction({
         validUntil: validUntilSec,
-        messages: [
-          {
-            address: cfg.ownerWallet,
-            amount: cfg.nanoTon,
-          },
-        ],
+        messages: [msgObj],
       });
 
       if (txResult && txResult.boc) {
@@ -2672,15 +2864,20 @@
               return;
             }
           }
+          // Fallback: if immediate BOC call returned non-ok (e.g. indexing delay), resume auto-poll!
+          startAutoOnChainPoll(cfg);
         } finally {
           txVerifyInFlight = false;
         }
       }
     } catch (err) {
       const msg = String((err && err.message) || err || '').toLowerCase();
-      if (msg.includes('reject') || msg.includes('decline') || msg.includes('user_rejects')) {
+      if (msg.includes('reject') || msg.includes('decline') || msg.includes('cancel') || msg.includes('user_rejects')) {
         stopAutoOnChainPoll();
         showToast('❌ Transaction cancelled in wallet.');
+      } else {
+        // Keep background on-chain poll active in case user completed payment inside external wallet app!
+        showToast('⏳ Checking transaction status on TON blockchain automatically...');
       }
     }
   }
@@ -2693,21 +2890,33 @@
       return;
     }
     const nftCfg = (appState.config && appState.config.nftSale) || {};
-    const maxPerWallet = Number(nftCfg.maxPerWallet || 5);
-    const boxPriceTon = Number(nftCfg.boxPriceTon || 10);
+    const maxMintPerUser = Number(
+      (appState.user && appState.user.nftMaxMintPerUser) ||
+        nftCfg.maxMintPerUser ||
+        nftCfg.maxPerWallet ||
+        5
+    );
     const ownedList = Array.isArray(appState.user.nftPurchases) ? appState.user.nftPurchases : [];
-    const inAppCount = ownedList.filter((n) => !n.isOnChainSynced).length;
+    const mintUsedCount =
+      appState.user && appState.user.nftMintCount !== undefined
+        ? Number(appState.user.nftMintCount)
+        : ownedList.filter((n) => !n.isOnChainSynced).length;
 
-    if (inAppCount >= maxPerWallet) {
-      showToast(`⚠️ Maximum limit of ${maxPerWallet} Genesis NFTs per wallet reached!`);
+    if (mintUsedCount >= maxMintPerUser) {
+      showToast(`⚠️ Maximum primary mint quota (${maxMintPerUser} NFTs per user/wallet) reached!`);
       return;
     }
 
+    const txPayloads = (appState && appState.txPayloads) || {};
+    const mintTarget = txPayloads.nftMintTarget || {};
+    const boxPriceTon = Number(mintTarget.totalTon || nftCfg.boxPriceTon || 10);
     const ownerWallet =
+      mintTarget.address ||
       nftCfg.recipientWallet ||
       (appState.config.presale && appState.config.presale.recipientWallet) ||
       'UQDUe_P76bjHJ9EIUk8KLnFVRhbHf9_g7lJXHXgchYpZy4R1';
     const nanoTon = String(Math.round(boxPriceTon * 1e9));
+    const payloadBoc = txPayloads.nftMintBoc || '';
 
     sfxClick();
     await executeTonTransaction({
@@ -2715,6 +2924,7 @@
       tonAmount: boxPriceTon,
       nanoTon,
       ownerWallet,
+      payloadBoc,
     });
   }
 
@@ -2725,6 +2935,8 @@
 
     const ownerWallet = appState.config.presale.recipientWallet;
     const nanoTon = String(Math.round(pkg.ton * 1e9));
+    const txPayloads = (appState && appState.txPayloads) || {};
+    const payloadBoc = (txPayloads.presaleBocs && txPayloads.presaleBocs[pkg.id]) || '';
 
     sfxClick();
     await executeTonTransaction({
@@ -2734,6 +2946,7 @@
       tonAmount: pkg.ton,
       nanoTon,
       ownerWallet,
+      payloadBoc,
     });
   }
 
@@ -2742,6 +2955,8 @@
     const feeTon = appState.config.wallet.verificationFeeTon || 0.1;
     const ownerWallet = appState.config.wallet.creatorTonWallet;
     const nanoTon = String(Math.round(feeTon * 1e9)); // 0.1 TON = 100,000,000 nanoton
+    const txPayloads = (appState && appState.txPayloads) || {};
+    const payloadBoc = txPayloads.verifyBoc || '';
 
     sfxClick();
     await executeTonTransaction({
@@ -2749,6 +2964,7 @@
       tonAmount: feeTon,
       nanoTon,
       ownerWallet,
+      payloadBoc,
     });
   }
 
@@ -3718,6 +3934,53 @@
         handleBuyNft();
       });
     }
+    if ($('btnRecheckNftMint')) {
+      $('btnRecheckNftMint').addEventListener('click', async () => {
+        sfxClick();
+        showToast('🔍 Checking 10 GRAM NFT Mint transaction on TON blockchain...');
+        const res = await apiPost('/api/nft/buy', { txBoc: '' });
+        if (res && res.ok) {
+          stopAutoOnChainPoll();
+          if (res.pulledNft) {
+            playGachaRevealAnimation(res.pulledNft, () => {
+              appState = res.data;
+              sfxLevelUp();
+              triggerHaptic('success');
+              renderAll();
+              showToast(res.message);
+            });
+          } else {
+            appState = res.data;
+            sfxSuccess();
+            renderAll();
+            showToast(res.message);
+          }
+        } else {
+          showToast((res && res.error) || 'No uncredited 10 GRAM NFT Mint transaction found yet.');
+        }
+      });
+    }
+    if ($('btnSyncOnChainNfts')) {
+      $('btnSyncOnChainNfts').addEventListener('click', async () => {
+        sfxClick();
+        if (!appState || !appState.user || !appState.user.walletConnected) {
+          showToast('🔗 Connect your TON Wallet first to sync on-chain NFT ownership!');
+          openTonConnect(false);
+          return;
+        }
+        showToast('⛓️ Syncing live NFT ownership from TON blockchain...');
+        const res = await apiPost('/api/nft/sync-onchain', {});
+        if (res && res.ok) {
+          appState = res.data;
+          sfxSuccess();
+          triggerHaptic('light');
+          renderAll();
+          showToast(res.message || '⛓️ On-chain NFT ownership & Top-10 boost updated!');
+        } else {
+          showToast((res && res.error) || 'Failed to sync on-chain NFTs.');
+        }
+      });
+    }
     if ($('btnCloseNftWindow')) {
       $('btnCloseNftWindow').addEventListener('click', () => {
         sfxClick();
@@ -3751,6 +4014,78 @@
           closeNftFloatingWindow();
         }
       });
+    }
+  }
+
+  let syncInFlight = false;
+  async function performBackgroundSync() {
+    if (document.hidden || syncInFlight) return;
+    syncInFlight = true;
+    try {
+      if (activeTxConfig) {
+        const matched = await checkActiveTxOnce();
+        if (matched) return;
+      }
+
+      const wasVerified = Boolean(appState && appState.user && appState.user.walletVerified);
+      const prevPresaleCount =
+        appState && appState.user && Array.isArray(appState.user.presalePurchases)
+          ? appState.user.presalePurchases.length
+          : 0;
+      const prevNftIds =
+        appState && appState.user && Array.isArray(appState.user.nftPurchases)
+          ? appState.user.nftPurchases.map((n) => n.id || n.serialCode).join(',')
+          : '';
+      const prevNftCount =
+        appState && appState.user && Array.isArray(appState.user.nftPurchases)
+          ? appState.user.nftPurchases.length
+          : 0;
+      const prevBoostPct = Number((appState && appState.user && appState.user.nftBoostPct) || 0);
+
+      const res = await apiPost('/api/user/sync');
+      if (res && res.ok) {
+        appState = res.data;
+        renderAll();
+
+        const curNftList =
+          appState.user && Array.isArray(appState.user.nftPurchases) ? appState.user.nftPurchases : [];
+        const curNftIds = curNftList.map((n) => n.id || n.serialCode).join(',');
+        const curBoostPct = Number((appState.user && appState.user.nftBoostPct) || 0);
+
+        if (!wasVerified && appState.user && appState.user.walletVerified) {
+          stopAutoOnChainPoll();
+          sfxSuccess();
+          triggerHaptic('success');
+          showToast('✅ Wallet Verification (0.1 GRAM) detected automatically! Withdraw is now active.');
+        } else if (
+          appState.user &&
+          Array.isArray(appState.user.presalePurchases) &&
+          appState.user.presalePurchases.length > prevPresaleCount
+        ) {
+          stopAutoOnChainPoll();
+          const latest = appState.user.presalePurchases[appState.user.presalePurchases.length - 1];
+          sfxLevelUp();
+          triggerHaptic('success');
+          showToast(
+            `🚀 Presale +${nf.format(latest ? latest.coinsReceived : 0)} MAXIMA detected automatically!`
+          );
+        } else if (curNftList.length > prevNftCount) {
+          stopAutoOnChainPoll();
+          const latestNft = curNftList[0] || curNftList[curNftList.length - 1];
+          sfxLevelUp();
+          triggerHaptic('success');
+          showToast(
+            `💎 NFT ${latestNft ? latestNft.name + ' ' + (latestNft.serialCode || '') : ''} detected on-chain! Active Boost: +${curBoostPct}% Power`
+          );
+        } else if (prevNftIds && curNftIds !== prevNftIds) {
+          showToast(
+            `⛓️ On-Chain NFT ownership updated automatically! Active Boost: +${curBoostPct}% Power (Prev: +${prevBoostPct}%)`
+          );
+        }
+      }
+    } catch (_) {
+    } finally {
+      syncInFlight = false;
     }
   }
 
@@ -3789,12 +4124,14 @@
           openNftFloatingWindow();
         }
 
-        // If local TON Connect session is active, verify it belongs to this Telegram account
-        if (tonConnectUI && tonConnectUI.connected && tonConnectUI.wallet) {
+        // If local TON Connect session is active, verify it belongs to this Telegram account & matches server walletRaw
+        if (tonConnectUI && tonConnectUI.connected && tonConnectUI.wallet && tonConnectUI.wallet.account) {
           let storedUid = '';
           try {
             storedUid = localStorage.getItem(TON_SESSION_UID_KEY) || '';
           } catch (_) {}
+          const localRaw = String(tonConnectUI.wallet.account.address || '').trim().toLowerCase();
+          const serverRaw = String((appState.user && appState.user.walletRaw) || '').trim().toLowerCase();
           if (storedUid && storedUid !== String(currentTgUser.userId || '')) {
             explicitDisconnectInProgress = true;
             await tonConnectUI.disconnect().catch(() => {});
@@ -3803,7 +4140,7 @@
             try {
               localStorage.removeItem(TON_SESSION_UID_KEY);
             } catch (_) {}
-          } else if (!appState.user.walletConnected) {
+          } else if (!appState.user.walletConnected || !serverRaw || localRaw !== serverRaw) {
             await syncLocalTonWalletToServer(tonConnectUI.wallet);
           } else {
             try {
@@ -3825,58 +4162,18 @@
       { once: true }
     );
 
-    // Periodic background sync & automatic on-chain detection (every 30s when tab is visible to save bandwidth)
-    setInterval(async () => {
-      if (document.hidden) return;
-      try {
-        const wasVerified = Boolean(appState && appState.user && appState.user.walletVerified);
-        const prevPresaleCount =
-          appState && appState.user && Array.isArray(appState.user.presalePurchases)
-            ? appState.user.presalePurchases.length
-            : 0;
-        const prevNftCount =
-          appState && appState.user && Array.isArray(appState.user.nftPurchases)
-            ? appState.user.nftPurchases.length
-            : 0;
+    // Immediately re-check pending tx & on-chain NFT ownership when returning from Tonkeeper / TON Space
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        performBackgroundSync();
+      }
+    });
+    window.addEventListener('focus', () => {
+      performBackgroundSync();
+    });
 
-        const res = await apiPost('/api/user/sync');
-        if (res && res.ok) {
-          appState = res.data;
-          renderAll();
-
-          if (!wasVerified && appState.user && appState.user.walletVerified) {
-            stopAutoOnChainPoll();
-            sfxSuccess();
-            triggerHaptic('success');
-            showToast('✅ Wallet Verification (0.1 GRAM) detected automatically! Withdraw is now active.');
-          } else if (
-            appState.user &&
-            Array.isArray(appState.user.presalePurchases) &&
-            appState.user.presalePurchases.length > prevPresaleCount
-          ) {
-            stopAutoOnChainPoll();
-            const latest = appState.user.presalePurchases[appState.user.presalePurchases.length - 1];
-            sfxLevelUp();
-            triggerHaptic('success');
-            showToast(
-              `🚀 Presale +${nf.format(latest ? latest.coinsReceived : 0)} MAXIMA detected automatically!`
-            );
-          } else if (
-            appState.user &&
-            Array.isArray(appState.user.nftPurchases) &&
-            appState.user.nftPurchases.length > prevNftCount
-          ) {
-            stopAutoOnChainPoll();
-            const latestNft = appState.user.nftPurchases[appState.user.nftPurchases.length - 1];
-            sfxLevelUp();
-            triggerHaptic('success');
-            showToast(
-              `💎 NFT ${latestNft ? latestNft.name + ' ' + (latestNft.serialCode || '') : ''} (+${latestNft ? latestNft.powerBoostPct : 2}% Mining Power) active!`
-            );
-          }
-        }
-      } catch (_) {}
-    }, 30000);
+    // Continuous automatic on-chain NFT ownership & tx sync (every 15s while visible)
+    setInterval(performBackgroundSync, 15000);
   }
 
   boot();

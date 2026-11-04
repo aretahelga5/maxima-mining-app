@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="68%">
+      <stop offset="0%" stop-color="#881337"/>
+      <stop offset="100%" stop-color="#090207"/>
+    </radialGradient>
+    <linearGradient id="mGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" rx="36" fill="url(#bg)"/>
+  <rect x="22" y="22" width="756" height="756" rx="30" fill="none" stroke="#f43f5e" stroke-width="8"/>
+  <circle cx="400" cy="355" r="245" fill="none" stroke="#fde047" stroke-opacity="0.45" stroke-width="3" stroke-dasharray="10 8"/>
+  <circle cx="400" cy="355" r="195" fill="#090307" fill-opacity="0.92" stroke="#f43f5e" stroke-width="6"/>
+  <g transform="translate(400,355) scale(1.1) translate(-256,-248)" fill="url(#mGrad)">
+    <polygon points="155,140 248,220 248,274 155,194"/>
+    <polygon points="357,140 264,220 264,274 357,194"/>
+    <polygon points="155,210 184,235 184,356 155,331"/>
+    <polygon points="357,210 328,235 328,356 357,331"/>
+    <polygon points="196,245 248,290 248,335 196,290"/>
+    <polygon points="316,245 264,290 264,335 316,290"/>
+  </g>
+  <rect x="90" y="50" width="620" height="52" rx="14" fill="#080a12" fill-opacity="0.9" stroke="#fde047" stroke-width="3"/>
+  <text x="400" y="83" fill="#fde047" font-family="Arial, sans-serif" font-weight="900" font-size="20" text-anchor="middle">MYTHIC TIER · +10% MINING POWER BOOST</text>
+  <rect x="56" y="604" width="688" height="140" rx="20" fill="#080a12" fill-opacity="0.93" stroke="#f43f5e" stroke-width="4"/>
+  <text x="400" y="648" fill="#ffffff" font-family="Arial, sans-serif" font-weight="900" font-size="26" text-anchor="middle">CEO CROWN MYTHIC NFT</text>
+  <text x="400" y="684" fill="#10e899" font-family="Arial, sans-serif" font-weight="800" font-size="16" text-anchor="middle">+10% POWER · 1ST MINT EXCLUSIVE +20,000 MAXIMA</text>
+  <text x="400" y="718" fill="#94a3b8" font-family="Arial, sans-serif" font-weight="700" font-size="14" text-anchor="middle">MAXIMA GENESIS COLLECTION · 20 SUPPLY · TON</text>
+</svg>

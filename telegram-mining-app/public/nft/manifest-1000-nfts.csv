@@ -1,0 +1,1001 @@
+﻿Index,Edition,Name,Rarity,MiningPowerBoost,FirstMintBonusMAXIMA,Aura,CoreGeometry,EmblemFinish,OverclockPct,DnaHash,ImageFile,MetadataFile
+0,#0001,"Cyber Drill Rig #0001",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Cyber Chrome Gradient",91.92%,0x39316FC2,0.png,0.json
+1,#0002,"Golden Reactor Rig #0002",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Vortex Singularity","24K Sovereign Gold",94.85%,0x30F14964,1.png,1.json
+2,#0003,"Bronze Pickaxe Rig #0003",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Obsidian Neon Edge",88.28%,0x34A8C3C6,2.png,2.json
+3,#0004,"Bronze Pickaxe Rig #0004",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","24K Sovereign Gold",88.51%,0x806532FE,3.png,3.json
+4,#0005,"Bronze Pickaxe Rig #0005",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Pure White-Gold Gloss",88.73%,0xCC219235,4.png,4.json
+5,#0006,"Bronze Pickaxe Rig #0006",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Prismatic Hologram",88.08%,0x27DFF16B,5.png,5.json
+6,#0007,"Bronze Pickaxe Rig #0007",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Obsidian Neon Edge",88.30%,0x739B60A3,6.png,6.json
+7,#0008,"Cyber Drill Rig #0008",RARE,+4%,"0 MAXIMA","Electric Sapphire","Vortex Singularity","Cyber Chrome Gradient",91.73%,0x6B5B3A45,7.png,7.json
+8,#0009,"Bronze Pickaxe Rig #0009",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Cyber Chrome Gradient",88.75%,0x1B152F12,8.png,8.json
+9,#0010,"Plasma Core Genesis #0010",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Vortex Singularity","Prismatic Hologram",97.29%,0x5AD9DD87,9.png,9.json
+10,#0011,"Golden Reactor Rig #0011",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Hexagonal Matrix Core","Prismatic Hologram",95.11%,0xFA93D254,10.png,10.json
+11,#0012,"Golden Reactor Rig #0012",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Quantum Radar Grid","24K Sovereign Gold",95.33%,0x5651418C,11.png,11.json
+12,#0013,"Bronze Pickaxe Rig #0013",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Prismatic Hologram",88.76%,0x5A08BBEE,12.png,12.json
+13,#0014,"Bronze Pickaxe Rig #0014",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Obsidian Neon Edge",88.11%,0xA5C52B26,13.png,13.json
+14,#0015,"Cyber Drill Rig #0015",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","Cyber Chrome Gradient",91.54%,0x9D84F4C6,14.png,14.json
+15,#0016,"Golden Reactor Rig #0016",EPIC,+6%,"0 MAXIMA","Amber Supernova","Hexagonal Matrix Core","24K Sovereign Gold",95.35%,0x9544CE68,15.png,15.json
+16,#0017,"Golden Reactor Rig #0017",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Cyber Chrome Gradient",94.69%,0xE1003D9F,16.png,16.json
+17,#0018,"Bronze Pickaxe Rig #0018",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","24K Sovereign Gold",88.12%,0xE4B8B802,17.png,17.json
+18,#0019,"Bronze Pickaxe Rig #0019",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Cyber Chrome Gradient",88.35%,0x40762739,18.png,18.json
+19,#0020,"Bronze Pickaxe Rig #0020",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Prismatic Hologram",88.57%,0x8C328670,19.png,19.json
+20,#0021,"Golden Reactor Rig #0021",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Vortex Singularity","Cyber Chrome Gradient",94.71%,0x2FF4CA7B,20.png,20.json
+21,#0022,"Bronze Pickaxe Rig #0022",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Pure White-Gold Gloss",88.14%,0x33AC54DF,21.png,21.json
+22,#0023,"Bronze Pickaxe Rig #0023",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Cyber Chrome Gradient",88.36%,0x7F69B415,22.png,22.json
+23,#0024,"Cyber Drill Rig #0024",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","24K Sovereign Gold",91.79%,0x77288DB7,23.png,23.json
+24,#0025,"Golden Reactor Rig #0025",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Octagonal Cyber Vault","Prismatic Hologram",94.72%,0x6EE76759,24.png,24.json
+25,#0026,"Bronze Pickaxe Rig #0026",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Cyber Chrome Gradient",88.16%,0x729FE1BB,25.png,25.json
+26,#0027,"Cyber Drill Rig #0027",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","24K Sovereign Gold",91.58%,0x6A5EBB5C,26.png,26.json
+27,#0028,"Bronze Pickaxe Rig #0028",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Obsidian Neon Edge",88.60%,0x1A19B029,27.png,27.json
+28,#0029,"Bronze Pickaxe Rig #0029",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Pure White-Gold Gloss",88.83%,0x65D61F61,28.png,28.json
+29,#0030,"Cyber Drill Rig #0030",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Obsidian Neon Edge",92.26%,0x5D95E902,29.png,29.json
+30,#0031,"Bronze Pickaxe Rig #0031",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Obsidian Neon Edge",88.40%,0xFD4FDDCE,30.png,30.json
+31,#0032,"Cyber Drill Rig #0032",RARE,+4%,"0 MAXIMA","Electric Sapphire","Vortex Singularity","Cyber Chrome Gradient",91.82%,0xF50EB770,31.png,31.json
+32,#0033,"Bronze Pickaxe Rig #0033",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Cyber Chrome Gradient",88.84%,0xA4C9AC3D,32.png,32.json
+33,#0034,"Cyber Drill Rig #0034",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","24K Sovereign Gold",92.27%,0x9C8885DF,33.png,33.json
+34,#0035,"Cyber Drill Rig #0035",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Pure White-Gold Gloss",91.62%,0xE844E515,34.png,34.json
+35,#0036,"Golden Reactor Rig #0036",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Obsidian Neon Edge",94.55%,0xE004BEB7,35.png,35.json
+36,#0037,"Cyber Drill Rig #0037",RARE,+4%,"0 MAXIMA","Glacier Pulse","Quantum Radar Grid","Obsidian Neon Edge",92.06%,0x8FBEB384,36.png,36.json
+37,#0038,"Bronze Pickaxe Rig #0038",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Obsidian Neon Edge",88.20%,0x3F79A851,37.png,37.json
+38,#0039,"Cyber Drill Rig #0039",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","Cyber Chrome Gradient",91.63%,0x373881F2,38.png,38.json
+39,#0040,"Cyber Drill Rig #0040",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","Prismatic Hologram",91.86%,0x82F5E129,39.png,39.json
+40,#0041,"Cyber Drill Rig #0041",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Hexagonal Matrix Core","24K Sovereign Gold",92.08%,0xCEB15061,40.png,40.json
+41,#0042,"Cyber Drill Rig #0042",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Pure White-Gold Gloss",92.30%,0x2A6FAF98,41.png,41.json
+42,#0043,"Bronze Pickaxe Rig #0043",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Pure White-Gold Gloss",88.44%,0xCA29A465,42.png,42.json
+43,#0044,"Golden Reactor Rig #0044",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Octagonal Cyber Vault","24K Sovereign Gold",94.58%,0x6DEBE870,43.png,43.json
+44,#0045,"Bronze Pickaxe Rig #0045",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Obsidian Neon Edge",88.01%,0x71A372D3,44.png,44.json
+45,#0046,"Bronze Pickaxe Rig #0046",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","24K Sovereign Gold",88.24%,0xBD5FD20A,45.png,45.json
+46,#0047,"Cyber Drill Rig #0047",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Prismatic Hologram",91.67%,0xB51EABAC,46.png,46.json
+47,#0048,"Bronze Pickaxe Rig #0048",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Prismatic Hologram",88.68%,0x64D9A078,47.png,47.json
+48,#0049,"Bronze Pickaxe Rig #0049",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Obsidian Neon Edge",88.03%,0xB096FFAF,48.png,48.json
+49,#0050,"Bronze Pickaxe Rig #0050",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Pure White-Gold Gloss",88.25%,0xFC526EE7,49.png,49.json
+50,#0051,"Cyber Drill Rig #0051",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","Obsidian Neon Edge",91.68%,0xF4114889,50.png,50.json
+51,#0052,"Golden Reactor Rig #0052",EPIC,+6%,"0 MAXIMA","Amber Supernova","Vortex Singularity","Cyber Chrome Gradient",94.61%,0xEBD1222A,51.png,51.json
+52,#0053,"Bronze Pickaxe Rig #0053",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","24K Sovereign Gold",88.04%,0xEF899C8C,52.png,52.json
+53,#0054,"Bronze Pickaxe Rig #0054",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Cyber Chrome Gradient",88.27%,0x4B46FBC3,53.png,53.json
+54,#0055,"Plasma Core Genesis #0055",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Hexagonal Matrix Core","Prismatic Hologram",97.69%,0x8B0ABA39,54.png,54.json
+55,#0056,"Bronze Pickaxe Rig #0056",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Obsidian Neon Edge",88.72%,0xE2BFCA32,55.png,55.json
+56,#0057,"Cyber Drill Rig #0057",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Cyber Chrome Gradient",92.15%,0xDA7EA3D3,56.png,56.json
+57,#0058,"Bronze Pickaxe Rig #0058",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Cyber Chrome Gradient",88.28%,0x8A3998A0,57.png,57.json
+58,#0059,"Bronze Pickaxe Rig #0059",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Obsidian Neon Edge",88.51%,0xD5F6F7D7,58.png,58.json
+59,#0060,"Cyber Drill Rig #0060",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","Cyber Chrome Gradient",91.94%,0xCDB5D178,59.png,59.json
+60,#0061,"Golden Reactor Rig #0061",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Octagonal Cyber Vault","24K Sovereign Gold",94.87%,0xC574AB1A,60.png,60.json
+61,#0062,"Cyber Drill Rig #0062",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","24K Sovereign Gold",91.51%,0x752F9FE7,61.png,61.json
+62,#0063,"Cyber Drill Rig #0063",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Pure White-Gold Gloss",91.73%,0xC0EBFF1E,62.png,62.json
+63,#0064,"Cyber Drill Rig #0064",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","Cyber Chrome Gradient",91.95%,0x1CA96E55,63.png,63.json
+64,#0065,"Bronze Pickaxe Rig #0065",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Cyber Chrome Gradient",88.09%,0xBC636322,64.png,64.json
+65,#0066,"Bronze Pickaxe Rig #0066",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Obsidian Neon Edge",88.32%,0x1820C259,65.png,65.json
+66,#0067,"Bronze Pickaxe Rig #0067",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","24K Sovereign Gold",88.54%,0x63DD3191,66.png,66.json
+67,#0068,"Cyber Drill Rig #0068",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Prismatic Hologram",91.97%,0x5B9CFB32,67.png,67.json
+68,#0069,"Bronze Pickaxe Rig #0069",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Prismatic Hologram",88.11%,0xFB56EFFE,68.png,68.json
+69,#0070,"Plasma Core Genesis #0070",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Vortex Singularity","Obsidian Neon Edge",97.53%,0x4B1BAE75,69.png,69.json
+70,#0071,"Cyber Drill Rig #0071",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Cyber Chrome Gradient",91.76%,0x4ED238D8,70.png,70.json
+71,#0072,"Bronze Pickaxe Rig #0072",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Cyber Chrome Gradient",88.78%,0xEE8C2DA5,71.png,71.json
+72,#0073,"Bronze Pickaxe Rig #0073",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Obsidian Neon Edge",88.12%,0x4A4A8CDC,72.png,72.json
+73,#0074,"Cyber Drill Rig #0074",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Octagonal Cyber Vault","Cyber Chrome Gradient",91.55%,0x4209667D,73.png,73.json
+74,#0075,"Bronze Pickaxe Rig #0075",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Cyber Chrome Gradient",88.57%,0xE1C35B4A,74.png,74.json
+75,#0076,"Cyber Drill Rig #0076",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","24K Sovereign Gold",92.00%,0xD98234EC,75.png,75.json
+76,#0077,"Cyber Drill Rig #0077",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","Pure White-Gold Gloss",92.23%,0x353F9422,76.png,76.json
+77,#0078,"Bronze Pickaxe Rig #0078",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Pure White-Gold Gloss",88.36%,0xD4F988EF,77.png,77.json
+78,#0079,"Bronze Pickaxe Rig #0079",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Cyber Chrome Gradient",88.59%,0x30B7E826,78.png,78.json
+79,#0080,"Bronze Pickaxe Rig #0080",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Obsidian Neon Edge",88.81%,0x7C73575E,79.png,79.json
+80,#0081,"Bronze Pickaxe Rig #0081",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","24K Sovereign Gold",88.16%,0xC830B695,80.png,80.json
+81,#0082,"Bronze Pickaxe Rig #0082",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Cyber Chrome Gradient",88.38%,0x23ED25CC,81.png,81.json
+82,#0083,"Plasma Core Genesis #0083",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Solar Rayburst Turbine","Prismatic Hologram",97.80%,0x63B1D442,82.png,82.json
+83,#0084,"Cyber Drill Rig #0084",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Pure White-Gold Gloss",92.03%,0x67695EA5,83.png,83.json
+84,#0085,"Cyber Drill Rig #0085",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Quantum Radar Grid","Cyber Chrome Gradient",92.26%,0xB325BDDC,84.png,84.json
+85,#0086,"Cyber Drill Rig #0086",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Obsidian Neon Edge",91.60%,0xFEE22D13,85.png,85.json
+86,#0087,"Bronze Pickaxe Rig #0087",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Obsidian Neon Edge",88.62%,0xAE9D21E0,86.png,86.json
+87,#0088,"Bronze Pickaxe Rig #0088",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","24K Sovereign Gold",88.84%,0xFA598117,87.png,87.json
+88,#0089,"Bronze Pickaxe Rig #0089",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Cyber Chrome Gradient",88.19%,0x5617E04E,88.png,88.json
+89,#0090,"Cyber Drill Rig #0090",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","24K Sovereign Gold",91.62%,0x4DD6B9EF,89.png,89.json
+90,#0091,"Bronze Pickaxe Rig #0091",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Obsidian Neon Edge",88.64%,0xED90AEBC,90.png,90.json
+91,#0092,"Cyber Drill Rig #0092",RARE,+4%,"0 MAXIMA","Neon Circuit","Quantum Radar Grid","Cyber Chrome Gradient",92.07%,0xE54F885E,91.png,91.json
+92,#0093,"Bronze Pickaxe Rig #0093",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.20%,0x950A7D2B,92.png,92.json
+93,#0094,"Bronze Pickaxe Rig #0094",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Obsidian Neon Edge",88.43%,0xE0C6DC62,93.png,93.json
+94,#0095,"Bronze Pickaxe Rig #0095",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","24K Sovereign Gold",88.65%,0x3C844B99,94.png,94.json
+95,#0096,"Bronze Pickaxe Rig #0096",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Cyber Chrome Gradient",88.88%,0x8840AAD0,95.png,95.json
+96,#0097,"Bronze Pickaxe Rig #0097",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Prismatic Hologram",88.22%,0xD3FD1A08,96.png,96.json
+97,#0098,"Plasma Core Genesis #0098",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Octagonal Cyber Vault","Obsidian Neon Edge",97.64%,0x23C2C87D,97.png,97.json
+98,#0099,"Bronze Pickaxe Rig #0099",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Pure White-Gold Gloss",88.67%,0x7B77D875,98.png,98.json
+99,#0100,"Bronze Pickaxe Rig #0100",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Cyber Chrome Gradient",88.01%,0xC73347AD,99.png,99.json
+100,#0101,"Plasma Core Genesis #0101",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Vortex Singularity","Prismatic Hologram",97.43%,0x16F8F622,100.png,100.json
+101,#0102,"Bronze Pickaxe Rig #0102",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","24K Sovereign Gold",88.46%,0x6EAD161C,101.png,101.json
+102,#0103,"Cyber Drill Rig #0103",RARE,+4%,"0 MAXIMA","Neon Circuit","Octagonal Cyber Vault","Prismatic Hologram",91.89%,0x666CDFBC,102.png,102.json
+103,#0104,"Bronze Pickaxe Rig #0104",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Prismatic Hologram",88.03%,0x1627D489,103.png,103.json
+104,#0105,"Bronze Pickaxe Rig #0105",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Obsidian Neon Edge",88.25%,0x61E443C1,104.png,104.json
+105,#0106,"Bronze Pickaxe Rig #0106",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Pure White-Gold Gloss",88.48%,0xADA0A2F8,105.png,105.json
+106,#0107,"Cyber Drill Rig #0107",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Obsidian Neon Edge",91.91%,0xA55F7C99,106.png,106.json
+107,#0108,"Cyber Drill Rig #0108",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","24K Sovereign Gold",92.13%,0xF11CDBD0,107.png,107.json
+108,#0109,"Bronze Pickaxe Rig #0109",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","24K Sovereign Gold",88.27%,0xA0D7D09D,108.png,108.json
+109,#0110,"Plasma Core Genesis #0110",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Hexagonal Matrix Core","Pure White-Gold Gloss",97.69%,0xE09B8F13,109.png,109.json
+110,#0111,"Bronze Pickaxe Rig #0111",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Prismatic Hologram",88.72%,0x48519F0C,110.png,110.json
+111,#0112,"Bronze Pickaxe Rig #0112",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Obsidian Neon Edge",88.06%,0x940DFE42,111.png,111.json
+112,#0113,"Bronze Pickaxe Rig #0113",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Pure White-Gold Gloss",88.29%,0xDFCA6D7A,112.png,112.json
+113,#0114,"Cyber Drill Rig #0114",RARE,+4%,"0 MAXIMA","Neon Circuit","Diamond Starlight Prism","Obsidian Neon Edge",91.71%,0xD789471C,113.png,113.json
+114,#0115,"Bronze Pickaxe Rig #0115",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Obsidian Neon Edge",88.73%,0x87443BE9,114.png,114.json
+115,#0116,"Bronze Pickaxe Rig #0116",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","24K Sovereign Gold",88.08%,0xD3009B1F,115.png,115.json
+116,#0117,"Bronze Pickaxe Rig #0117",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.30%,0x2EBEFA56,116.png,116.json
+117,#0118,"Bronze Pickaxe Rig #0118",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Prismatic Hologram",88.53%,0x7A7A698E,117.png,117.json
+118,#0119,"Cyber Drill Rig #0119",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Pure White-Gold Gloss",91.95%,0x723A432F,118.png,118.json
+119,#0120,"Plasma Core Genesis #0120",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Vortex Singularity","Pure White-Gold Gloss",97.29%,0x15FC873B,119.png,119.json
+120,#0121,"Bronze Pickaxe Rig #0121",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Cyber Chrome Gradient",88.32%,0x6DB19733,120.png,120.json
+121,#0122,"Golden Reactor Rig #0122",EPIC,+6%,"0 MAXIMA","Amber Supernova","Quantum Radar Grid","Cyber Chrome Gradient",95.33%,0x1173DB3F,121.png,121.json
+122,#0123,"Cyber Drill Rig #0123",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Cyber Chrome Gradient",91.97%,0xB12DD00C,122.png,122.json
+123,#0124,"Cyber Drill Rig #0124",RARE,+4%,"0 MAXIMA","Electric Sapphire","Solar Rayburst Turbine","Prismatic Hologram",92.19%,0xFCE93F43,123.png,123.json
+124,#0125,"CEO Crown Mythic #0125",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Celestial Emperor","Octagonal Cyber Vault","Obsidian Neon Edge",99.13%,0x4CAEEDB8,124.png,124.json
+125,#0126,"Bronze Pickaxe Rig #0126",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Obsidian Neon Edge",88.56%,0xF8609347,125.png,125.json
+126,#0127,"Golden Reactor Rig #0127",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Obsidian Neon Edge",94.69%,0x9C22D752,126.png,126.json
+127,#0128,"Bronze Pickaxe Rig #0128",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Cyber Chrome Gradient",88.13%,0x9FDA61B6,127.png,127.json
+128,#0129,"Bronze Pickaxe Rig #0129",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Obsidian Neon Edge",88.35%,0xEB97C0EC,128.png,128.json
+129,#0130,"Cyber Drill Rig #0130",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Cyber Chrome Gradient",91.78%,0xE3569A8E,129.png,129.json
+130,#0131,"Plasma Core Genesis #0131",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Solar Rayburst Turbine","Pure White-Gold Gloss",97.99%,0x8718DE99,130.png,130.json
+131,#0132,"Cyber Drill Rig #0132",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","24K Sovereign Gold",92.23%,0x8AD068FC,131.png,131.json
+132,#0133,"Bronze Pickaxe Rig #0133",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Obsidian Neon Edge",88.37%,0x3A8B5DC9,132.png,132.json
+133,#0134,"Bronze Pickaxe Rig #0134",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Pure White-Gold Gloss",88.59%,0x8647BD00,133.png,133.json
+134,#0135,"Cyber Drill Rig #0135",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Obsidian Neon Edge",92.02%,0x7E0796A2,134.png,134.json
+135,#0136,"Bronze Pickaxe Rig #0136",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Obsidian Neon Edge",88.16%,0x2DC18B6F,135.png,135.json
+136,#0137,"Bronze Pickaxe Rig #0137",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","24K Sovereign Gold",88.38%,0x797EEAA5,136.png,136.json
+137,#0138,"Cyber Drill Rig #0138",RARE,+4%,"0 MAXIMA","Neon Circuit","Diamond Starlight Prism","Prismatic Hologram",91.81%,0x713DC447,137.png,137.json
+138,#0139,"Golden Reactor Rig #0139",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Pure White-Gold Gloss",94.74%,0x68FC9DE9,138.png,138.json
+139,#0140,"Bronze Pickaxe Rig #0140",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Obsidian Neon Edge",88.17%,0x6CB4284C,139.png,139.json
+140,#0141,"Cyber Drill Rig #0141",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","Cyber Chrome Gradient",91.60%,0x6474F1EC,140.png,140.json
+141,#0142,"Cyber Drill Rig #0142",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","Obsidian Neon Edge",91.83%,0xB0306124,141.png,141.json
+142,#0143,"Golden Reactor Rig #0143",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Vortex Singularity","Cyber Chrome Gradient",94.76%,0xA7EF3AC6,142.png,142.json
+143,#0144,"Bronze Pickaxe Rig #0144",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","24K Sovereign Gold",88.19%,0xABA7B528,143.png,143.json
+144,#0145,"Bronze Pickaxe Rig #0145",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Cyber Chrome Gradient",88.41%,0xF764245F,144.png,144.json
+145,#0146,"Bronze Pickaxe Rig #0146",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Prismatic Hologram",88.64%,0x53218396,145.png,145.json
+146,#0147,"Cyber Drill Rig #0147",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Pure White-Gold Gloss",92.07%,0x4AE15D38,146.png,146.json
+147,#0148,"Bronze Pickaxe Rig #0148",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Pure White-Gold Gloss",88.21%,0xEA9A5205,147.png,147.json
+148,#0149,"Cyber Drill Rig #0149",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Obsidian Neon Edge",91.63%,0xE25A2BA6,148.png,148.json
+149,#0150,"Bronze Pickaxe Rig #0150",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",88.65%,0x92142073,149.png,149.json
+150,#0151,"Golden Reactor Rig #0151",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Prismatic Hologram",94.79%,0x35D6647F,150.png,150.json
+151,#0152,"Golden Reactor Rig #0152",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Hexagonal Matrix Core","24K Sovereign Gold",95.01%,0x8193C3B5,151.png,151.json
+152,#0153,"Cyber Drill Rig #0153",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","24K Sovereign Gold",91.65%,0x314EB882,152.png,152.json
+153,#0154,"Bronze Pickaxe Rig #0154",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Obsidian Neon Edge",88.67%,0xD107AD4F,153.png,153.json
+154,#0155,"Bronze Pickaxe Rig #0155",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Pure White-Gold Gloss",88.01%,0x2CC51C87,154.png,154.json
+155,#0156,"Bronze Pickaxe Rig #0156",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Cyber Chrome Gradient",88.24%,0x78817BBE,155.png,155.json
+156,#0157,"Cyber Drill Rig #0157",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","24K Sovereign Gold",91.67%,0x7041555F,156.png,156.json
+157,#0158,"Golden Reactor Rig #0158",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Diamond Starlight Prism","Prismatic Hologram",94.60%,0x68002F01,157.png,157.json
+158,#0159,"Cyber Drill Rig #0159",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Prismatic Hologram",92.12%,0x17BB23CE,158.png,158.json
+159,#0160,"Cyber Drill Rig #0160",RARE,+4%,"0 MAXIMA","Electric Sapphire","Solar Rayburst Turbine","24K Sovereign Gold",92.34%,0x63778305,159.png,159.json
+160,#0161,"Bronze Pickaxe Rig #0161",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Obsidian Neon Edge",88.48%,0x133277D2,160.png,160.json
+161,#0162,"Golden Reactor Rig #0162",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Vortex Singularity","Obsidian Neon Edge",94.61%,0xA6F3BBDD,161.png,161.json
+162,#0163,"Plasma Core Genesis #0163",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Hexagonal Matrix Core","Cyber Chrome Gradient",97.24%,0x9EB2957F,162.png,162.json
+163,#0164,"Golden Reactor Rig #0164",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Cyber Chrome Gradient",95.06%,0x4E6D8A4C,163.png,163.json
+164,#0165,"Bronze Pickaxe Rig #0165",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","24K Sovereign Gold",88.49%,0x522514AF,164.png,164.json
+165,#0166,"Bronze Pickaxe Rig #0166",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Cyber Chrome Gradient",88.72%,0x9DE173E6,165.png,165.json
+166,#0167,"Cyber Drill Rig #0167",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","24K Sovereign Gold",92.15%,0x95A14D87,166.png,166.json
+167,#0168,"Bronze Pickaxe Rig #0168",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Obsidian Neon Edge",88.29%,0x455B4254,167.png,167.json
+168,#0169,"Bronze Pickaxe Rig #0169",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Pure White-Gold Gloss",88.51%,0x9118A18B,168.png,168.json
+169,#0170,"Bronze Pickaxe Rig #0170",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Cyber Chrome Gradient",88.73%,0xDCD410C3,169.png,169.json
+170,#0171,"Bronze Pickaxe Rig #0171",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Obsidian Neon Edge",88.08%,0x38926FF9,170.png,170.json
+171,#0172,"Cyber Drill Rig #0172",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Cyber Chrome Gradient",91.51%,0x3051499B,171.png,171.json
+172,#0173,"Bronze Pickaxe Rig #0173",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Cyber Chrome Gradient",88.53%,0xD00B3E68,172.png,172.json
+173,#0174,"Bronze Pickaxe Rig #0174",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Prismatic Hologram",88.75%,0x2BC89D9F,173.png,173.json
+174,#0175,"Golden Reactor Rig #0175",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Prismatic Hologram",94.88%,0xBF89E1AA,174.png,174.json
+175,#0176,"Golden Reactor Rig #0176",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Obsidian Neon Edge",95.11%,0x1B4750E2,175.png,175.json
+176,#0177,"Bronze Pickaxe Rig #0177",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Cyber Chrome Gradient",88.54%,0x1EFFCB44,176.png,176.json
+177,#0178,"Bronze Pickaxe Rig #0178",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Obsidian Neon Edge",88.77%,0x6ABB3A7C,177.png,177.json
+178,#0179,"Bronze Pickaxe Rig #0179",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","24K Sovereign Gold",88.11%,0xB67899B2,178.png,178.json
+179,#0180,"Cyber Drill Rig #0180",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Hexagonal Matrix Core","Prismatic Hologram",91.54%,0xAE377354,179.png,179.json
+180,#0181,"Plasma Core Genesis #0181",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Solar Rayburst Turbine","Prismatic Hologram",97.75%,0x51F9B75F,180.png,180.json
+181,#0182,"Bronze Pickaxe Rig #0182",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","24K Sovereign Gold",88.78%,0xA9AEC758,181.png,181.json
+182,#0183,"Bronze Pickaxe Rig #0183",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Pure White-Gold Gloss",88.13%,0xF56B368F,182.png,182.json
+183,#0184,"Cyber Drill Rig #0184",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Obsidian Neon Edge",91.56%,0xED2A1031,183.png,183.json
+184,#0185,"Bronze Pickaxe Rig #0185",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Obsidian Neon Edge",88.57%,0x9CE5F4FD,184.png,184.json
+185,#0186,"Bronze Pickaxe Rig #0186",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","24K Sovereign Gold",88.80%,0xE8A16435,185.png,185.json
+186,#0187,"Bronze Pickaxe Rig #0187",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Cyber Chrome Gradient",88.14%,0x445FC36C,186.png,186.json
+187,#0188,"Bronze Pickaxe Rig #0188",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Prismatic Hologram",88.37%,0x901B32A3,187.png,187.json
+188,#0189,"Bronze Pickaxe Rig #0189",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","24K Sovereign Gold",88.59%,0xDBD891DA,188.png,188.json
+189,#0190,"Golden Reactor Rig #0190",EPIC,+6%,"0 MAXIMA","Amber Supernova","Octagonal Cyber Vault","Obsidian Neon Edge",94.72%,0x7F9AD5E5,189.png,189.json
+190,#0191,"Bronze Pickaxe Rig #0191",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Cyber Chrome Gradient",88.16%,0x83526049,190.png,190.json
+191,#0192,"Bronze Pickaxe Rig #0192",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Obsidian Neon Edge",88.38%,0xCF0EBF7F,191.png,191.json
+192,#0193,"Cyber Drill Rig #0193",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","Cyber Chrome Gradient",91.81%,0xC6CE9921,192.png,192.json
+193,#0194,"Cyber Drill Rig #0194",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Prismatic Hologram",92.04%,0x228BF858,193.png,193.json
+194,#0195,"Cyber Drill Rig #0195",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","24K Sovereign Gold",92.26%,0x6E48678F,194.png,194.json
+195,#0196,"Bronze Pickaxe Rig #0196",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","24K Sovereign Gold",88.40%,0x1E025C5C,195.png,195.json
+196,#0197,"Bronze Pickaxe Rig #0197",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Pure White-Gold Gloss",88.62%,0x69BFBB93,196.png,196.json
+197,#0198,"Bronze Pickaxe Rig #0198",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Cyber Chrome Gradient",88.85%,0xB57B2ACB,197.png,197.json
+198,#0199,"Bronze Pickaxe Rig #0199",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Obsidian Neon Edge",88.19%,0x11398A02,198.png,198.json
+199,#0200,"Golden Reactor Rig #0200",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Prismatic Hologram",95.20%,0xA4FACE0D,199.png,199.json
+200,#0201,"Bronze Pickaxe Rig #0201",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Cyber Chrome Gradient",88.64%,0xA8B25870,200.png,200.json
+201,#0202,"Bronze Pickaxe Rig #0202",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Prismatic Hologram",88.86%,0xF46EB7A7,201.png,201.json
+202,#0203,"Bronze Pickaxe Rig #0203",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","24K Sovereign Gold",88.21%,0x502C26DF,202.png,202.json
+203,#0204,"Cyber Drill Rig #0204",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Prismatic Hologram",91.64%,0x47EBF07F,203.png,203.json
+204,#0205,"Golden Reactor Rig #0205",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Hexagonal Matrix Core","Pure White-Gold Gloss",94.56%,0x3FAACA21,204.png,204.json
+205,#0206,"Golden Reactor Rig #0206",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Diamond Starlight Prism","Cyber Chrome Gradient",94.79%,0x8B673959,205.png,205.json
+206,#0207,"Golden Reactor Rig #0207",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Octagonal Cyber Vault","Prismatic Hologram",95.01%,0xD723988F,206.png,206.json
+207,#0208,"Bronze Pickaxe Rig #0208",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.45%,0xDADB22F3,207.png,207.json
+208,#0209,"CEO Crown Mythic #0209",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Crimson Sovereign","Octagonal Cyber Vault","Obsidian Neon Edge",99.47%,0xC6A24BD3,208.png,208.json
+209,#0210,"Cyber Drill Rig #0210",RARE,+4%,"0 MAXIMA","Glacier Pulse","Solar Rayburst Turbine","Pure White-Gold Gloss",92.10%,0x2E585BCB,209.png,209.json
+210,#0211,"Cyber Drill Rig #0211",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","Prismatic Hologram",92.32%,0x7A15BB02,210.png,210.json
+211,#0212,"Bronze Pickaxe Rig #0212",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Cyber Chrome Gradient",88.46%,0x29CFAFCF,211.png,211.json
+212,#0213,"Cyber Drill Rig #0213",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Octagonal Cyber Vault","24K Sovereign Gold",91.89%,0x218F8970,212.png,212.json
+213,#0214,"Bronze Pickaxe Rig #0214",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","24K Sovereign Gold",88.03%,0xC1487E3D,213.png,213.json
+214,#0215,"Bronze Pickaxe Rig #0215",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Cyber Chrome Gradient",88.26%,0x1D06DD74,214.png,214.json
+215,#0216,"Cyber Drill Rig #0216",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","24K Sovereign Gold",91.68%,0x14C5B715,215.png,215.json
+216,#0217,"Cyber Drill Rig #0217",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","Pure White-Gold Gloss",91.91%,0x6082264D,216.png,216.json
+217,#0218,"Bronze Pickaxe Rig #0218",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Pure White-Gold Gloss",88.05%,0x103C1B1A,217.png,217.json
+218,#0219,"Bronze Pickaxe Rig #0219",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Cyber Chrome Gradient",88.27%,0x5BF97A51,218.png,218.json
+219,#0220,"Cyber Drill Rig #0220",RARE,+4%,"0 MAXIMA","Neon Circuit","Octagonal Cyber Vault","24K Sovereign Gold",91.70%,0x53B853F3,219.png,219.json
+220,#0221,"Bronze Pickaxe Rig #0221",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","24K Sovereign Gold",88.72%,0xF37248BF,220.png,220.json
+221,#0222,"Bronze Pickaxe Rig #0222",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Cyber Chrome Gradient",88.06%,0x4F2FA7F6,221.png,221.json
+222,#0223,"Bronze Pickaxe Rig #0223",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Prismatic Hologram",88.29%,0x9AEC172E,222.png,222.json
+223,#0224,"Bronze Pickaxe Rig #0224",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","24K Sovereign Gold",88.51%,0xE6A87665,223.png,223.json
+224,#0225,"Bronze Pickaxe Rig #0225",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Pure White-Gold Gloss",88.74%,0x4266D59C,224.png,224.json
+225,#0226,"Bronze Pickaxe Rig #0226",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Cyber Chrome Gradient",88.08%,0x8E2244D3,225.png,225.json
+226,#0227,"Bronze Pickaxe Rig #0227",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Obsidian Neon Edge",88.30%,0xD9DFA40A,226.png,226.json
+227,#0228,"Plasma Core Genesis #0228",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Vortex Singularity","24K Sovereign Gold",97.72%,0x29A46280,227.png,227.json
+228,#0229,"Bronze Pickaxe Rig #0229",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Cyber Chrome Gradient",88.75%,0x81597279,228.png,228.json
+229,#0230,"Bronze Pickaxe Rig #0230",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Prismatic Hologram",88.10%,0xCD15D1AF,229.png,229.json
+230,#0231,"Bronze Pickaxe Rig #0231",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","24K Sovereign Gold",88.32%,0x28D340E7,230.png,230.json
+231,#0232,"Golden Reactor Rig #0232",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Quantum Radar Grid","Obsidian Neon Edge",95.33%,0xBC9484F3,231.png,231.json
+232,#0233,"Bronze Pickaxe Rig #0233",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Cyber Chrome Gradient",88.77%,0xC04CFF55,232.png,232.json
+233,#0234,"Golden Reactor Rig #0234",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Vortex Singularity","Cyber Chrome Gradient",94.90%,0x640E5361,233.png,233.json
+234,#0235,"Bronze Pickaxe Rig #0235",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","24K Sovereign Gold",88.34%,0x67C6CDC3,234.png,234.json
+235,#0236,"Cyber Drill Rig #0236",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Prismatic Hologram",91.76%,0x5F85A765,235.png,235.json
+236,#0237,"Golden Reactor Rig #0237",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Pure White-Gold Gloss",94.69%,0x57458106,236.png,236.json
+237,#0238,"Bronze Pickaxe Rig #0238",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","24K Sovereign Gold",88.13%,0x5AFCFB68,237.png,237.json
+238,#0239,"Bronze Pickaxe Rig #0239",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Pure White-Gold Gloss",88.35%,0xA6B96AA0,238.png,238.json
+239,#0240,"Bronze Pickaxe Rig #0240",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Cyber Chrome Gradient",88.58%,0xF275C9D7,239.png,239.json
+240,#0241,"Bronze Pickaxe Rig #0241",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Obsidian Neon Edge",88.80%,0x4E33390F,240.png,240.json
+241,#0242,"Cyber Drill Rig #0242",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Cyber Chrome Gradient",92.23%,0x45F212B0,241.png,241.json
+242,#0243,"Bronze Pickaxe Rig #0243",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Cyber Chrome Gradient",88.37%,0xE5ACF77C,242.png,242.json
+243,#0244,"Bronze Pickaxe Rig #0244",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Prismatic Hologram",88.59%,0x416966B4,243.png,243.json
+244,#0245,"Cyber Drill Rig #0245",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Pure White-Gold Gloss",92.02%,0x39294056,244.png,244.json
+245,#0246,"Bronze Pickaxe Rig #0246",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Pure White-Gold Gloss",88.16%,0xD8E23523,245.png,245.json
+246,#0247,"Cyber Drill Rig #0247",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",91.59%,0xD0A2FEC3,246.png,246.json
+247,#0248,"Bronze Pickaxe Rig #0248",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Obsidian Neon Edge",88.61%,0x805CF390,247.png,247.json
+248,#0249,"Cyber Drill Rig #0249",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Cyber Chrome Gradient",92.04%,0x781CCD32,248.png,248.json
+249,#0250,"Bronze Pickaxe Rig #0250",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Cyber Chrome Gradient",88.18%,0x27D6C1FF,249.png,249.json
+250,#0251,"Bronze Pickaxe Rig #0251",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Prismatic Hologram",88.40%,0x73933136,250.png,250.json
+251,#0252,"Cyber Drill Rig #0252",RARE,+4%,"0 MAXIMA","Electric Sapphire","Vortex Singularity","Pure White-Gold Gloss",91.83%,0x6B52FAD7,251.png,251.json
+252,#0253,"Bronze Pickaxe Rig #0253",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Pure White-Gold Gloss",88.85%,0x1B0DEFA4,252.png,252.json
+253,#0254,"Cyber Drill Rig #0254",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Obsidian Neon Edge",92.28%,0x12CCC945,253.png,253.json
+254,#0255,"Bronze Pickaxe Rig #0255",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Obsidian Neon Edge",88.42%,0xB286BE12,254.png,254.json
+255,#0256,"Plasma Core Genesis #0256",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Hexagonal Matrix Core","24K Sovereign Gold",97.83%,0xF24A7C89,255.png,255.json
+256,#0257,"Cyber Drill Rig #0257",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Prismatic Hologram",92.07%,0xF602F6EB,256.png,256.json
+257,#0258,"Cyber Drill Rig #0258",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","24K Sovereign Gold",92.29%,0x51BF6623,257.png,257.json
+258,#0259,"Cyber Drill Rig #0259",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Pure White-Gold Gloss",91.64%,0x9D7CC559,258.png,258.json
+259,#0260,"Bronze Pickaxe Rig #0260",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Pure White-Gold Gloss",88.66%,0x4D36BA26,259.png,259.json
+260,#0261,"Bronze Pickaxe Rig #0261",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Cyber Chrome Gradient",88.00%,0x98F3295E,260.png,260.json
+261,#0262,"Cyber Drill Rig #0262",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","24K Sovereign Gold",92.31%,0x90B2F2FF,261.png,261.json
+262,#0263,"Bronze Pickaxe Rig #0263",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","24K Sovereign Gold",88.45%,0x406DE7CC,262.png,262.json
+263,#0264,"Cyber Drill Rig #0264",RARE,+4%,"0 MAXIMA","Electric Sapphire","Vortex Singularity","Prismatic Hologram",91.88%,0x382CC16D,263.png,263.json
+264,#0265,"Bronze Pickaxe Rig #0265",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Prismatic Hologram",88.02%,0xD7E6B63A,264.png,264.json
+265,#0266,"Plasma Core Genesis #0266",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Vortex Singularity","Obsidian Neon Edge",97.44%,0x27AB74B0,265.png,265.json
+266,#0267,"Bronze Pickaxe Rig #0267",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Pure White-Gold Gloss",88.46%,0x7F6084A9,266.png,266.json
+267,#0268,"Cyber Drill Rig #0268",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","Obsidian Neon Edge",91.89%,0x771F5E4A,267.png,267.json
+268,#0269,"Bronze Pickaxe Rig #0269",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Obsidian Neon Edge",88.03%,0x26DA5317,268.png,268.json
+269,#0270,"Bronze Pickaxe Rig #0270",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","24K Sovereign Gold",88.26%,0x7297B24E,269.png,269.json
+270,#0271,"Golden Reactor Rig #0271",EPIC,+6%,"0 MAXIMA","Amber Supernova","Solar Rayburst Turbine","24K Sovereign Gold",95.27%,0x1659F659,270.png,270.json
+271,#0272,"Bronze Pickaxe Rig #0272",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Prismatic Hologram",88.70%,0x1A1180BC,271.png,271.json
+272,#0273,"Bronze Pickaxe Rig #0273",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","24K Sovereign Gold",88.05%,0x65CDDFF3,272.png,272.json
+273,#0274,"Bronze Pickaxe Rig #0274",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Pure White-Gold Gloss",88.27%,0xB18A4F2B,273.png,273.json
+274,#0275,"Bronze Pickaxe Rig #0275",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Cyber Chrome Gradient",88.50%,0xFD46AE62,274.png,274.json
+275,#0276,"Bronze Pickaxe Rig #0276",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Obsidian Neon Edge",88.72%,0x59041D99,275.png,275.json
+276,#0277,"Cyber Drill Rig #0277",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Cyber Chrome Gradient",92.15%,0x50C3E73A,276.png,276.json
+277,#0278,"Cyber Drill Rig #0278",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Prismatic Hologram",92.37%,0x9C7F5672,277.png,277.json
+278,#0279,"Cyber Drill Rig #0279",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","24K Sovereign Gold",91.72%,0xE83CB5A9,278.png,278.json
+279,#0280,"CEO Crown Mythic #0280",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Crimson Sovereign","Diamond Starlight Prism","Pure White-Gold Gloss",99.54%,0x3801741F,279.png,279.json
+280,#0281,"Bronze Pickaxe Rig #0281",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Pure White-Gold Gloss",88.08%,0xE3B319AD,280.png,280.json
+281,#0282,"Bronze Pickaxe Rig #0282",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Cyber Chrome Gradient",88.30%,0x3F7178E4,281.png,281.json
+282,#0283,"Plasma Core Genesis #0283",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Vortex Singularity","Obsidian Neon Edge",97.72%,0x7F34375A,282.png,282.json
+283,#0284,"Cyber Drill Rig #0284",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","Cyber Chrome Gradient",91.96%,0x82ECB1BC,283.png,283.json
+284,#0285,"Bronze Pickaxe Rig #0285",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Cyber Chrome Gradient",88.10%,0x32A7A689,284.png,284.json
+285,#0286,"Plasma Core Genesis #0286",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Diamond Starlight Prism","Prismatic Hologram",97.52%,0x726B6500,285.png,285.json
+286,#0287,"Cyber Drill Rig #0287",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Pure White-Gold Gloss",91.75%,0x7623DF62,286.png,286.json
+287,#0288,"Golden Reactor Rig #0288",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Octagonal Cyber Vault","Obsidian Neon Edge",94.68%,0x6DE2B903,287.png,287.json
+288,#0289,"Bronze Pickaxe Rig #0289",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Cyber Chrome Gradient",88.11%,0x719A4366,288.png,288.json
+289,#0290,"Cyber Drill Rig #0290",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","24K Sovereign Gold",91.54%,0x69591D08,289.png,289.json
+290,#0291,"Bronze Pickaxe Rig #0291",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","24K Sovereign Gold",88.56%,0x191411D5,290.png,290.json
+291,#0292,"Plasma Core Genesis #0292",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Hexagonal Matrix Core","Pure White-Gold Gloss",97.98%,0x58D8C04A,291.png,291.json
+292,#0293,"Bronze Pickaxe Rig #0293",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Prismatic Hologram",88.13%,0xB08DD042,292.png,292.json
+293,#0294,"Bronze Pickaxe Rig #0294",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","24K Sovereign Gold",88.35%,0xFC4A3F7A,293.png,293.json
+294,#0295,"CEO Crown Mythic #0295",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Royal Ruby Gold","Octagonal Cyber Vault","Cyber Chrome Gradient",99.38%,0xE810685A,294.png,294.json
+295,#0296,"Cyber Drill Rig #0296",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","Obsidian Neon Edge",92.01%,0x4FC67853,295.png,295.json
+296,#0297,"Bronze Pickaxe Rig #0297",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Obsidian Neon Edge",88.14%,0xEF806D20,296.png,296.json
+297,#0298,"Bronze Pickaxe Rig #0298",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","24K Sovereign Gold",88.37%,0x4B3ECC56,297.png,297.json
+298,#0299,"Cyber Drill Rig #0299",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Prismatic Hologram",91.80%,0x42FDA5F8,298.png,298.json
+299,#0300,"Bronze Pickaxe Rig #0300",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Prismatic Hologram",88.82%,0xE2B79AC5,299.png,299.json
+300,#0301,"Bronze Pickaxe Rig #0301",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","24K Sovereign Gold",88.16%,0x3E74F9FC,300.png,300.json
+301,#0302,"Bronze Pickaxe Rig #0302",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Pure White-Gold Gloss",88.38%,0x8A316933,301.png,301.json
+302,#0303,"Bronze Pickaxe Rig #0303",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Cyber Chrome Gradient",88.61%,0xD5EDC86A,302.png,302.json
+303,#0304,"CEO Crown Mythic #0304",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Blood Moon Supernova","Diamond Starlight Prism","24K Sovereign Gold",99.63%,0xC1B4F14A,303.png,303.json
+304,#0305,"Cyber Drill Rig #0305",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Quantum Radar Grid","Cyber Chrome Gradient",92.26%,0x296A1143,304.png,304.json
+305,#0306,"Bronze Pickaxe Rig #0306",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Cyber Chrome Gradient",88.40%,0xC924F60F,305.png,305.json
+306,#0307,"Cyber Drill Rig #0307",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","24K Sovereign Gold",91.83%,0xC0E3CFB1,306.png,306.json
+307,#0308,"Cyber Drill Rig #0308",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","Pure White-Gold Gloss",92.05%,0x1CA03EE9,307.png,307.json
+308,#0309,"Cyber Drill Rig #0309",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","Prismatic Hologram",92.28%,0x685D9E1F,308.png,308.json
+309,#0310,"Plasma Core Genesis #0310",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Diamond Starlight Prism","Cyber Chrome Gradient",97.61%,0xFC1EE22B,309.png,309.json
+310,#0311,"Bronze Pickaxe Rig #0311",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Obsidian Neon Edge",88.64%,0x63D4F223,310.png,310.json
+311,#0312,"Cyber Drill Rig #0312",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Cyber Chrome Gradient",92.07%,0x5B93CBC5,311.png,311.json
+312,#0313,"Bronze Pickaxe Rig #0313",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.21%,0xFB4DC092,312.png,312.json
+313,#0314,"Plasma Core Genesis #0314",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Vortex Singularity","Prismatic Hologram",97.63%,0x4B127F08,313.png,313.json
+314,#0315,"Cyber Drill Rig #0315",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Pure White-Gold Gloss",91.86%,0x4ECAF96A,314.png,314.json
+315,#0316,"Bronze Pickaxe Rig #0316",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Pure White-Gold Gloss",88.00%,0xEE84EE37,315.png,315.json
+316,#0317,"CEO Crown Mythic #0317",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Blood Moon Supernova","Hexagonal Matrix Core","Obsidian Neon Edge",99.90%,0xDA4A2718,316.png,316.json
+317,#0318,"Cyber Drill Rig #0318",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","24K Sovereign Gold",91.65%,0x42003710,317.png,317.json
+318,#0319,"Golden Reactor Rig #0319",EPIC,+6%,"0 MAXIMA","Amber Supernova","Solar Rayburst Turbine","Prismatic Hologram",94.58%,0x39C010B2,318.png,318.json
+319,#0320,"Golden Reactor Rig #0320",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Vortex Singularity","24K Sovereign Gold",94.81%,0x857C6FE9,319.png,319.json
+320,#0321,"Bronze Pickaxe Rig #0321",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Prismatic Hologram",88.24%,0x8934EA4B,320.png,320.json
+321,#0322,"Bronze Pickaxe Rig #0322",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","24K Sovereign Gold",88.47%,0xD4F15983,321.png,321.json
+322,#0323,"Bronze Pickaxe Rig #0323",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Pure White-Gold Gloss",88.69%,0x30AEB8B9,322.png,322.json
+323,#0324,"Bronze Pickaxe Rig #0324",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Cyber Chrome Gradient",88.03%,0x7C6B27F1,323.png,323.json
+324,#0325,"Cyber Drill Rig #0325",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","24K Sovereign Gold",92.34%,0x742AF192,324.png,324.json
+325,#0326,"Golden Reactor Rig #0326",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Solar Rayburst Turbine","Prismatic Hologram",95.27%,0x6BE9CB33,325.png,325.json
+326,#0327,"Bronze Pickaxe Rig #0327",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Cyber Chrome Gradient",88.71%,0x6FA15596,326.png,326.json
+327,#0328,"Golden Reactor Rig #0328",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","Pure White-Gold Gloss",94.84%,0x136399A2,327.png,327.json
+328,#0329,"Cyber Drill Rig #0329",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Quantum Radar Grid","Pure White-Gold Gloss",92.36%,0xB31D8E6F,328.png,328.json
+329,#0330,"Cyber Drill Rig #0330",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Prismatic Hologram",91.70%,0xFED9EDA6,329.png,329.json
+330,#0331,"Bronze Pickaxe Rig #0331",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Cyber Chrome Gradient",88.72%,0xAE94E272,330.png,330.json
+331,#0332,"Cyber Drill Rig #0332",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","24K Sovereign Gold",92.15%,0xA653BC14,331.png,331.json
+332,#0333,"CEO Crown Mythic #0333",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Omega Void Flame","Solar Rayburst Turbine","Cyber Chrome Gradient",99.97%,0xE6177A8A,332.png,332.json
+333,#0334,"Cyber Drill Rig #0334",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","Prismatic Hologram",91.72%,0x4DCD8A83,333.png,333.json
+334,#0335,"Cyber Drill Rig #0335",RARE,+4%,"0 MAXIMA","Neon Circuit","Octagonal Cyber Vault","24K Sovereign Gold",91.94%,0x998AE9B9,334.png,334.json
+335,#0336,"Cyber Drill Rig #0336",RARE,+4%,"0 MAXIMA","Neon Circuit","Quantum Radar Grid","Pure White-Gold Gloss",92.17%,0xE54658F1,335.png,335.json
+336,#0337,"Bronze Pickaxe Rig #0337",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Pure White-Gold Gloss",88.31%,0x95014DBE,336.png,336.json
+337,#0338,"Bronze Pickaxe Rig #0338",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Prismatic Hologram",88.53%,0xE0BEACF5,337.png,337.json
+338,#0339,"Cyber Drill Rig #0339",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Pure White-Gold Gloss",91.96%,0xD87D8696,338.png,338.json
+339,#0340,"Plasma Core Genesis #0340",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Hexagonal Matrix Core","24K Sovereign Gold",97.29%,0x7C3FCAA2,339.png,339.json
+340,#0341,"Cyber Drill Rig #0341",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Quantum Radar Grid","Prismatic Hologram",91.53%,0x7FF75505,340.png,340.json
+341,#0342,"Bronze Pickaxe Rig #0342",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Prismatic Hologram",88.55%,0x2FB249D2,341.png,341.json
+342,#0343,"Bronze Pickaxe Rig #0343",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","24K Sovereign Gold",88.77%,0x7B6EA909,342.png,342.json
+343,#0344,"Golden Reactor Rig #0344",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Vortex Singularity","Obsidian Neon Edge",94.90%,0x1F30ED14,343.png,343.json
+344,#0345,"Cyber Drill Rig #0345",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","Obsidian Neon Edge",91.54%,0xBEEAE1E1,344.png,344.json
+345,#0346,"Cyber Drill Rig #0346",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","Pure White-Gold Gloss",91.77%,0x1AA75119,345.png,345.json
+346,#0347,"Golden Reactor Rig #0347",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Diamond Starlight Prism","Obsidian Neon Edge",94.70%,0x12672ABA,346.png,346.json
+347,#0348,"Bronze Pickaxe Rig #0348",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Cyber Chrome Gradient",88.13%,0x161FA51C,347.png,347.json
+348,#0349,"Cyber Drill Rig #0349",RARE,+4%,"0 MAXIMA","Glacier Pulse","Solar Rayburst Turbine","24K Sovereign Gold",91.56%,0xFDDD7EBE,348.png,348.json
+349,#0350,"Bronze Pickaxe Rig #0350",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","24K Sovereign Gold",88.58%,0xAD98738B,349.png,349.json
+350,#0351,"Plasma Core Genesis #0351",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Solar Rayburst Turbine","Pure White-Gold Gloss",98.00%,0xED5C3201,350.png,350.json
+351,#0352,"Cyber Drill Rig #0352",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",92.23%,0xF113AC63,351.png,351.json
+352,#0353,"Bronze Pickaxe Rig #0353",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Obsidian Neon Edge",88.37%,0xA0CEA130,352.png,352.json
+353,#0354,"Bronze Pickaxe Rig #0354",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","24K Sovereign Gold",88.59%,0xEC8B1068,353.png,353.json
+354,#0355,"Bronze Pickaxe Rig #0355",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Cyber Chrome Gradient",88.82%,0x48486F9F,354.png,354.json
+355,#0356,"Bronze Pickaxe Rig #0356",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Prismatic Hologram",88.16%,0x9405CED6,355.png,355.json
+356,#0357,"Bronze Pickaxe Rig #0357",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","24K Sovereign Gold",88.39%,0xDFC13E0D,356.png,356.json
+357,#0358,"Cyber Drill Rig #0358",RARE,+4%,"0 MAXIMA","Neon Circuit","Diamond Starlight Prism","Prismatic Hologram",91.81%,0xD78017AF,357.png,357.json
+358,#0359,"Bronze Pickaxe Rig #0359",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Prismatic Hologram",88.83%,0x873BFC7B,358.png,358.json
+359,#0360,"Golden Reactor Rig #0360",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Octagonal Cyber Vault","Cyber Chrome Gradient",94.97%,0x2AFD5087,359.png,359.json
+360,#0361,"Plasma Core Genesis #0361",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Octagonal Cyber Vault","24K Sovereign Gold",97.60%,0x22BD2A29,360.png,360.json
+361,#0362,"Golden Reactor Rig #0362",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Solar Rayburst Turbine","24K Sovereign Gold",94.54%,0xC2761EF6,361.png,361.json
+362,#0363,"Golden Reactor Rig #0363",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Vortex Singularity","Pure White-Gold Gloss",94.76%,0x1E347E2D,362.png,362.json
+363,#0364,"Bronze Pickaxe Rig #0364",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","24K Sovereign Gold",88.19%,0x21ECF88F,363.png,363.json
+364,#0365,"CEO Crown Mythic #0365",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Royal Ruby Gold","Hexagonal Matrix Core","Cyber Chrome Gradient",99.22%,0xFDB13170,364.png,364.json
+365,#0366,"Bronze Pickaxe Rig #0366",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Prismatic Hologram",88.64%,0xB965C6FD,365.png,365.json
+366,#0367,"Bronze Pickaxe Rig #0367",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Obsidian Neon Edge",88.87%,0x15223635,366.png,366.json
+367,#0368,"Bronze Pickaxe Rig #0368",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","24K Sovereign Gold",88.21%,0x60DF956C,367.png,367.json
+368,#0369,"Bronze Pickaxe Rig #0369",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Cyber Chrome Gradient",88.43%,0xAC9BF4A2,368.png,368.json
+369,#0370,"Golden Reactor Rig #0370",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Hexagonal Matrix Core","Pure White-Gold Gloss",94.57%,0x505D48AF,369.png,369.json
+370,#0371,"Cyber Drill Rig #0371",RARE,+4%,"0 MAXIMA","Neon Circuit","Octagonal Cyber Vault","Pure White-Gold Gloss",92.09%,0xF0173D7C,370.png,370.json
+371,#0372,"Cyber Drill Rig #0372",RARE,+4%,"0 MAXIMA","Glacier Pulse","Quantum Radar Grid","Prismatic Hologram",92.31%,0x4BD59CB3,371.png,371.json
+372,#0373,"Cyber Drill Rig #0373",RARE,+4%,"0 MAXIMA","Glacier Pulse","Solar Rayburst Turbine","Obsidian Neon Edge",91.66%,0x9791FBE9,372.png,372.json
+373,#0374,"CEO Crown Mythic #0374",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Blood Moon Supernova","Octagonal Cyber Vault","24K Sovereign Gold",99.47%,0xD755BA60,373.png,373.json
+374,#0375,"Bronze Pickaxe Rig #0375",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","24K Sovereign Gold",88.02%,0x93085FEE,374.png,374.json
+375,#0376,"Cyber Drill Rig #0376",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Prismatic Hologram",92.33%,0x8AC83990,375.png,375.json
+376,#0377,"Bronze Pickaxe Rig #0377",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Prismatic Hologram",88.47%,0x3A822E5D,376.png,376.json
+377,#0378,"Bronze Pickaxe Rig #0378",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","24K Sovereign Gold",88.69%,0x863F8D93,377.png,377.json
+378,#0379,"Golden Reactor Rig #0379",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Octagonal Cyber Vault","Obsidian Neon Edge",94.82%,0x2A01D19F,378.png,378.json
+379,#0380,"Cyber Drill Rig #0380",RARE,+4%,"0 MAXIMA","Electric Sapphire","Solar Rayburst Turbine","Obsidian Neon Edge",92.34%,0xC9BBC66C,379.png,379.json
+380,#0381,"Bronze Pickaxe Rig #0381",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Obsidian Neon Edge",88.48%,0x7975BB39,380.png,380.json
+381,#0382,"Golden Reactor Rig #0382",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Hexagonal Matrix Core","Obsidian Neon Edge",94.62%,0x1D37FF44,381.png,381.json
+382,#0383,"Cyber Drill Rig #0383",RARE,+4%,"0 MAXIMA","Neon Circuit","Octagonal Cyber Vault","Prismatic Hologram",92.14%,0xBCF1F411,382.png,382.json
+383,#0384,"Bronze Pickaxe Rig #0384",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Prismatic Hologram",88.27%,0x6CACE8DE,383.png,383.json
+384,#0385,"Bronze Pickaxe Rig #0385",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","24K Sovereign Gold",88.50%,0xB8685816,384.png,384.json
+385,#0386,"Plasma Core Genesis #0386",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Quantum Radar Grid","Pure White-Gold Gloss",97.92%,0xF82C168C,385.png,385.json
+386,#0387,"Bronze Pickaxe Rig #0387",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Prismatic Hologram",88.07%,0x5FE22684,386.png,386.json
+387,#0388,"Golden Reactor Rig #0388",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Cyber Chrome Gradient",95.08%,0xF3A36A90,387.png,387.json
+388,#0389,"Golden Reactor Rig #0389",EPIC,+6%,"0 MAXIMA","Amber Supernova","Hexagonal Matrix Core","Obsidian Neon Edge",95.30%,0x4F61C9C6,388.png,388.json
+389,#0390,"Cyber Drill Rig #0390",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Prismatic Hologram",91.94%,0xEF1BBE93,389.png,389.json
+390,#0391,"Bronze Pickaxe Rig #0391",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Prismatic Hologram",88.08%,0x9ED5B360,390.png,390.json
+391,#0392,"Plasma Core Genesis #0392",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Octagonal Cyber Vault","Obsidian Neon Edge",97.50%,0xDE9971D6,391.png,391.json
+392,#0393,"Cyber Drill Rig #0393",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Prismatic Hologram",91.74%,0xE251EC39,392.png,392.json
+393,#0394,"Plasma Core Genesis #0394",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Solar Rayburst Turbine","Cyber Chrome Gradient",97.95%,0x86134045,393.png,393.json
+394,#0395,"Bronze Pickaxe Rig #0395",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Obsidian Neon Edge",88.10%,0xDDC8503D,394.png,394.json
+395,#0396,"Bronze Pickaxe Rig #0396",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","24K Sovereign Gold",88.32%,0x3986AF74,395.png,395.json
+396,#0397,"Bronze Pickaxe Rig #0397",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Cyber Chrome Gradient",88.55%,0x85421EAC,396.png,396.json
+397,#0398,"Cyber Drill Rig #0398",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","24K Sovereign Gold",91.98%,0x7D02E84C,397.png,397.json
+398,#0399,"Cyber Drill Rig #0399",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","Pure White-Gold Gloss",92.20%,0xC8BE5784,398.png,398.json
+399,#0400,"Bronze Pickaxe Rig #0400",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Pure White-Gold Gloss",88.34%,0x78794C51,399.png,399.json
+400,#0401,"Bronze Pickaxe Rig #0401",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Prismatic Hologram",88.56%,0xC435AB88,400.png,400.json
+401,#0402,"Bronze Pickaxe Rig #0402",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Obsidian Neon Edge",88.79%,0x1FF31AC0,401.png,401.json
+402,#0403,"Cyber Drill Rig #0403",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Cyber Chrome Gradient",92.22%,0x17B2E460,402.png,402.json
+403,#0404,"Bronze Pickaxe Rig #0404",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Cyber Chrome Gradient",88.35%,0xB76CD92D,403.png,403.json
+404,#0405,"Cyber Drill Rig #0405",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","24K Sovereign Gold",91.78%,0xAF2BB2CF,404.png,404.json
+405,#0406,"CEO Crown Mythic #0406",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Celestial Emperor","Vortex Singularity","Pure White-Gold Gloss",99.60%,0xEEEF7145,405.png,405.json
+406,#0407,"Cyber Drill Rig #0407",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","Prismatic Hologram",92.23%,0x56A5813D,406.png,406.json
+407,#0408,"Bronze Pickaxe Rig #0408",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Prismatic Hologram",88.37%,0xF65F760A,407.png,407.json
+408,#0409,"Cyber Drill Rig #0409",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Octagonal Cyber Vault","Pure White-Gold Gloss",91.80%,0xEE1E4FAC,408.png,408.json
+409,#0410,"Golden Reactor Rig #0410",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Octagonal Cyber Vault","Obsidian Neon Edge",94.73%,0xE5DD294D,409.png,409.json
+410,#0411,"Bronze Pickaxe Rig #0411",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Cyber Chrome Gradient",88.16%,0xE995A3B0,410.png,410.json
+411,#0412,"Bronze Pickaxe Rig #0412",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Prismatic Hologram",88.39%,0x455312E7,411.png,411.json
+412,#0413,"Bronze Pickaxe Rig #0413",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","24K Sovereign Gold",88.61%,0x910F721E,412.png,412.json
+413,#0414,"Bronze Pickaxe Rig #0414",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Pure White-Gold Gloss",88.84%,0xDCCCD155,413.png,413.json
+414,#0415,"Bronze Pickaxe Rig #0415",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Prismatic Hologram",88.18%,0x3889408D,414.png,414.json
+415,#0416,"Plasma Core Genesis #0416",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Octagonal Cyber Vault","Obsidian Neon Edge",97.60%,0x784DEF02,415.png,415.json
+416,#0417,"Bronze Pickaxe Rig #0417",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","24K Sovereign Gold",88.63%,0xD002FEFA,416.png,416.json
+417,#0418,"Bronze Pickaxe Rig #0418",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Cyber Chrome Gradient",88.85%,0x2BC06E32,417.png,417.json
+418,#0419,"Cyber Drill Rig #0419",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","24K Sovereign Gold",92.28%,0x237F47D3,418.png,418.json
+419,#0420,"Cyber Drill Rig #0420",RARE,+4%,"0 MAXIMA","Glacier Pulse","Quantum Radar Grid","Pure White-Gold Gloss",91.62%,0x6F3CA70A,419.png,419.json
+420,#0421,"Bronze Pickaxe Rig #0421",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Pure White-Gold Gloss",88.64%,0x1EF69BD7,420.png,420.json
+421,#0422,"Golden Reactor Rig #0422",EPIC,+6%,"0 MAXIMA","Amber Supernova","Octagonal Cyber Vault","Pure White-Gold Gloss",94.78%,0xB2B7DFE3,421.png,421.json
+422,#0423,"Cyber Drill Rig #0423",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","Pure White-Gold Gloss",92.30%,0x6272D4AF,422.png,422.json
+423,#0424,"Bronze Pickaxe Rig #0424",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","24K Sovereign Gold",88.44%,0x122DC97C,423.png,423.json
+424,#0425,"Bronze Pickaxe Rig #0425",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Cyber Chrome Gradient",88.66%,0x5DE938B4,424.png,424.json
+425,#0426,"Cyber Drill Rig #0426",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","24K Sovereign Gold",92.09%,0x55A91256,425.png,425.json
+426,#0427,"Golden Reactor Rig #0427",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Octagonal Cyber Vault","Prismatic Hologram",95.02%,0x4D68DBF6,426.png,426.json
+427,#0428,"Bronze Pickaxe Rig #0428",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Pure White-Gold Gloss",88.45%,0x51206659,427.png,427.json
+428,#0429,"Cyber Drill Rig #0429",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Obsidian Neon Edge",91.88%,0x48DF3FFB,428.png,428.json
+429,#0430,"Bronze Pickaxe Rig #0430",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",88.02%,0xE89934C8,429.png,429.json
+430,#0431,"Golden Reactor Rig #0431",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Obsidian Neon Edge",95.03%,0x8C5B78D3,430.png,430.json
+431,#0432,"Cyber Drill Rig #0432",RARE,+4%,"0 MAXIMA","Glacier Pulse","Quantum Radar Grid","Prismatic Hologram",91.67%,0x3C166DA0,431.png,431.json
+432,#0433,"Golden Reactor Rig #0433",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Quantum Radar Grid","Pure White-Gold Gloss",94.60%,0x33D54742,432.png,432.json
+433,#0434,"Bronze Pickaxe Rig #0434",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","24K Sovereign Gold",88.04%,0x378DC1A4,433.png,433.json
+434,#0435,"Cyber Drill Rig #0435",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","Prismatic Hologram",92.34%,0x2F4C9B46,434.png,434.json
+435,#0436,"Cyber Drill Rig #0436",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Hexagonal Matrix Core","Obsidian Neon Edge",91.69%,0x7B09FA7C,435.png,435.json
+436,#0437,"Golden Reactor Rig #0437",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Hexagonal Matrix Core","Cyber Chrome Gradient",94.62%,0x72C8D41E,436.png,436.json
+437,#0438,"Bronze Pickaxe Rig #0438",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","24K Sovereign Gold",88.05%,0x76805E81,437.png,437.json
+438,#0439,"Golden Reactor Rig #0439",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Octagonal Cyber Vault","24K Sovereign Gold",95.07%,0x1A42A28D,438.png,438.json
+439,#0440,"Bronze Pickaxe Rig #0440",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Prismatic Hologram",88.50%,0x1DFA2CF0,439.png,439.json
+440,#0441,"Bronze Pickaxe Rig #0441",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","24K Sovereign Gold",88.72%,0x69B68C26,440.png,440.json
+441,#0442,"Golden Reactor Rig #0442",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Vortex Singularity","Obsidian Neon Edge",94.86%,0xFD77D032,441.png,441.json
+442,#0443,"Bronze Pickaxe Rig #0443",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Prismatic Hologram",88.29%,0x11305A95,442.png,442.json
+443,#0444,"Cyber Drill Rig #0444",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Quantum Radar Grid","Pure White-Gold Gloss",91.72%,0xF8EF3437,443.png,443.json
+444,#0445,"Bronze Pickaxe Rig #0445",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","24K Sovereign Gold",88.74%,0xA8A92903,444.png,444.json
+445,#0446,"Bronze Pickaxe Rig #0446",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Cyber Chrome Gradient",88.08%,0xF466883A,445.png,445.json
+446,#0447,"Bronze Pickaxe Rig #0447",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Prismatic Hologram",88.31%,0x5023E771,446.png,446.json
+447,#0448,"Bronze Pickaxe Rig #0448",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","24K Sovereign Gold",88.53%,0x9BE056A9,447.png,447.json
+448,#0449,"Bronze Pickaxe Rig #0449",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Pure White-Gold Gloss",88.76%,0xE79CB5E0,448.png,448.json
+449,#0450,"Bronze Pickaxe Rig #0450",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Prismatic Hologram",88.10%,0x435A2517,449.png,449.json
+450,#0451,"Bronze Pickaxe Rig #0451",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Obsidian Neon Edge",88.32%,0x8F16844E,450.png,450.json
+451,#0452,"Cyber Drill Rig #0452",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Cyber Chrome Gradient",91.75%,0x86D65DF0,451.png,451.json
+452,#0453,"Bronze Pickaxe Rig #0453",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Cyber Chrome Gradient",88.77%,0x369052BD,452.png,452.json
+453,#0454,"Golden Reactor Rig #0454",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Vortex Singularity","Pure White-Gold Gloss",94.91%,0xCA5196C8,453.png,453.json
+454,#0455,"Bronze Pickaxe Rig #0455",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","24K Sovereign Gold",88.34%,0xCE09212B,454.png,454.json
+455,#0456,"Bronze Pickaxe Rig #0456",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Pure White-Gold Gloss",88.56%,0x29C78062,455.png,455.json
+456,#0457,"Cyber Drill Rig #0457",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Octagonal Cyber Vault","Obsidian Neon Edge",91.99%,0x21865A03,456.png,456.json
+457,#0458,"Cyber Drill Rig #0458",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Pure White-Gold Gloss",92.22%,0x6D43B93A,457.png,457.json
+458,#0459,"CEO Crown Mythic #0459",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Royal Ruby Gold","Quantum Radar Grid","Cyber Chrome Gradient",99.16%,0xAD0777B0,458.png,458.json
+459,#0460,"Plasma Core Genesis #0460",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Vortex Singularity","Cyber Chrome Gradient",97.77%,0x5CC16C7D,459.png,459.json
+460,#0461,"Cyber Drill Rig #0461",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","24K Sovereign Gold",92.01%,0x6079E6DF,460.png,460.json
+461,#0462,"Cyber Drill Rig #0462",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","Pure White-Gold Gloss",92.23%,0xAC365617,461.png,461.json
+462,#0463,"Bronze Pickaxe Rig #0463",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Pure White-Gold Gloss",88.37%,0x5BF04AE4,462.png,462.json
+463,#0464,"Bronze Pickaxe Rig #0464",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Prismatic Hologram",88.60%,0xA7ADAA1B,463.png,463.json
+464,#0465,"Cyber Drill Rig #0465",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Pure White-Gold Gloss",92.03%,0x9F6C83BD,464.png,464.json
+465,#0466,"Bronze Pickaxe Rig #0466",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","24K Sovereign Gold",88.16%,0x4F277889,465.png,465.json
+466,#0467,"Bronze Pickaxe Rig #0467",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Cyber Chrome Gradient",88.39%,0x9AE3D7C0,466.png,466.json
+467,#0468,"Cyber Drill Rig #0468",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","24K Sovereign Gold",91.82%,0x92A3B162,467.png,467.json
+468,#0469,"Plasma Core Genesis #0469",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Hexagonal Matrix Core","Obsidian Neon Edge",98.03%,0x3665F56D,468.png,468.json
+469,#0470,"Bronze Pickaxe Rig #0470",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Pure White-Gold Gloss",88.18%,0x8E1A1567,469.png,469.json
+470,#0471,"Cyber Drill Rig #0471",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","Obsidian Neon Edge",91.61%,0x85D9DF07,470.png,470.json
+471,#0472,"Bronze Pickaxe Rig #0472",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Obsidian Neon Edge",88.63%,0x3594D3D4,471.png,471.json
+472,#0473,"CEO Crown Mythic #0473",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Omega Void Flame","Vortex Singularity","Cyber Chrome Gradient",99.65%,0x215BFCB4,472.png,472.json
+473,#0474,"Cyber Drill Rig #0474",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Prismatic Hologram",92.28%,0x79101CAD,473.png,473.json
+474,#0475,"Golden Reactor Rig #0475",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Hexagonal Matrix Core","Pure White-Gold Gloss",95.21%,0x70CFE64E,474.png,474.json
+475,#0476,"Golden Reactor Rig #0476",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Quantum Radar Grid","Prismatic Hologram",94.55%,0xBC8C5586,475.png,475.json
+476,#0477,"Bronze Pickaxe Rig #0477",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Pure White-Gold Gloss",88.87%,0xC043CFE8,476.png,476.json
+477,#0478,"Bronze Pickaxe Rig #0478",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Prismatic Hologram",88.21%,0x1C013F20,477.png,477.json
+478,#0479,"Cyber Drill Rig #0479",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Pure White-Gold Gloss",91.64%,0x13C018C1,478.png,478.json
+479,#0480,"Bronze Pickaxe Rig #0480",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","24K Sovereign Gold",88.66%,0xB37AFD8D,479.png,479.json
+480,#0481,"Bronze Pickaxe Rig #0481",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Cyber Chrome Gradient",88.00%,0xFF366CC5,480.png,480.json
+481,#0482,"Bronze Pickaxe Rig #0482",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Prismatic Hologram",88.23%,0x5AF4CBFC,481.png,481.json
+482,#0483,"Golden Reactor Rig #0483",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Quantum Radar Grid","Prismatic Hologram",95.24%,0xEEB52008,482.png,482.json
+483,#0484,"Bronze Pickaxe Rig #0484",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Pure White-Gold Gloss",88.68%,0xF26D9A6A,483.png,483.json
+484,#0485,"Bronze Pickaxe Rig #0485",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Prismatic Hologram",88.02%,0x4E2AF9A1,484.png,484.json
+485,#0486,"Bronze Pickaxe Rig #0486",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Obsidian Neon Edge",88.24%,0x99E768D9,485.png,485.json
+486,#0487,"Golden Reactor Rig #0487",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Hexagonal Matrix Core","Obsidian Neon Edge",95.26%,0x3DA9ACE4,486.png,486.json
+487,#0488,"Bronze Pickaxe Rig #0488",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.69%,0x41613747,487.png,487.json
+488,#0489,"Cyber Drill Rig #0489",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","24K Sovereign Gold",92.12%,0x392010E9,488.png,488.json
+489,#0490,"Golden Reactor Rig #0490",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Vortex Singularity","Prismatic Hologram",95.05%,0x30E0DA89,489.png,489.json
+490,#0491,"Bronze Pickaxe Rig #0491",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Pure White-Gold Gloss",88.48%,0x349764ED,490.png,490.json
+491,#0492,"Bronze Pickaxe Rig #0492",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Prismatic Hologram",88.71%,0x8054C423,491.png,491.json
+492,#0493,"Bronze Pickaxe Rig #0493",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Obsidian Neon Edge",88.05%,0xCC10335B,492.png,492.json
+493,#0494,"Cyber Drill Rig #0494",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Cyber Chrome Gradient",92.36%,0xC3D0FCFC,493.png,493.json
+494,#0495,"Bronze Pickaxe Rig #0495",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Cyber Chrome Gradient",88.50%,0x738AF1C9,494.png,494.json
+495,#0496,"Bronze Pickaxe Rig #0496",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Prismatic Hologram",88.72%,0xBF476100,495.png,495.json
+496,#0497,"Bronze Pickaxe Rig #0497",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","24K Sovereign Gold",88.07%,0x1B04C037,496.png,496.json
+497,#0498,"Bronze Pickaxe Rig #0498",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Pure White-Gold Gloss",88.29%,0x66C12F6F,497.png,497.json
+498,#0499,"Golden Reactor Rig #0499",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Hexagonal Matrix Core","Pure White-Gold Gloss",95.31%,0xFA82737A,498.png,498.json
+499,#0500,"Golden Reactor Rig #0500",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Quantum Radar Grid","Cyber Chrome Gradient",94.65%,0x5640D2B1,499.png,499.json
+500,#0501,"Cyber Drill Rig #0501",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Cyber Chrome Gradient",92.17%,0xF5F9C77E,500.png,500.json
+501,#0502,"Bronze Pickaxe Rig #0502",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Cyber Chrome Gradient",88.31%,0xA5B4BC4B,501.png,501.json
+502,#0503,"Bronze Pickaxe Rig #0503",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Prismatic Hologram",88.53%,0xF1702B83,502.png,502.json
+503,#0504,"Cyber Drill Rig #0504",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Pure White-Gold Gloss",91.96%,0xE930F523,503.png,503.json
+504,#0505,"Cyber Drill Rig #0505",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Prismatic Hologram",92.19%,0x44ED645B,504.png,504.json
+505,#0506,"Cyber Drill Rig #0506",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Obsidian Neon Edge",91.53%,0x90AAC392,505.png,505.json
+506,#0507,"Bronze Pickaxe Rig #0507",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Obsidian Neon Edge",88.55%,0x4064B85F,506.png,506.json
+507,#0508,"Bronze Pickaxe Rig #0508",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Pure White-Gold Gloss",88.77%,0x8C212797,507.png,507.json
+508,#0509,"Bronze Pickaxe Rig #0509",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Cyber Chrome Gradient",88.12%,0xD7DD86CD,508.png,508.json
+509,#0510,"Bronze Pickaxe Rig #0510",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Prismatic Hologram",88.34%,0x339BE604,509.png,509.json
+510,#0511,"Bronze Pickaxe Rig #0511",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","24K Sovereign Gold",88.57%,0x7F57553C,510.png,510.json
+511,#0512,"Golden Reactor Rig #0512",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Quantum Radar Grid","Obsidian Neon Edge",94.70%,0x231A9947,511.png,511.json
+512,#0513,"Bronze Pickaxe Rig #0513",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Prismatic Hologram",88.13%,0x26D123AA,512.png,512.json
+513,#0514,"Golden Reactor Rig #0514",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Vortex Singularity","Cyber Chrome Gradient",95.15%,0xBA9367B6,513.png,513.json
+514,#0515,"Bronze Pickaxe Rig #0515",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Pure White-Gold Gloss",88.58%,0xBE4AE218,514.png,514.json
+515,#0516,"Bronze Pickaxe Rig #0516",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Cyber Chrome Gradient",88.81%,0x1A085150,515.png,515.json
+516,#0517,"Bronze Pickaxe Rig #0517",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Prismatic Hologram",88.15%,0x65C5B086,516.png,516.json
+517,#0518,"Cyber Drill Rig #0518",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Pure White-Gold Gloss",91.58%,0x5D848A28,517.png,517.json
+518,#0519,"Cyber Drill Rig #0519",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Prismatic Hologram",91.80%,0xA940E95F,518.png,518.json
+519,#0520,"Plasma Core Genesis #0520",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Quantum Radar Grid","Cyber Chrome Gradient",98.02%,0x4D023D6B,519.png,519.json
+520,#0521,"Bronze Pickaxe Rig #0521",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Obsidian Neon Edge",88.17%,0xA4B84D63,520.png,520.json
+521,#0522,"Golden Reactor Rig #0522",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Obsidian Neon Edge",95.18%,0x487A916F,521.png,521.json
+522,#0523,"Cyber Drill Rig #0523",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Obsidian Neon Edge",91.82%,0xE833863C,522.png,522.json
+523,#0524,"Bronze Pickaxe Rig #0524",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Prismatic Hologram",88.84%,0x97EE7B09,523.png,523.json
+524,#0525,"Bronze Pickaxe Rig #0525",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","24K Sovereign Gold",88.18%,0xE3ABDA40,524.png,524.json
+525,#0526,"Bronze Pickaxe Rig #0526",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Pure White-Gold Gloss",88.41%,0x3F684977,525.png,525.json
+526,#0527,"Cyber Drill Rig #0527",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","Obsidian Neon Edge",91.83%,0x37272319,526.png,526.json
+527,#0528,"Bronze Pickaxe Rig #0528",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Obsidian Neon Edge",88.85%,0xD6E117E6,527.png,527.json
+528,#0529,"Bronze Pickaxe Rig #0529",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Pure White-Gold Gloss",88.20%,0x329F771D,528.png,528.json
+529,#0530,"Cyber Drill Rig #0530",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Obsidian Neon Edge",91.63%,0x2A5E50BE,529.png,529.json
+530,#0531,"Cyber Drill Rig #0531",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","24K Sovereign Gold",91.85%,0x761AAFF5,530.png,530.json
+531,#0532,"Bronze Pickaxe Rig #0532",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","24K Sovereign Gold",88.87%,0x25D5A4C2,531.png,531.json
+532,#0533,"Bronze Pickaxe Rig #0533",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Pure White-Gold Gloss",88.21%,0x719213FA,532.png,532.json
+533,#0534,"Cyber Drill Rig #0534",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Obsidian Neon Edge",91.64%,0x6951DD9A,533.png,533.json
+534,#0535,"Cyber Drill Rig #0535",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Pure White-Gold Gloss",91.87%,0xB50D4CD2,534.png,534.json
+535,#0536,"Cyber Drill Rig #0536",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","Cyber Chrome Gradient",92.09%,0x10CBAC09,535.png,535.json
+536,#0537,"Bronze Pickaxe Rig #0537",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Cyber Chrome Gradient",88.23%,0xB085A0D6,536.png,536.json
+537,#0538,"Bronze Pickaxe Rig #0538",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Prismatic Hologram",88.45%,0xFC41100D,537.png,537.json
+538,#0539,"Bronze Pickaxe Rig #0539",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","24K Sovereign Gold",88.68%,0x57FF6F44,538.png,538.json
+539,#0540,"Bronze Pickaxe Rig #0540",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Pure White-Gold Gloss",88.02%,0xA3BBCE7B,539.png,539.json
+540,#0541,"Plasma Core Genesis #0541",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Hexagonal Matrix Core","Cyber Chrome Gradient",97.44%,0xE37F8CF1,540.png,540.json
+541,#0542,"Bronze Pickaxe Rig #0542",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Obsidian Neon Edge",88.47%,0x4B359CE9,541.png,541.json
+542,#0543,"Bronze Pickaxe Rig #0543",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Pure White-Gold Gloss",88.69%,0x96F2FC20,542.png,542.json
+543,#0544,"Plasma Core Genesis #0544",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Quantum Radar Grid","Cyber Chrome Gradient",97.23%,0xD6B5BA96,543.png,543.json
+544,#0545,"Cyber Drill Rig #0545",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","24K Sovereign Gold",92.35%,0xDA6D44FA,544.png,544.json
+545,#0546,"Cyber Drill Rig #0546",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Pure White-Gold Gloss",91.69%,0x362BA430,545.png,545.json
+546,#0547,"Golden Reactor Rig #0547",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Hexagonal Matrix Core","Obsidian Neon Edge",94.62%,0x2DEA7DD2,546.png,546.json
+547,#0548,"Bronze Pickaxe Rig #0548",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Prismatic Hologram",88.05%,0x31A2F834,547.png,547.json
+548,#0549,"Bronze Pickaxe Rig #0549",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Obsidian Neon Edge",88.28%,0x7D5F676C,548.png,548.json
+549,#0550,"Bronze Pickaxe Rig #0550",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Pure White-Gold Gloss",88.50%,0xC91BC6A3,549.png,549.json
+550,#0551,"Cyber Drill Rig #0551",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Obsidian Neon Edge",91.93%,0xC0DAA044,550.png,550.json
+551,#0552,"Bronze Pickaxe Rig #0552",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Prismatic Hologram",88.07%,0x70959511,551.png,551.json
+552,#0553,"Cyber Drill Rig #0553",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Hexagonal Matrix Core","Pure White-Gold Gloss",92.38%,0x68546EB3,552.png,552.json
+553,#0554,"Cyber Drill Rig #0554",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Prismatic Hologram",91.72%,0xB411CDE9,553.png,553.json
+554,#0555,"CEO Crown Mythic #0555",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Celestial Emperor","Diamond Starlight Prism","Obsidian Neon Edge",99.54%,0xF3D58C60,554.png,554.json
+555,#0556,"Cyber Drill Rig #0556",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Pure White-Gold Gloss",92.17%,0x5B8B9C58,555.png,555.json
+556,#0557,"Cyber Drill Rig #0557",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Cyber Chrome Gradient",91.51%,0xA747FB8F,556.png,556.json
+557,#0558,"Cyber Drill Rig #0558",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","Obsidian Neon Edge",91.74%,0xF3046AC7,557.png,557.json
+558,#0559,"Bronze Pickaxe Rig #0559",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Prismatic Hologram",88.76%,0xA2BF5F93,558.png,558.json
+559,#0560,"Golden Reactor Rig #0560",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","Prismatic Hologram",94.89%,0x4681A39F,559.png,559.json
+560,#0561,"CEO Crown Mythic #0561",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Blood Moon Supernova","Hexagonal Matrix Core","Prismatic Hologram",99.13%,0xDA42E7AA,560.png,560.json
+561,#0562,"Bronze Pickaxe Rig #0562",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Prismatic Hologram",88.55%,0x95F58D39,561.png,561.json
+562,#0563,"Golden Reactor Rig #0563",EPIC,+6%,"0 MAXIMA","Amber Supernova","Solar Rayburst Turbine","Cyber Chrome Gradient",94.68%,0x39B7D144,562.png,562.json
+563,#0564,"Cyber Drill Rig #0564",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","Cyber Chrome Gradient",92.20%,0xD971C611,563.png,563.json
+564,#0565,"Cyber Drill Rig #0565",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","Obsidian Neon Edge",91.55%,0x352E3549,564.png,564.json
+565,#0566,"Bronze Pickaxe Rig #0566",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Prismatic Hologram",88.57%,0xD4E82A16,565.png,565.json
+566,#0567,"Bronze Pickaxe Rig #0567",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","24K Sovereign Gold",88.79%,0x30A6894D,566.png,566.json
+567,#0568,"Plasma Core Genesis #0568",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Quantum Radar Grid","Pure White-Gold Gloss",97.33%,0x706A47C3,567.png,567.json
+568,#0569,"Golden Reactor Rig #0569",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Vortex Singularity","Pure White-Gold Gloss",95.15%,0x20243C90,568.png,568.json
+569,#0570,"Bronze Pickaxe Rig #0570",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Obsidian Neon Edge",88.58%,0x23DCB6F2,569.png,569.json
+570,#0571,"Bronze Pickaxe Rig #0571",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Pure White-Gold Gloss",88.81%,0x6F99262A,570.png,570.json
+571,#0572,"Bronze Pickaxe Rig #0572",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Cyber Chrome Gradient",88.15%,0xBB558560,571.png,571.json
+572,#0573,"Bronze Pickaxe Rig #0573",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Prismatic Hologram",88.37%,0x1713E497,572.png,572.json
+573,#0574,"Bronze Pickaxe Rig #0574",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","24K Sovereign Gold",88.60%,0x62CF53CF,573.png,573.json
+574,#0575,"Bronze Pickaxe Rig #0575",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Pure White-Gold Gloss",88.82%,0xAE8CB306,574.png,574.json
+575,#0576,"Cyber Drill Rig #0576",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Diamond Starlight Prism","Obsidian Neon Edge",92.25%,0xA64B8CA7,575.png,575.json
+576,#0577,"Golden Reactor Rig #0577",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Diamond Starlight Prism","Cyber Chrome Gradient",95.18%,0x9E0A6649,576.png,576.json
+577,#0578,"Bronze Pickaxe Rig #0578",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Pure White-Gold Gloss",88.61%,0xA1C2E0AB,577.png,577.json
+578,#0579,"Bronze Pickaxe Rig #0579",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Cyber Chrome Gradient",88.84%,0xED7F4FE3,578.png,578.json
+579,#0580,"Bronze Pickaxe Rig #0580",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Prismatic Hologram",88.18%,0x493CAF1A,579.png,579.json
+580,#0581,"Plasma Core Genesis #0581",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Octagonal Cyber Vault","24K Sovereign Gold",97.60%,0x89006D90,580.png,580.json
+581,#0582,"Cyber Drill Rig #0582",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Prismatic Hologram",91.84%,0x8CB8E7F2,581.png,581.json
+582,#0583,"Golden Reactor Rig #0583",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Pure White-Gold Gloss",94.76%,0x8477C193,582.png,582.json
+583,#0584,"Bronze Pickaxe Rig #0584",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Obsidian Neon Edge",88.20%,0x882F4BF7,583.png,583.json
+584,#0585,"Bronze Pickaxe Rig #0585",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Pure White-Gold Gloss",88.42%,0xD3ECAB2D,584.png,584.json
+585,#0586,"Bronze Pickaxe Rig #0586",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Cyber Chrome Gradient",88.65%,0x2FA91A65,585.png,585.json
+586,#0587,"Bronze Pickaxe Rig #0587",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Prismatic Hologram",88.87%,0x7B66799C,586.png,586.json
+587,#0588,"Golden Reactor Rig #0588",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Vortex Singularity","Prismatic Hologram",95.00%,0x1F28BDA7,587.png,587.json
+588,#0589,"Bronze Pickaxe Rig #0589",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Pure White-Gold Gloss",88.44%,0x22E0480A,588.png,588.json
+589,#0590,"Bronze Pickaxe Rig #0590",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Prismatic Hologram",88.66%,0x6E9CA741,589.png,589.json
+590,#0591,"Plasma Core Genesis #0591",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Hexagonal Matrix Core","Obsidian Neon Edge",97.20%,0xAE6065B7,590.png,590.json
+591,#0592,"Bronze Pickaxe Rig #0592",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Pure White-Gold Gloss",88.23%,0x161675B0,591.png,591.json
+592,#0593,"Bronze Pickaxe Rig #0593",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.45%,0x61D3D4E6,592.png,592.json
+593,#0594,"Cyber Drill Rig #0594",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","24K Sovereign Gold",91.88%,0x5992AE88,593.png,593.json
+594,#0595,"Plasma Core Genesis #0595",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Solar Rayburst Turbine","24K Sovereign Gold",97.22%,0xED53F293,594.png,594.json
+595,#0596,"Golden Reactor Rig #0596",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","Obsidian Neon Edge",95.04%,0x9D0EE760,595.png,595.json
+596,#0597,"Bronze Pickaxe Rig #0597",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Prismatic Hologram",88.47%,0xA0C671C3,596.png,596.json
+597,#0598,"Plasma Core Genesis #0598",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Octagonal Cyber Vault","Obsidian Neon Edge",97.89%,0xE08A303A,597.png,597.json
+598,#0599,"Golden Reactor Rig #0599",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Octagonal Cyber Vault","Obsidian Neon Edge",94.83%,0x90442507,598.png,598.json
+599,#0600,"Cyber Drill Rig #0600",RARE,+4%,"0 MAXIMA","Electric Sapphire","Solar Rayburst Turbine","Obsidian Neon Edge",92.35%,0x3FFF19D4,599.png,599.json
+600,#0601,"Bronze Pickaxe Rig #0601",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Prismatic Hologram",88.49%,0xDFB9FEA0,600.png,600.json
+601,#0602,"Bronze Pickaxe Rig #0602",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","24K Sovereign Gold",88.71%,0x3B766DD7,601.png,601.json
+602,#0603,"Bronze Pickaxe Rig #0603",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Pure White-Gold Gloss",88.05%,0x8733CD0E,602.png,602.json
+603,#0604,"Bronze Pickaxe Rig #0604",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Prismatic Hologram",88.28%,0xD2EF3C46,603.png,603.json
+604,#0605,"Bronze Pickaxe Rig #0605",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Obsidian Neon Edge",88.50%,0x2EAD9B7D,604.png,604.json
+605,#0606,"Cyber Drill Rig #0606",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Cyber Chrome Gradient",91.93%,0x266C751E,605.png,605.json
+606,#0607,"Cyber Drill Rig #0607",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Obsidian Neon Edge",92.16%,0x7228D455,606.png,606.json
+607,#0608,"Bronze Pickaxe Rig #0608",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Prismatic Hologram",88.29%,0x21E3C922,607.png,607.json
+608,#0609,"Bronze Pickaxe Rig #0609",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","24K Sovereign Gold",88.52%,0x6DA0385A,608.png,608.json
+609,#0610,"Cyber Drill Rig #0610",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Prismatic Hologram",91.95%,0x655F11FB,609.png,609.json
+610,#0611,"Cyber Drill Rig #0611",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Obsidian Neon Edge",92.17%,0xB11B7132,610.png,610.json
+611,#0612,"Golden Reactor Rig #0612",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Vortex Singularity","Cyber Chrome Gradient",95.10%,0xA8DB4AD4,611.png,611.json
+612,#0613,"Bronze Pickaxe Rig #0613",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Pure White-Gold Gloss",88.53%,0xAC93C536,612.png,612.json
+613,#0614,"Bronze Pickaxe Rig #0614",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Cyber Chrome Gradient",88.76%,0xF84F346D,613.png,613.json
+614,#0615,"Bronze Pickaxe Rig #0615",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Prismatic Hologram",88.10%,0x540D93A4,614.png,614.json
+615,#0616,"Bronze Pickaxe Rig #0616",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","24K Sovereign Gold",88.33%,0x9FC9F2DB,615.png,615.json
+616,#0617,"Bronze Pickaxe Rig #0617",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Pure White-Gold Gloss",88.55%,0xEB866213,616.png,616.json
+617,#0618,"Bronze Pickaxe Rig #0618",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Prismatic Hologram",88.78%,0x4743C14A,617.png,617.json
+618,#0619,"Cyber Drill Rig #0619",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Pure White-Gold Gloss",92.20%,0x3F039AEB,618.png,618.json
+619,#0620,"Golden Reactor Rig #0620",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Obsidian Neon Edge",95.13%,0x36C2748D,619.png,619.json
+620,#0621,"Cyber Drill Rig #0621",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Obsidian Neon Edge",91.77%,0xD67C695A,620.png,620.json
+621,#0622,"Golden Reactor Rig #0622",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Quantum Radar Grid","Cyber Chrome Gradient",94.70%,0xCE3B42FB,621.png,621.json
+622,#0623,"Bronze Pickaxe Rig #0623",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","24K Sovereign Gold",88.14%,0xD1F3BD5D,622.png,622.json
+623,#0624,"Plasma Core Genesis #0624",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Octagonal Cyber Vault","Pure White-Gold Gloss",97.55%,0x21B87BD4,623.png,623.json
+624,#0625,"Plasma Core Genesis #0625",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Vortex Singularity","Cyber Chrome Gradient",97.78%,0x6D74DB0A,624.png,624.json
+625,#0626,"Cyber Drill Rig #0626",RARE,+4%,"0 MAXIMA","Neon Circuit","Diamond Starlight Prism","Pure White-Gold Gloss",92.01%,0x712C656D,625.png,625.json
+626,#0627,"Bronze Pickaxe Rig #0627",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Pure White-Gold Gloss",88.15%,0x20E75A3A,626.png,626.json
+627,#0628,"Golden Reactor Rig #0628",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Octagonal Cyber Vault","24K Sovereign Gold",95.17%,0xB4A89E46,627.png,627.json
+628,#0629,"Cyber Drill Rig #0629",RARE,+4%,"0 MAXIMA","Glacier Pulse","Solar Rayburst Turbine","24K Sovereign Gold",91.80%,0x64639313,628.png,628.json
+629,#0630,"Bronze Pickaxe Rig #0630",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","24K Sovereign Gold",88.82%,0x141D87E0,629.png,629.json
+630,#0631,"Golden Reactor Rig #0631",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Vortex Singularity","Obsidian Neon Edge",94.96%,0xA7DECBEB,630.png,630.json
+631,#0632,"Bronze Pickaxe Rig #0632",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Prismatic Hologram",88.39%,0xAB96564E,631.png,631.json
+632,#0633,"Bronze Pickaxe Rig #0633",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Obsidian Neon Edge",88.62%,0xF753B585,632.png,632.json
+633,#0634,"Bronze Pickaxe Rig #0634",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Pure White-Gold Gloss",88.84%,0x531024BD,633.png,633.json
+634,#0635,"Bronze Pickaxe Rig #0635",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Cyber Chrome Gradient",88.18%,0x9ECD83F3,634.png,634.json
+635,#0636,"Cyber Drill Rig #0636",RARE,+4%,"0 MAXIMA","Electric Sapphire","Solar Rayburst Turbine","24K Sovereign Gold",91.61%,0x968C5D95,635.png,635.json
+636,#0637,"Bronze Pickaxe Rig #0637",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","24K Sovereign Gold",88.63%,0x46475262,636.png,636.json
+637,#0638,"Golden Reactor Rig #0638",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Hexagonal Matrix Core","Obsidian Neon Edge",94.77%,0xDA08966D,637.png,637.json
+638,#0639,"Bronze Pickaxe Rig #0639",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Prismatic Hologram",88.20%,0xDDC020D1,638.png,638.json
+639,#0640,"Bronze Pickaxe Rig #0640",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Obsidian Neon Edge",88.42%,0x397D8007,639.png,639.json
+640,#0641,"Bronze Pickaxe Rig #0641",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Pure White-Gold Gloss",88.65%,0x853ADF3E,640.png,640.json
+641,#0642,"Bronze Pickaxe Rig #0642",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Cyber Chrome Gradient",88.87%,0xD0F64E76,641.png,641.json
+642,#0643,"Bronze Pickaxe Rig #0643",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Prismatic Hologram",88.22%,0x2CB4ADAD,642.png,642.json
+643,#0644,"Bronze Pickaxe Rig #0644",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","24K Sovereign Gold",88.44%,0x78701CE4,643.png,643.json
+644,#0645,"CEO Crown Mythic #0645",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Royal Ruby Gold","Vortex Singularity","Prismatic Hologram",99.46%,0x643745C4,644.png,644.json
+645,#0646,"Plasma Core Genesis #0646",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Hexagonal Matrix Core","Cyber Chrome Gradient",97.20%,0x13F23A91,645.png,645.json
+646,#0647,"Cyber Drill Rig #0647",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Pure White-Gold Gloss",92.32%,0x17AAB4F3,646.png,646.json
+647,#0648,"Bronze Pickaxe Rig #0648",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Pure White-Gold Gloss",88.46%,0xB763A9C0,647.png,647.json
+648,#0649,"Bronze Pickaxe Rig #0649",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Cyber Chrome Gradient",88.68%,0x132118F8,648.png,648.json
+649,#0650,"Bronze Pickaxe Rig #0650",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",88.02%,0x5EDD782F,649.png,649.json
+650,#0651,"Bronze Pickaxe Rig #0651",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","24K Sovereign Gold",88.25%,0xAA9AD766,650.png,650.json
+651,#0652,"Bronze Pickaxe Rig #0652",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Pure White-Gold Gloss",88.47%,0xF656469D,651.png,651.json
+652,#0653,"Bronze Pickaxe Rig #0653",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Prismatic Hologram",88.70%,0x5214A5D4,652.png,652.json
+653,#0654,"Cyber Drill Rig #0654",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","Pure White-Gold Gloss",92.12%,0x49D37F76,653.png,653.json
+654,#0655,"Cyber Drill Rig #0655",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","Cyber Chrome Gradient",92.35%,0x9590DEAD,654.png,654.json
+655,#0656,"Golden Reactor Rig #0656",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","24K Sovereign Gold",95.28%,0x8D4FB84E,655.png,655.json
+656,#0657,"Bronze Pickaxe Rig #0657",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Obsidian Neon Edge",88.71%,0x910742B1,656.png,656.json
+657,#0658,"Cyber Drill Rig #0658",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Cyber Chrome Gradient",92.14%,0x88C61C53,657.png,657.json
+658,#0659,"Bronze Pickaxe Rig #0659",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Pure White-Gold Gloss",88.28%,0x38811120,658.png,658.json
+659,#0660,"Cyber Drill Rig #0660",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Obsidian Neon Edge",91.71%,0x3040DAC0,659.png,659.json
+660,#0661,"Cyber Drill Rig #0661",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Pure White-Gold Gloss",91.93%,0x7BFD49F8,660.png,660.json
+661,#0662,"Golden Reactor Rig #0662",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Vortex Singularity","Obsidian Neon Edge",94.86%,0x73BC239A,661.png,661.json
+662,#0663,"Cyber Drill Rig #0663",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","Obsidian Neon Edge",91.50%,0x23771867,662.png,662.json
+663,#0664,"Golden Reactor Rig #0664",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Cyber Chrome Gradient",95.31%,0x1B36E207,663.png,663.json
+664,#0665,"Bronze Pickaxe Rig #0665",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","24K Sovereign Gold",88.74%,0x1EEE6C6A,664.png,664.json
+665,#0666,"Cyber Drill Rig #0666",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","Prismatic Hologram",92.17%,0x16AD460C,665.png,665.json
+666,#0667,"Cyber Drill Rig #0667",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","Obsidian Neon Edge",91.52%,0x626AA543,666.png,666.json
+667,#0668,"Bronze Pickaxe Rig #0668",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Obsidian Neon Edge",88.54%,0x12249A10,667.png,667.json
+668,#0669,"Bronze Pickaxe Rig #0669",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Pure White-Gold Gloss",88.76%,0x5DE1F946,668.png,668.json
+669,#0670,"Bronze Pickaxe Rig #0670",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Cyber Chrome Gradient",88.10%,0xA99D687E,669.png,669.json
+670,#0671,"Golden Reactor Rig #0671",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Octagonal Cyber Vault","Cyber Chrome Gradient",95.12%,0x4D5FAC8A,670.png,670.json
+671,#0672,"Plasma Core Genesis #0672",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Octagonal Cyber Vault","24K Sovereign Gold",97.75%,0x451F862B,671.png,671.json
+672,#0673,"Bronze Pickaxe Rig #0673",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Pure White-Gold Gloss",88.78%,0x9CD49623,672.png,672.json
+673,#0674,"Bronze Pickaxe Rig #0674",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Prismatic Hologram",88.12%,0xE890F55A,673.png,673.json
+674,#0675,"Plasma Core Genesis #0675",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Diamond Cryo-Nebula","Hexagonal Matrix Core","Obsidian Neon Edge",97.54%,0x3855B3D0,674.png,674.json
+675,#0676,"Bronze Pickaxe Rig #0676",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Pure White-Gold Gloss",88.57%,0x900AC3C9,675.png,675.json
+676,#0677,"Bronze Pickaxe Rig #0677",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Cyber Chrome Gradient",88.79%,0xDBC73301,676.png,676.json
+677,#0678,"Cyber Drill Rig #0678",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","24K Sovereign Gold",92.22%,0xD386FCA1,677.png,677.json
+678,#0679,"Bronze Pickaxe Rig #0679",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","24K Sovereign Gold",88.36%,0x8341F16E,678.png,678.json
+679,#0680,"Bronze Pickaxe Rig #0680",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Pure White-Gold Gloss",88.58%,0xCEFD60A6,679.png,679.json
+680,#0681,"Cyber Drill Rig #0681",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","Obsidian Neon Edge",92.01%,0xC6BD3A47,680.png,680.json
+681,#0682,"Bronze Pickaxe Rig #0682",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Obsidian Neon Edge",88.15%,0x76772F14,681.png,681.json
+682,#0683,"Cyber Drill Rig #0683",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Cyber Chrome Gradient",91.58%,0x6E37F8B5,682.png,682.json
+683,#0684,"Golden Reactor Rig #0684",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Quantum Radar Grid","24K Sovereign Gold",94.51%,0x65F6D257,683.png,683.json
+684,#0685,"Bronze Pickaxe Rig #0685",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Obsidian Neon Edge",88.82%,0x69AE5CBA,684.png,684.json
+685,#0686,"Cyber Drill Rig #0686",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Cyber Chrome Gradient",92.25%,0x616D365B,685.png,685.json
+686,#0687,"Bronze Pickaxe Rig #0687",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Pure White-Gold Gloss",88.39%,0x11282B28,686.png,686.json
+687,#0688,"Bronze Pickaxe Rig #0688",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Prismatic Hologram",88.62%,0x5CE48A5F,687.png,687.json
+688,#0689,"Cyber Drill Rig #0689",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Octagonal Cyber Vault","Pure White-Gold Gloss",92.05%,0x54A46401,688.png,688.json
+689,#0690,"Bronze Pickaxe Rig #0690",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Pure White-Gold Gloss",88.18%,0xF45D58CD,689.png,689.json
+690,#0691,"Cyber Drill Rig #0691",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","Obsidian Neon Edge",91.61%,0xEC1D326F,690.png,690.json
+691,#0692,"Plasma Core Genesis #0692",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Vortex Singularity","Prismatic Hologram",97.83%,0x8FDF767A,691.png,691.json
+692,#0693,"Golden Reactor Rig #0693",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Hexagonal Matrix Core","Prismatic Hologram",94.77%,0x3F996B47,692.png,692.json
+693,#0694,"Cyber Drill Rig #0694",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Prismatic Hologram",92.29%,0xDF536014,693.png,693.json
+694,#0695,"Cyber Drill Rig #0695",RARE,+4%,"0 MAXIMA","Neon Circuit","Quantum Radar Grid","Obsidian Neon Edge",91.63%,0x3B11BF4B,694.png,694.json
+695,#0696,"Bronze Pickaxe Rig #0696",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Obsidian Neon Edge",88.65%,0xDACAB418,695.png,695.json
+696,#0697,"Golden Reactor Rig #0697",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Solar Rayburst Turbine","Obsidian Neon Edge",94.78%,0x7E8CF823,696.png,696.json
+697,#0698,"Cyber Drill Rig #0698",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Obsidian Neon Edge",92.30%,0x2E47ECF0,697.png,697.json
+698,#0699,"Bronze Pickaxe Rig #0699",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Obsidian Neon Edge",88.44%,0xCE01E1BD,698.png,698.json
+699,#0700,"Plasma Core Genesis #0700",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Diamond Starlight Prism","24K Sovereign Gold",97.86%,0x1DC6A034,699.png,699.json
+700,#0701,"Bronze Pickaxe Rig #0701",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Pure White-Gold Gloss",88.01%,0x757BB02C,700.png,700.json
+701,#0702,"Bronze Pickaxe Rig #0702",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Prismatic Hologram",88.23%,0xC1371F64,701.png,701.json
+702,#0703,"Bronze Pickaxe Rig #0703",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Obsidian Neon Edge",88.46%,0x1CF57E9A,702.png,702.json
+703,#0704,"Bronze Pickaxe Rig #0704",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Pure White-Gold Gloss",88.68%,0x68B1DDD1,703.png,703.json
+704,#0705,"Bronze Pickaxe Rig #0705",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Cyber Chrome Gradient",88.02%,0xB46E4D09,704.png,704.json
+705,#0706,"Bronze Pickaxe Rig #0706",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Obsidian Neon Edge",88.25%,0x102BAC40,705.png,705.json
+706,#0707,"Bronze Pickaxe Rig #0707",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","24K Sovereign Gold",88.47%,0x5BE81B77,706.png,706.json
+707,#0708,"Cyber Drill Rig #0708",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Prismatic Hologram",91.90%,0x53A7E518,707.png,707.json
+708,#0709,"Bronze Pickaxe Rig #0709",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Prismatic Hologram",88.04%,0xF361D9E5,708.png,708.json
+709,#0710,"Bronze Pickaxe Rig #0710",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Obsidian Neon Edge",88.26%,0x4F1E491D,709.png,709.json
+710,#0711,"Cyber Drill Rig #0711",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","Cyber Chrome Gradient",91.69%,0x46DE22BE,710.png,710.json
+711,#0712,"Bronze Pickaxe Rig #0712",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Cyber Chrome Gradient",88.71%,0xE697178B,711.png,711.json
+712,#0713,"Bronze Pickaxe Rig #0713",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Obsidian Neon Edge",88.06%,0x425576C2,712.png,712.json
+713,#0714,"Cyber Drill Rig #0714",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Cyber Chrome Gradient",92.37%,0x3A145064,713.png,713.json
+714,#0715,"Bronze Pickaxe Rig #0715",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Pure White-Gold Gloss",88.50%,0xD9CE4531,714.png,714.json
+715,#0716,"Bronze Pickaxe Rig #0716",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Prismatic Hologram",88.73%,0x358BA467,715.png,715.json
+716,#0717,"Bronze Pickaxe Rig #0717",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Obsidian Neon Edge",88.07%,0x8148139F,716.png,716.json
+717,#0718,"Bronze Pickaxe Rig #0718",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Pure White-Gold Gloss",88.30%,0xCD0472D6,717.png,717.json
+718,#0719,"Golden Reactor Rig #0719",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Octagonal Cyber Vault","24K Sovereign Gold",95.31%,0x70C7B6E1,718.png,718.json
+719,#0720,"Bronze Pickaxe Rig #0720",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Obsidian Neon Edge",88.75%,0x747E4144,719.png,719.json
+720,#0721,"Bronze Pickaxe Rig #0721",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","24K Sovereign Gold",88.09%,0xC03BA07B,720.png,720.json
+721,#0722,"Bronze Pickaxe Rig #0722",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Pure White-Gold Gloss",88.31%,0x1BF8FFB2,721.png,721.json
+722,#0723,"Cyber Drill Rig #0723",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",91.74%,0x13B8D953,722.png,722.json
+723,#0724,"Cyber Drill Rig #0724",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Pure White-Gold Gloss",91.97%,0x5F74488B,723.png,723.json
+724,#0725,"Cyber Drill Rig #0725",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Cyber Chrome Gradient",92.19%,0xAB31A7C2,724.png,724.json
+725,#0726,"Bronze Pickaxe Rig #0726",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Cyber Chrome Gradient",88.33%,0x5AEB9C8F,725.png,725.json
+726,#0727,"Cyber Drill Rig #0727",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","24K Sovereign Gold",91.76%,0x52AB7631,726.png,726.json
+727,#0728,"Plasma Core Genesis #0728",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Vortex Singularity","24K Sovereign Gold",97.97%,0xE66CBA3C,727.png,727.json
+728,#0729,"Cyber Drill Rig #0729",RARE,+4%,"0 MAXIMA","Electric Sapphire","Diamond Starlight Prism","Prismatic Hologram",92.21%,0xEA24449F,728.png,728.json
+729,#0730,"Plasma Core Genesis #0730",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Hexagonal Matrix Core","Prismatic Hologram",97.54%,0x8DE688AA,729.png,729.json
+730,#0731,"Bronze Pickaxe Rig #0731",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Obsidian Neon Edge",88.57%,0xE59B98A3,730.png,730.json
+731,#0732,"Bronze Pickaxe Rig #0732",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Pure White-Gold Gloss",88.79%,0x4158F7DA,731.png,731.json
+732,#0733,"Bronze Pickaxe Rig #0733",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Cyber Chrome Gradient",88.14%,0x8D156711,732.png,732.json
+733,#0734,"Bronze Pickaxe Rig #0734",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Obsidian Neon Edge",88.36%,0xD8D1C648,733.png,733.json
+734,#0735,"Bronze Pickaxe Rig #0735",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","24K Sovereign Gold",88.59%,0x348F3580,734.png,734.json
+735,#0736,"Bronze Pickaxe Rig #0736",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Pure White-Gold Gloss",88.81%,0x804B94B7,735.png,735.json
+736,#0737,"Golden Reactor Rig #0737",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Pure White-Gold Gloss",94.94%,0x240ED8C2,736.png,736.json
+737,#0738,"Cyber Drill Rig #0738",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Pure White-Gold Gloss",91.58%,0xC3C7CD8F,737.png,737.json
+738,#0739,"Bronze Pickaxe Rig #0739",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Pure White-Gold Gloss",88.60%,0x7382C25C,738.png,738.json
+739,#0740,"Bronze Pickaxe Rig #0740",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Cyber Chrome Gradient",88.83%,0xBF3E3194,739.png,739.json
+740,#0741,"Bronze Pickaxe Rig #0741",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Obsidian Neon Edge",88.17%,0x1AFC90CA,740.png,740.json
+741,#0742,"Cyber Drill Rig #0742",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Cyber Chrome Gradient",91.60%,0x12BB6A6C,741.png,741.json
+742,#0743,"Bronze Pickaxe Rig #0743",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Pure White-Gold Gloss",88.62%,0xB2755F39,742.png,742.json
+743,#0744,"Cyber Drill Rig #0744",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","Obsidian Neon Edge",92.05%,0xAA3438DA,743.png,743.json
+744,#0745,"Cyber Drill Rig #0745",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Pure White-Gold Gloss",92.27%,0xF5F19811,744.png,744.json
+745,#0746,"Cyber Drill Rig #0746",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","Cyber Chrome Gradient",91.61%,0x51AEF748,745.png,745.json
+746,#0747,"Cyber Drill Rig #0747",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",91.84%,0x9D6B6680,746.png,746.json
+747,#0748,"Plasma Core Genesis #0748",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Solar Rayburst Turbine","Prismatic Hologram",98.05%,0x412DAA8B,747.png,747.json
+748,#0749,"Golden Reactor Rig #0749",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Prismatic Hologram",94.99%,0xE0E79F58,748.png,748.json
+749,#0750,"Bronze Pickaxe Rig #0750",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Pure White-Gold Gloss",88.43%,0xE49E29BB,749.png,749.json
+750,#0751,"Bronze Pickaxe Rig #0751",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Prismatic Hologram",88.65%,0x405C88F2,750.png,750.json
+751,#0752,"Bronze Pickaxe Rig #0752",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Obsidian Neon Edge",88.87%,0x8C18E829,751.png,751.json
+752,#0753,"Cyber Drill Rig #0753",RARE,+4%,"0 MAXIMA","Neon Circuit","Diamond Starlight Prism","Cyber Chrome Gradient",92.30%,0x83D8C1CA,752.png,752.json
+753,#0754,"Golden Reactor Rig #0754",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Diamond Starlight Prism","24K Sovereign Gold",95.23%,0x7B979B6C,753.png,753.json
+754,#0755,"Cyber Drill Rig #0755",RARE,+4%,"0 MAXIMA","Neon Circuit","Quantum Radar Grid","24K Sovereign Gold",91.87%,0x2B529039,754.png,754.json
+755,#0756,"Golden Reactor Rig #0756",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Quantum Radar Grid","Prismatic Hologram",94.80%,0x231169DA,755.png,755.json
+756,#0757,"Golden Reactor Rig #0757",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Octagonal Cyber Vault","24K Sovereign Gold",95.02%,0x6ECEC911,756.png,756.json
+757,#0758,"Cyber Drill Rig #0758",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","Obsidian Neon Edge",91.66%,0x1E88BDDE,757.png,757.json
+758,#0759,"Bronze Pickaxe Rig #0759",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Obsidian Neon Edge",88.68%,0xBE42B2AB,758.png,758.json
+759,#0760,"Bronze Pickaxe Rig #0760",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Pure White-Gold Gloss",88.03%,0x19FF21E3,759.png,759.json
+760,#0761,"Bronze Pickaxe Rig #0761",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Cyber Chrome Gradient",88.25%,0x65BC811A,760.png,760.json
+761,#0762,"Cyber Drill Rig #0762",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","24K Sovereign Gold",91.68%,0x5D7B5ABB,761.png,761.json
+762,#0763,"Golden Reactor Rig #0763",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Quantum Radar Grid","Prismatic Hologram",94.61%,0x553B345D,762.png,762.json
+763,#0764,"Bronze Pickaxe Rig #0764",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Pure White-Gold Gloss",88.04%,0x58F2AEBF,763.png,763.json
+764,#0765,"Plasma Core Genesis #0765",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Solar Rayburst Turbine","Prismatic Hologram",97.46%,0x98B66D35,764.png,764.json
+765,#0766,"Golden Reactor Rig #0766",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Diamond Starlight Prism","Cyber Chrome Gradient",95.28%,0x48716202,765.png,765.json
+766,#0767,"Bronze Pickaxe Rig #0767",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Pure White-Gold Gloss",88.71%,0x4C29DC64,766.png,766.json
+767,#0768,"Bronze Pickaxe Rig #0768",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Cyber Chrome Gradient",88.06%,0x97E64B9C,767.png,767.json
+768,#0769,"Bronze Pickaxe Rig #0769",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Obsidian Neon Edge",88.28%,0xE3A2AAD3,768.png,768.json
+769,#0770,"Bronze Pickaxe Rig #0770",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","24K Sovereign Gold",88.51%,0x3F601A0B,769.png,769.json
+770,#0771,"Bronze Pickaxe Rig #0771",COMMON,+2%,"0 MAXIMA","Ember Forge","Diamond Starlight Prism","Pure White-Gold Gloss",88.73%,0x8B1C7941,770.png,770.json
+771,#0772,"Plasma Core Genesis #0772",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Solar Rayburst Turbine","Prismatic Hologram",97.27%,0xCAE037B7,771.png,771.json
+772,#0773,"Cyber Drill Rig #0773",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Pure White-Gold Gloss",91.50%,0xCE98B21A,772.png,772.json
+773,#0774,"Cyber Drill Rig #0774",RARE,+4%,"0 MAXIMA","Electric Sapphire","Quantum Radar Grid","Cyber Chrome Gradient",91.73%,0x2A552151,773.png,773.json
+774,#0775,"Plasma Core Genesis #0775",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Octagonal Cyber Vault","Cyber Chrome Gradient",97.94%,0xBE16655D,774.png,774.json
+775,#0776,"Bronze Pickaxe Rig #0776",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Obsidian Neon Edge",88.09%,0x25CD7555,775.png,775.json
+776,#0777,"Golden Reactor Rig #0777",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Vortex Singularity","Prismatic Hologram",95.10%,0xB98EB960,776.png,776.json
+777,#0778,"Cyber Drill Rig #0778",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","Prismatic Hologram",91.74%,0x6948AE2D,777.png,777.json
+778,#0779,"Cyber Drill Rig #0779",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Obsidian Neon Edge",91.97%,0xB5051D65,778.png,778.json
+779,#0780,"Bronze Pickaxe Rig #0780",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Obsidian Neon Edge",88.11%,0x64C01232,779.png,779.json
+780,#0781,"Cyber Drill Rig #0781",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Quantum Radar Grid","Cyber Chrome Gradient",91.54%,0x5C7FDBD3,780.png,780.json
+781,#0782,"Bronze Pickaxe Rig #0782",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Cyber Chrome Gradient",88.55%,0xFC39D0A0,781.png,781.json
+782,#0783,"Cyber Drill Rig #0783",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Vortex Singularity","24K Sovereign Gold",91.98%,0xF3F8AA41,782.png,782.json
+783,#0784,"Bronze Pickaxe Rig #0784",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","24K Sovereign Gold",88.12%,0xA3B39F0E,783.png,783.json
+784,#0785,"Golden Reactor Rig #0785",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Diamond Starlight Prism","24K Sovereign Gold",95.14%,0x4775E31A,784.png,784.json
+785,#0786,"Bronze Pickaxe Rig #0786",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Prismatic Hologram",88.57%,0x4B2D6D7D,785.png,785.json
+786,#0787,"Golden Reactor Rig #0787",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Quantum Radar Grid","Cyber Chrome Gradient",94.70%,0xDEEEB188,786.png,786.json
+787,#0788,"Golden Reactor Rig #0788",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Solar Rayburst Turbine","Obsidian Neon Edge",94.93%,0x3AAB20C0,787.png,787.json
+788,#0789,"Bronze Pickaxe Rig #0789",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Cyber Chrome Gradient",88.36%,0x3E639B22,788.png,788.json
+789,#0790,"Bronze Pickaxe Rig #0790",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Obsidian Neon Edge",88.59%,0x8A20FA59,789.png,789.json
+790,#0791,"Golden Reactor Rig #0791",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Hexagonal Matrix Core","Prismatic Hologram",94.72%,0x2DE24E65,790.png,790.json
+791,#0792,"Golden Reactor Rig #0792",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","24K Sovereign Gold",94.94%,0x799EAD9C,791.png,791.json
+792,#0793,"Bronze Pickaxe Rig #0793",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Prismatic Hologram",88.38%,0x7D5637FF,792.png,792.json
+793,#0794,"Bronze Pickaxe Rig #0794",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Obsidian Neon Edge",88.60%,0xC9139736,793.png,793.json
+794,#0795,"Cyber Drill Rig #0795",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Cyber Chrome Gradient",92.03%,0xC0D270D7,794.png,794.json
+795,#0796,"Bronze Pickaxe Rig #0796",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Cyber Chrome Gradient",88.17%,0x708D65A4,795.png,795.json
+796,#0797,"Bronze Pickaxe Rig #0797",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Quantum Radar Grid","Obsidian Neon Edge",88.39%,0xBC49C4DB,796.png,796.json
+797,#0798,"Bronze Pickaxe Rig #0798",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","24K Sovereign Gold",88.62%,0x18073413,797.png,797.json
+798,#0799,"Bronze Pickaxe Rig #0799",COMMON,+2%,"0 MAXIMA","Molten Bronze","Vortex Singularity","Pure White-Gold Gloss",88.84%,0x63C3934A,798.png,798.json
+799,#0800,"Cyber Drill Rig #0800",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Obsidian Neon Edge",92.27%,0x5B826CEB,799.png,799.json
+800,#0801,"Bronze Pickaxe Rig #0801",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",88.41%,0xFB3C61B8,800.png,800.json
+801,#0802,"Golden Reactor Rig #0802",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Solar Rayburst Turbine","Obsidian Neon Edge",94.54%,0x9EFEA5C4,801.png,801.json
+802,#0803,"Cyber Drill Rig #0803",RARE,+4%,"0 MAXIMA","Glacier Pulse","Diamond Starlight Prism","Obsidian Neon Edge",92.06%,0x4EB99A91,802.png,802.json
+803,#0804,"Cyber Drill Rig #0804",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Octagonal Cyber Vault","24K Sovereign Gold",92.29%,0x9A75F9C7,803.png,803.json
+804,#0805,"Golden Reactor Rig #0805",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Octagonal Cyber Vault","Prismatic Hologram",95.22%,0x9235D369,804.png,804.json
+805,#0806,"Plasma Core Genesis #0806",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Octagonal Cyber Vault","Pure White-Gold Gloss",97.85%,0x89F4AD0A,805.png,805.json
+806,#0807,"Golden Reactor Rig #0807",EPIC,+6%,"0 MAXIMA","Amber Supernova","Solar Rayburst Turbine","Pure White-Gold Gloss",94.78%,0x39AFA1D7,806.png,806.json
+807,#0808,"Bronze Pickaxe Rig #0808",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Obsidian Neon Edge",88.22%,0x3D672C3B,807.png,807.json
+808,#0809,"Golden Reactor Rig #0809",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Diamond Starlight Prism","Obsidian Neon Edge",95.23%,0xD1287046,808.png,808.json
+809,#0810,"Bronze Pickaxe Rig #0810",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Cyber Chrome Gradient",88.67%,0xD4E0EAA8,809.png,809.json
+810,#0811,"Cyber Drill Rig #0811",RARE,+4%,"0 MAXIMA","Neon Circuit","Octagonal Cyber Vault","24K Sovereign Gold",92.10%,0xCC9FC44A,810.png,810.json
+811,#0812,"Bronze Pickaxe Rig #0812",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","24K Sovereign Gold",88.23%,0x7C5AB917,811.png,811.json
+812,#0813,"Golden Reactor Rig #0813",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Vortex Singularity","24K Sovereign Gold",95.25%,0x201CFD22,812.png,812.json
+813,#0814,"Golden Reactor Rig #0814",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Solar Rayburst Turbine","Pure White-Gold Gloss",94.59%,0x6BD86C5A,813.png,813.json
+814,#0815,"Golden Reactor Rig #0815",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Prismatic Hologram",94.82%,0xB795CB90,814.png,814.json
+815,#0816,"Bronze Pickaxe Rig #0816",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Pure White-Gold Gloss",88.25%,0xBB4D55F4,815.png,815.json
+816,#0817,"Bronze Pickaxe Rig #0817",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Cyber Chrome Gradient",88.47%,0x170AB52A,816.png,816.json
+817,#0818,"Bronze Pickaxe Rig #0818",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Obsidian Neon Edge",88.70%,0x62C72462,817.png,817.json
+818,#0819,"Cyber Drill Rig #0819",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Cyber Chrome Gradient",92.13%,0x5A86EE03,818.png,818.json
+819,#0820,"CEO Crown Mythic #0820",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Omega Void Flame","Vortex Singularity","Prismatic Hologram",99.95%,0x9A4AAC79,819.png,819.json
+820,#0821,"Cyber Drill Rig #0821",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","24K Sovereign Gold",91.70%,0xF1FFBC71,820.png,820.json
+821,#0822,"Bronze Pickaxe Rig #0822",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Obsidian Neon Edge",88.71%,0xA1BAB13E,821.png,821.json
+822,#0823,"Golden Reactor Rig #0823",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Quantum Radar Grid","Obsidian Neon Edge",94.85%,0x457CF54A,822.png,822.json
+823,#0824,"Cyber Drill Rig #0824",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Obsidian Neon Edge",92.37%,0xE535EA17,823.png,823.json
+824,#0825,"Cyber Drill Rig #0825",RARE,+4%,"0 MAXIMA","Glacier Pulse","Solar Rayburst Turbine","24K Sovereign Gold",91.71%,0x40F3594E,824.png,824.json
+825,#0826,"Cyber Drill Rig #0826",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","Cyber Chrome Gradient",91.94%,0x8CAFB885,825.png,825.json
+826,#0827,"CEO Crown Mythic #0827",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Blood Moon Supernova","Vortex Singularity","Prismatic Hologram",99.75%,0xCC7376FB,826.png,826.json
+827,#0828,"Golden Reactor Rig #0828",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","Pure White-Gold Gloss",95.09%,0xD02BF15D,827.png,827.json
+828,#0829,"Golden Reactor Rig #0829",EPIC,+6%,"0 MAXIMA","Amber Supernova","Octagonal Cyber Vault","Prismatic Hologram",95.31%,0x2BE96095,828.png,828.json
+829,#0830,"Cyber Drill Rig #0830",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","Cyber Chrome Gradient",91.95%,0xCBA25562,829.png,829.json
+830,#0831,"Bronze Pickaxe Rig #0831",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Cyber Chrome Gradient",88.09%,0x7B5D4A2F,830.png,830.json
+831,#0832,"Bronze Pickaxe Rig #0832",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Obsidian Neon Edge",88.32%,0xC71AA966,831.png,831.json
+832,#0833,"Bronze Pickaxe Rig #0833",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","24K Sovereign Gold",88.54%,0x22D7189E,832.png,832.json
+833,#0834,"Bronze Pickaxe Rig #0834",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Cyber Chrome Gradient",88.76%,0x6E9477D4,833.png,833.json
+834,#0835,"Bronze Pickaxe Rig #0835",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Prismatic Hologram",88.11%,0xBA50D70B,834.png,834.json
+835,#0836,"Cyber Drill Rig #0836",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","Pure White-Gold Gloss",91.54%,0xB20FB0AD,835.png,835.json
+836,#0837,"Golden Reactor Rig #0837",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Vortex Singularity","Obsidian Neon Edge",95.35%,0xA9CF8A4E,836.png,836.json
+837,#0838,"Bronze Pickaxe Rig #0838",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Cyber Chrome Gradient",88.78%,0xAD8714B1,837.png,837.json
+838,#0839,"Cyber Drill Rig #0839",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","24K Sovereign Gold",92.21%,0xA546DE52,838.png,838.json
+839,#0840,"Golden Reactor Rig #0840",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","Prismatic Hologram",95.14%,0x9D05B7F4,839.png,839.json
+840,#0841,"Golden Reactor Rig #0841",EPIC,+6%,"0 MAXIMA","Amber Supernova","Octagonal Cyber Vault","24K Sovereign Gold",95.36%,0xE8C2272B,840.png,840.json
+841,#0842,"Cyber Drill Rig #0842",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","24K Sovereign Gold",92.00%,0x987C1BF8,841.png,841.json
+842,#0843,"Cyber Drill Rig #0843",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Vortex Singularity","Pure White-Gold Gloss",92.22%,0xE4397B2F,842.png,842.json
+843,#0844,"Bronze Pickaxe Rig #0844",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Pure White-Gold Gloss",88.36%,0x93F46FFC,843.png,843.json
+844,#0845,"Cyber Drill Rig #0845",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","Obsidian Neon Edge",91.79%,0x8BB3499E,844.png,844.json
+845,#0846,"Bronze Pickaxe Rig #0846",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Obsidian Neon Edge",88.81%,0x3B6E3E6B,845.png,845.json
+846,#0847,"Bronze Pickaxe Rig #0847",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","24K Sovereign Gold",88.16%,0x872A9DA1,846.png,846.json
+847,#0848,"Golden Reactor Rig #0848",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Octagonal Cyber Vault","24K Sovereign Gold",95.17%,0x2AECE1AD,847.png,847.json
+848,#0849,"Bronze Pickaxe Rig #0849",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Prismatic Hologram",88.60%,0x2EA46C10,848.png,848.json
+849,#0850,"Cyber Drill Rig #0850",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Pure White-Gold Gloss",92.03%,0x266345B1,849.png,849.json
+850,#0851,"Bronze Pickaxe Rig #0851",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Pure White-Gold Gloss",88.17%,0xC61D3A7E,850.png,850.json
+851,#0852,"Cyber Drill Rig #0852",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",91.60%,0xBDDC1420,851.png,851.json
+852,#0853,"Cyber Drill Rig #0853",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","24K Sovereign Gold",91.82%,0x199A7357,852.png,852.json
+853,#0854,"Golden Reactor Rig #0854",EPIC,+6%,"0 MAXIMA","Amber Supernova","Quantum Radar Grid","Prismatic Hologram",94.75%,0x11594CF8,853.png,853.json
+854,#0855,"Bronze Pickaxe Rig #0855",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Cyber Chrome Gradient",88.19%,0x1511C75A,854.png,854.json
+855,#0856,"Bronze Pickaxe Rig #0856",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Hexagonal Matrix Core","Prismatic Hologram",88.41%,0x60CE3692,855.png,855.json
+856,#0857,"Bronze Pickaxe Rig #0857",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Obsidian Neon Edge",88.64%,0xAC8A95C9,856.png,856.json
+857,#0858,"Bronze Pickaxe Rig #0858",COMMON,+2%,"0 MAXIMA","Molten Bronze","Octagonal Cyber Vault","Pure White-Gold Gloss",88.86%,0xF847F500,857.png,857.json
+858,#0859,"Cyber Drill Rig #0859",RARE,+4%,"0 MAXIMA","Neon Circuit","Octagonal Cyber Vault","Obsidian Neon Edge",92.29%,0xF006CEA1,858.png,858.json
+859,#0860,"Bronze Pickaxe Rig #0860",COMMON,+2%,"0 MAXIMA","Rust Matrix","Solar Rayburst Turbine","Obsidian Neon Edge",88.43%,0x9FC1C36E,859.png,859.json
+860,#0861,"Bronze Pickaxe Rig #0861",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","24K Sovereign Gold",88.65%,0xEB7D32A6,860.png,860.json
+861,#0862,"Golden Reactor Rig #0862",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Solar Rayburst Turbine","24K Sovereign Gold",94.79%,0x8F3F76B1,861.png,861.json
+862,#0863,"Cyber Drill Rig #0863",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","24K Sovereign Gold",92.30%,0x3EFA6B7E,862.png,862.json
+863,#0864,"Golden Reactor Rig #0864",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Prismatic Hologram",95.23%,0x36B94520,863.png,863.json
+864,#0865,"Bronze Pickaxe Rig #0865",COMMON,+2%,"0 MAXIMA","Ember Forge","Octagonal Cyber Vault","Pure White-Gold Gloss",88.67%,0x3A71BF82,864.png,864.json
+865,#0866,"Cyber Drill Rig #0866",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Obsidian Neon Edge",92.10%,0x32309924,865.png,865.json
+866,#0867,"Bronze Pickaxe Rig #0867",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Obsidian Neon Edge",88.24%,0xD1EA8DF1,866.png,866.json
+867,#0868,"Bronze Pickaxe Rig #0868",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","24K Sovereign Gold",88.46%,0x2DA8ED27,867.png,867.json
+868,#0869,"Cyber Drill Rig #0869",RARE,+4%,"0 MAXIMA","Electric Sapphire","Hexagonal Matrix Core","Prismatic Hologram",91.89%,0x2567C6C9,868.png,868.json
+869,#0870,"Bronze Pickaxe Rig #0870",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Prismatic Hologram",88.03%,0xC521BB96,869.png,869.json
+870,#0871,"Bronze Pickaxe Rig #0871",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Obsidian Neon Edge",88.25%,0x20DE2ACE,870.png,870.json
+871,#0872,"Cyber Drill Rig #0872",RARE,+4%,"0 MAXIMA","Glacier Pulse","Quantum Radar Grid","Cyber Chrome Gradient",91.68%,0x189EF46E,871.png,871.json
+872,#0873,"Bronze Pickaxe Rig #0873",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Vortex Singularity","Cyber Chrome Gradient",88.70%,0xB857E93B,872.png,872.json
+873,#0874,"Bronze Pickaxe Rig #0874",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Obsidian Neon Edge",88.04%,0x14155873,873.png,873.json
+874,#0875,"Cyber Drill Rig #0875",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Cyber Chrome Gradient",92.35%,0xFBD33214,874.png,874.json
+875,#0876,"Plasma Core Genesis #0876",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Vortex Singularity","Pure White-Gold Gloss",97.69%,0x9F957620,875.png,875.json
+876,#0877,"Plasma Core Genesis #0877",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Diamond Starlight Prism","Prismatic Hologram",97.91%,0xEB52D557,876.png,876.json
+877,#0878,"Bronze Pickaxe Rig #0878",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Obsidian Neon Edge",88.06%,0x5308E54F,877.png,877.json
+878,#0879,"Bronze Pickaxe Rig #0879",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","Pure White-Gold Gloss",88.28%,0x9EC45487,878.png,878.json
+879,#0880,"Cyber Drill Rig #0880",RARE,+4%,"0 MAXIMA","Electric Sapphire","Solar Rayburst Turbine","Obsidian Neon Edge",91.71%,0x96842E28,879.png,879.json
+880,#0881,"Bronze Pickaxe Rig #0881",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Obsidian Neon Edge",88.73%,0x463E22F5,880.png,880.json
+881,#0882,"Bronze Pickaxe Rig #0882",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","24K Sovereign Gold",88.08%,0x91FB822C,881.png,881.json
+882,#0883,"Bronze Pickaxe Rig #0883",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Cyber Chrome Gradient",88.30%,0xDDB7E163,882.png,882.json
+883,#0884,"Cyber Drill Rig #0884",RARE,+4%,"0 MAXIMA","Glacier Pulse","Quantum Radar Grid","24K Sovereign Gold",91.73%,0xD577BB04,883.png,883.json
+884,#0885,"Golden Reactor Rig #0885",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Quantum Radar Grid","Prismatic Hologram",94.66%,0xCD3694A6,884.png,884.json
+885,#0886,"Bronze Pickaxe Rig #0886",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Pure White-Gold Gloss",88.09%,0xD0EE1F09,885.png,885.json
+886,#0887,"Cyber Drill Rig #0887",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Obsidian Neon Edge",91.52%,0xC8ADE8AA,886.png,886.json
+887,#0888,"Cyber Drill Rig #0888",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Hexagonal Matrix Core","24K Sovereign Gold",91.75%,0x246B57E1,887.png,887.json
+888,#0889,"Cyber Drill Rig #0889",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","Cyber Chrome Gradient",91.97%,0x7027B718,888.png,888.json
+889,#0890,"Cyber Drill Rig #0890",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Prismatic Hologram",92.19%,0xBBE42650,889.png,889.json
+890,#0891,"Golden Reactor Rig #0891",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Octagonal Cyber Vault","Pure White-Gold Gloss",95.12%,0xB3A3EFF0,890.png,890.json
+891,#0892,"Cyber Drill Rig #0892",RARE,+4%,"0 MAXIMA","Electric Sapphire","Solar Rayburst Turbine","Pure White-Gold Gloss",91.76%,0x635EE4BD,891.png,891.json
+892,#0893,"Bronze Pickaxe Rig #0893",COMMON,+2%,"0 MAXIMA","Molten Bronze","Diamond Starlight Prism","Pure White-Gold Gloss",88.78%,0x1318D98A,892.png,892.json
+893,#0894,"Cyber Drill Rig #0894",RARE,+4%,"0 MAXIMA","Neon Circuit","Diamond Starlight Prism","Obsidian Neon Edge",92.21%,0xFAD7B32C,893.png,893.json
+894,#0895,"Cyber Drill Rig #0895",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","24K Sovereign Gold",91.55%,0x56942264,894.png,894.json
+895,#0896,"Bronze Pickaxe Rig #0896",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","24K Sovereign Gold",88.57%,0xF64E1731,895.png,895.json
+896,#0897,"Cyber Drill Rig #0897",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Solar Rayburst Turbine","Prismatic Hologram",92.00%,0xEE0DE0D1,896.png,896.json
+897,#0898,"Bronze Pickaxe Rig #0898",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Prismatic Hologram",88.14%,0x9DC8D59E,897.png,897.json
+898,#0899,"CEO Crown Mythic #0899",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Royal Ruby Gold","Quantum Radar Grid","Pure White-Gold Gloss",99.16%,0x898EFE7E,898.png,898.json
+899,#0900,"Golden Reactor Rig #0900",EPIC,+6%,"0 MAXIMA","Amber Supernova","Diamond Starlight Prism","Obsidian Neon Edge",95.38%,0x8D4688E1,899.png,899.json
+900,#0901,"Bronze Pickaxe Rig #0901",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Cyber Chrome Gradient",88.81%,0x90FE1345,900.png,900.json
+901,#0902,"Plasma Core Genesis #0902",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Hexagonal Matrix Core","Prismatic Hologram",97.35%,0xD0C2C1BA,901.png,901.json
+902,#0903,"Bronze Pickaxe Rig #0903",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","24K Sovereign Gold",88.38%,0x3878D1B2,902.png,902.json
+903,#0904,"Golden Reactor Rig #0904",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Vortex Singularity","24K Sovereign Gold",94.51%,0xCC3925BE,903.png,903.json
+904,#0905,"Cyber Drill Rig #0905",RARE,+4%,"0 MAXIMA","Neon Circuit","Vortex Singularity","24K Sovereign Gold",92.03%,0x7BF41A8B,904.png,904.json
+905,#0906,"Golden Reactor Rig #0906",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Hexagonal Matrix Core","Prismatic Hologram",94.96%,0x73B3E42C,905.png,905.json
+906,#0907,"Cyber Drill Rig #0907",RARE,+4%,"0 MAXIMA","Glacier Pulse","Hexagonal Matrix Core","Cyber Chrome Gradient",91.60%,0x236ED8F9,906.png,906.json
+907,#0908,"Bronze Pickaxe Rig #0908",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Cyber Chrome Gradient",88.62%,0xC328CDC6,907.png,907.json
+908,#0909,"Cyber Drill Rig #0909",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Octagonal Cyber Vault","24K Sovereign Gold",92.05%,0xBAE7A767,908.png,908.json
+909,#0910,"Golden Reactor Rig #0910",EPIC,+6%,"0 MAXIMA","Amber Supernova","Solar Rayburst Turbine","Prismatic Hologram",94.98%,0xB2A68109,909.png,909.json
+910,#0911,"Plasma Core Genesis #0911",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Solar Rayburst Turbine","Pure White-Gold Gloss",97.61%,0xAA665AAB,910.png,910.json
+911,#0912,"CEO Crown Mythic #0912",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Royal Ruby Gold","Solar Rayburst Turbine","Obsidian Neon Edge",99.44%,0xA225344C,911.png,911.json
+912,#0913,"Plasma Core Genesis #0913",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Astral Violet","Diamond Starlight Prism","Obsidian Neon Edge",98.06%,0x51E02919,912.png,912.json
+913,#0914,"Golden Reactor Rig #0914",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Quantum Radar Grid","Obsidian Neon Edge",94.99%,0xF1991DE6,913.png,913.json
+914,#0915,"Plasma Core Genesis #0915",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Quantum Radar Grid","Cyber Chrome Gradient",97.62%,0xE959E787,914.png,914.json
+915,#0916,"Golden Reactor Rig #0916",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Vortex Singularity","Cyber Chrome Gradient",94.56%,0x9913DC54,915.png,915.json
+916,#0917,"Bronze Pickaxe Rig #0917",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","24K Sovereign Gold",88.88%,0x9CCB66B7,916.png,916.json
+917,#0918,"Bronze Pickaxe Rig #0918",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Cyber Chrome Gradient",88.22%,0xE888C5ED,917.png,917.json
+918,#0919,"Bronze Pickaxe Rig #0919",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Quantum Radar Grid","Prismatic Hologram",88.44%,0x44453525,918.png,918.json
+919,#0920,"Bronze Pickaxe Rig #0920",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Octagonal Cyber Vault","Obsidian Neon Edge",88.67%,0x9002945C,919.png,919.json
+920,#0921,"Plasma Core Genesis #0921",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Amethyst Quantum","Octagonal Cyber Vault","Pure White-Gold Gloss",97.21%,0xCFC652D2,920.png,920.json
+921,#0922,"Bronze Pickaxe Rig #0922",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Cyber Chrome Gradient",88.24%,0x377C62CB,921.png,921.json
+922,#0923,"Bronze Pickaxe Rig #0923",COMMON,+2%,"0 MAXIMA","Ember Forge","Hexagonal Matrix Core","Obsidian Neon Edge",88.46%,0x8338C201,922.png,922.json
+923,#0924,"Bronze Pickaxe Rig #0924",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","24K Sovereign Gold",88.68%,0xCEF53139,923.png,923.json
+924,#0925,"Bronze Pickaxe Rig #0925",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Cyber Chrome Gradient",88.03%,0x2AB29070,924.png,924.json
+925,#0926,"Cyber Drill Rig #0926",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","24K Sovereign Gold",92.34%,0x22726A11,925.png,925.json
+926,#0927,"Bronze Pickaxe Rig #0927",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Obsidian Neon Edge",88.48%,0xC22B5EDE,926.png,926.json
+927,#0928,"Cyber Drill Rig #0928",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Cyber Chrome Gradient",91.91%,0xB9EB3880,927.png,927.json
+928,#0929,"Golden Reactor Rig #0929",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Solar Rayburst Turbine","24K Sovereign Gold",94.83%,0xB1AA1221,928.png,928.json
+929,#0930,"Bronze Pickaxe Rig #0930",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Obsidian Neon Edge",88.27%,0xB5628C84,929.png,929.json
+930,#0931,"Golden Reactor Rig #0931",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","Prismatic Hologram",95.28%,0x5924D08F,930.png,930.json
+931,#0932,"Cyber Drill Rig #0932",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Quantum Radar Grid","Prismatic Hologram",91.92%,0xF8DEC55C,931.png,931.json
+932,#0933,"Bronze Pickaxe Rig #0933",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","Prismatic Hologram",88.06%,0xA898BA29,932.png,932.json
+933,#0934,"Bronze Pickaxe Rig #0934",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Obsidian Neon Edge",88.29%,0xF4552961,933.png,933.json
+934,#0935,"Cyber Drill Rig #0935",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","Cyber Chrome Gradient",91.71%,0xEC14F301,934.png,934.json
+935,#0936,"Cyber Drill Rig #0936",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Hexagonal Matrix Core","Obsidian Neon Edge",91.94%,0x47D26239,935.png,935.json
+936,#0937,"Bronze Pickaxe Rig #0937",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Octagonal Cyber Vault","Obsidian Neon Edge",88.08%,0xE78B5706,936.png,936.json
+937,#0938,"Bronze Pickaxe Rig #0938",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","24K Sovereign Gold",88.30%,0x4349B63D,937.png,937.json
+938,#0939,"Bronze Pickaxe Rig #0939",COMMON,+2%,"0 MAXIMA","Molten Bronze","Solar Rayburst Turbine","Cyber Chrome Gradient",88.53%,0x8F052575,938.png,938.json
+939,#0940,"Cyber Drill Rig #0940",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","24K Sovereign Gold",91.95%,0x86C5EF15,939.png,939.json
+940,#0941,"Bronze Pickaxe Rig #0941",COMMON,+2%,"0 MAXIMA","Rust Matrix","Diamond Starlight Prism","Obsidian Neon Edge",88.09%,0x367FE3E2,940.png,940.json
+941,#0942,"Bronze Pickaxe Rig #0942",COMMON,+2%,"0 MAXIMA","Rust Matrix","Hexagonal Matrix Core","Pure White-Gold Gloss",88.32%,0x823C531A,941.png,941.json
+942,#0943,"Golden Reactor Rig #0943",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Diamond Starlight Prism","24K Sovereign Gold",95.33%,0x25FE9725,942.png,942.json
+943,#0944,"Golden Reactor Rig #0944",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Cyber Chrome Gradient",94.68%,0x71BAF65C,943.png,943.json
+944,#0945,"Bronze Pickaxe Rig #0945",COMMON,+2%,"0 MAXIMA","Ember Forge","Vortex Singularity","24K Sovereign Gold",88.11%,0x757280BF,944.png,944.json
+945,#0946,"Bronze Pickaxe Rig #0946",COMMON,+2%,"0 MAXIMA","Ember Forge","Solar Rayburst Turbine","Cyber Chrome Gradient",88.33%,0xC12FDFF6,945.png,945.json
+946,#0947,"Cyber Drill Rig #0947",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Solar Rayburst Turbine","24K Sovereign Gold",91.76%,0xB8EEB997,946.png,946.json
+947,#0948,"Bronze Pickaxe Rig #0948",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Diamond Starlight Prism","Obsidian Neon Edge",88.78%,0x68A9AE64,947.png,947.json
+948,#0949,"Bronze Pickaxe Rig #0949",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Pure White-Gold Gloss",88.13%,0xB4651D9C,948.png,948.json
+949,#0950,"Cyber Drill Rig #0950",RARE,+4%,"0 MAXIMA","Electric Sapphire","Octagonal Cyber Vault","Obsidian Neon Edge",91.55%,0xAC25E73D,949.png,949.json
+950,#0951,"Cyber Drill Rig #0951",RARE,+4%,"0 MAXIMA","Neon Circuit","Quantum Radar Grid","24K Sovereign Gold",91.78%,0xF7E15674,950.png,950.json
+951,#0952,"Cyber Drill Rig #0952",RARE,+4%,"0 MAXIMA","Neon Circuit","Solar Rayburst Turbine","Cyber Chrome Gradient",92.00%,0x539FB5AB,951.png,951.json
+952,#0953,"Cyber Drill Rig #0953",RARE,+4%,"0 MAXIMA","Glacier Pulse","Vortex Singularity","Prismatic Hologram",92.23%,0x9F5B24E3,952.png,952.json
+953,#0954,"Bronze Pickaxe Rig #0954",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Prismatic Hologram",88.37%,0x4F1619B0,953.png,953.json
+954,#0955,"Bronze Pickaxe Rig #0955",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Obsidian Neon Edge",88.59%,0x9AD278E7,954.png,954.json
+955,#0956,"Golden Reactor Rig #0956",EPIC,+6%,"0 MAXIMA","Solar 24K Gold","Hexagonal Matrix Core","Obsidian Neon Edge",94.72%,0x3E94BCF2,955.png,955.json
+956,#0957,"Golden Reactor Rig #0957",EPIC,+6%,"0 MAXIMA","Amber Supernova","Quantum Radar Grid","24K Sovereign Gold",94.95%,0x8A512C2A,956.png,956.json
+957,#0958,"Golden Reactor Rig #0958",EPIC,+6%,"0 MAXIMA","Amber Supernova","Octagonal Cyber Vault","Cyber Chrome Gradient",95.17%,0xD60D8B61,957.png,957.json
+958,#0959,"Bronze Pickaxe Rig #0959",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","24K Sovereign Gold",88.61%,0xD9C515C4,958.png,958.json
+959,#0960,"Golden Reactor Rig #0960",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Solar Rayburst Turbine","24K Sovereign Gold",94.74%,0x7D8759CF,959.png,959.json
+960,#0961,"Bronze Pickaxe Rig #0961",COMMON,+2%,"0 MAXIMA","Molten Bronze","Hexagonal Matrix Core","Prismatic Hologram",88.17%,0x813FD431,960.png,960.json
+961,#0962,"Bronze Pickaxe Rig #0962",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","24K Sovereign Gold",88.40%,0xCCFC4369,961.png,961.json
+962,#0963,"Cyber Drill Rig #0963",RARE,+4%,"0 MAXIMA","Neon Circuit","Quantum Radar Grid","Cyber Chrome Gradient",91.83%,0xC4BB1D0B,962.png,962.json
+963,#0964,"Bronze Pickaxe Rig #0964",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.85%,0x747611D8,963.png,963.json
+964,#0965,"Golden Reactor Rig #0965",EPIC,+6%,"0 MAXIMA","Golden Dynamo","Solar Rayburst Turbine","Cyber Chrome Gradient",94.98%,0x183855E3,964.png,964.json
+965,#0966,"Bronze Pickaxe Rig #0966",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","24K Sovereign Gold",88.41%,0x1BF0D045,965.png,965.json
+966,#0967,"Bronze Pickaxe Rig #0967",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Cyber Chrome Gradient",88.64%,0x67AC3F7D,966.png,966.json
+967,#0968,"Cyber Drill Rig #0968",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","24K Sovereign Gold",92.07%,0x5F6C191E,967.png,967.json
+968,#0969,"Bronze Pickaxe Rig #0969",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","24K Sovereign Gold",88.21%,0xFF25FDEA,968.png,968.json
+969,#0970,"Golden Reactor Rig #0970",EPIC,+6%,"0 MAXIMA","Amber Supernova","Octagonal Cyber Vault","Obsidian Neon Edge",95.22%,0xA2E851F7,969.png,969.json
+970,#0971,"Bronze Pickaxe Rig #0971",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Vortex Singularity","Cyber Chrome Gradient",88.65%,0xA69FCC59,970.png,970.json
+971,#0972,"Cyber Drill Rig #0972",RARE,+4%,"0 MAXIMA","Electric Sapphire","Vortex Singularity","24K Sovereign Gold",92.08%,0x9E5FA5FB,971.png,971.json
+972,#0973,"Plasma Core Genesis #0973",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Solar Rayburst Turbine","24K Sovereign Gold",97.42%,0x4221EA06,972.png,972.json
+973,#0974,"Bronze Pickaxe Rig #0974",COMMON,+2%,"0 MAXIMA","Molten Bronze","Quantum Radar Grid","Cyber Chrome Gradient",88.45%,0x99D6F9FE,973.png,973.json
+974,#0975,"Bronze Pickaxe Rig #0975",COMMON,+2%,"0 MAXIMA","Rust Matrix","Octagonal Cyber Vault","Prismatic Hologram",88.67%,0xE5926936,974.png,974.json
+975,#0976,"Cyber Drill Rig #0976",RARE,+4%,"0 MAXIMA","Glacier Pulse","Octagonal Cyber Vault","Pure White-Gold Gloss",92.10%,0xDD5242D8,975.png,975.json
+976,#0977,"Bronze Pickaxe Rig #0977",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Pure White-Gold Gloss",88.24%,0x8D0C37A5,976.png,976.json
+977,#0978,"Bronze Pickaxe Rig #0978",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Hexagonal Matrix Core","Cyber Chrome Gradient",88.46%,0xD8C996DB,977.png,977.json
+978,#0979,"Bronze Pickaxe Rig #0979",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Diamond Starlight Prism","Obsidian Neon Edge",88.69%,0x3486F612,978.png,978.json
+979,#0980,"Cyber Drill Rig #0980",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Diamond Starlight Prism","Cyber Chrome Gradient",92.11%,0x2C46CFB4,979.png,979.json
+980,#0981,"Cyber Drill Rig #0981",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Octagonal Cyber Vault","Prismatic Hologram",92.34%,0x78023EEB,980.png,980.json
+981,#0982,"Cyber Drill Rig #0982",RARE,+4%,"0 MAXIMA","Arctic Cobalt","Quantum Radar Grid","24K Sovereign Gold",91.68%,0xC3BF9E22,981.png,981.json
+982,#0983,"Golden Reactor Rig #0983",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Quantum Radar Grid","Prismatic Hologram",94.61%,0xBB7E77C4,982.png,982.json
+983,#0984,"Cyber Drill Rig #0984",RARE,+4%,"0 MAXIMA","Electric Sapphire","Vortex Singularity","Prismatic Hologram",92.13%,0x6B396C91,983.png,983.json
+984,#0985,"Golden Reactor Rig #0985",EPIC,+6%,"0 MAXIMA","Radiant Sunburst","Vortex Singularity","Pure White-Gold Gloss",95.06%,0x62F84632,984.png,984.json
+985,#0986,"Cyber Drill Rig #0986",RARE,+4%,"0 MAXIMA","Neon Circuit","Hexagonal Matrix Core","24K Sovereign Gold",91.70%,0x12B33AFF,985.png,985.json
+986,#0987,"Cyber Drill Rig #0987",RARE,+4%,"0 MAXIMA","Neon Circuit","Quantum Radar Grid","Cyber Chrome Gradient",91.92%,0x5E6F9A36,986.png,986.json
+987,#0988,"Bronze Pickaxe Rig #0988",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Cyber Chrome Gradient",88.06%,0xFE298F03,987.png,987.json
+988,#0989,"Bronze Pickaxe Rig #0989",COMMON,+2%,"0 MAXIMA","Subterranean Amber","Solar Rayburst Turbine","Prismatic Hologram",88.29%,0x59E6EE3A,988.png,988.json
+989,#0990,"CEO Crown Mythic #0990",MYTHIC,+10%,"20000 MAXIMA (1st Mint Only)","Blood Moon Supernova","Quantum Radar Grid","Pure White-Gold Gloss",99.31%,0x45AD271B,989.png,989.json
+990,#0991,"Cyber Drill Rig #0991",RARE,+4%,"0 MAXIMA","Cyber Cyan Matrix","Hexagonal Matrix Core","Prismatic Hologram",91.94%,0x9D623713,990.png,990.json
+991,#0992,"Golden Reactor Rig #0992",EPIC,+6%,"0 MAXIMA","Amber Supernova","Hexagonal Matrix Core","Pure White-Gold Gloss",94.87%,0x952210B5,991.png,991.json
+992,#0993,"Bronze Pickaxe Rig #0993",COMMON,+2%,"0 MAXIMA","Ember Forge","Quantum Radar Grid","Obsidian Neon Edge",88.30%,0x98D98B17,992.png,992.json
+993,#0994,"Bronze Pickaxe Rig #0994",COMMON,+2%,"0 MAXIMA","Obsidian Copper","Solar Rayburst Turbine","24K Sovereign Gold",88.53%,0xE496EA4D,993.png,993.json
+994,#0995,"Golden Reactor Rig #0995",EPIC,+6%,"0 MAXIMA","Imperial Citrine","Quantum Radar Grid","24K Sovereign Gold",94.66%,0x88583E5A,994.png,994.json
+995,#0996,"Cyber Drill Rig #0996",RARE,+4%,"0 MAXIMA","Electric Sapphire","Vortex Singularity","24K Sovereign Gold",92.18%,0x38133327,995.png,995.json
+996,#0997,"Plasma Core Genesis #0997",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Hyperion Cyan-Purple","Solar Rayburst Turbine","Obsidian Neon Edge",97.51%,0xCBD47732,996.png,996.json
+997,#0998,"Bronze Pickaxe Rig #0998",COMMON,+2%,"0 MAXIMA","Rust Matrix","Quantum Radar Grid","Pure White-Gold Gloss",88.54%,0x338A872B,997.png,997.json
+998,#0999,"Plasma Core Genesis #0999",LEGENDARY,+8%,"10000 MAXIMA (1st Mint Only)","Starlight Prism","Diamond Starlight Prism","Cyber Chrome Gradient",97.96%,0x734E45A1,998.png,998.json
+999,#1000,"Bronze Pickaxe Rig #1000",COMMON,+2%,"0 MAXIMA","Rust Matrix","Vortex Singularity","Obsidian Neon Edge",88.11%,0xCB035599,999.png,999.json

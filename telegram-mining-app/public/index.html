@@ -18,10 +18,10 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Official TON Connect UI SDK (Patched Local Bundle for Telegram Desktop & Mobile + CDN Fallback) -->
   <script
-    src="/tonconnect-ui.min.js?v=20261104-ps10nov"
+    src="/tonconnect-ui.min.js?v=20261105-nft-onchain"
     onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';s.onerror=function(){var u=document.createElement('script');u.src='https://unpkg.com/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';document.head.appendChild(u);};document.head.appendChild(s);"
   ></script>
-  <link rel="stylesheet" href="/style.css?v=20261104-ps10nov" />
+  <link rel="stylesheet" href="/style.css?v=20261105-nft-onchain" />
 </head>
 <body>
   <!-- ================= INITIAL 10-LANGUAGE SELECTION POPUP MODAL ================= -->
@@ -280,6 +280,13 @@
 
         <!-- FILTER ALL 1,000 LEVELS BY RANGE -->
         <div class="game-card filter-card">
+          <input
+            type="search"
+            id="inputSearchLevel"
+            class="game-input"
+            style="margin-bottom: 10px"
+            placeholder="🔍 Search Level (1 - 1000)..."
+          />
           <div class="range-chips" id="levelRangeChips">
             <button type="button" class="r-chip active" data-range="1-100">Lv 1–100</button>
             <button type="button" class="r-chip" data-range="101-200">101–200</button>
@@ -478,6 +485,29 @@
           <p data-i18n="wallet_tab_desc">
             Connect your personal TON wallet via TON Connect and verify your wallet to unlock Withdraw.
           </p>
+        </div>
+
+        <!-- ADMIN AUTO-WITHDRAW QUICK ENTRY (VISIBLE ONLY TO ADMIN) -->
+        <div class="game-card adm-quick-card" id="adminQuickEntryCard" style="display: none">
+          <div class="step-row-head">
+            <strong>🛡️ Admin Auto-Withdraw Panel</strong>
+            <span class="pill-mint" id="adminPendingBadge">0 Queued</span>
+          </div>
+          <p class="card-note">
+            1-Click & Batch Jetton MAXIMA Payout via TON Connect + Anti-Bug Legitimacy Audit.
+          </p>
+          <button type="button" class="btn-gold btn-block" id="btnOpenAdminWdModal">
+            ⚡ Open Admin Auto-Withdraw Panel
+          </button>
+          <a
+            href="/deploy-nft.html"
+            target="_blank"
+            rel="noopener"
+            class="btn-ghost btn-block"
+            style="margin-top: 8px; display: block; text-align: center; text-decoration: none;"
+          >
+            💎 1-Click Deploy Smart Contract NFT On-Chain
+          </a>
         </div>
 
         <!-- JETTON CONTRACT MASTER CARD -->
@@ -711,9 +741,259 @@
     </nav>
   </div>
 
+  <!-- ================= FLOATING GENESIS NFT BUTTON (ACTIVE) ================= -->
+  <button
+    type="button"
+    class="nft-fab-btn"
+    id="btnOpenNftWindow"
+    aria-label="Open MAXIMA Genesis NFT Mint & On-Chain Vault"
+  >
+    <span class="nft-fab-glow" aria-hidden="true"></span>
+    <span class="nft-fab-icon">💎</span>
+    <span class="nft-fab-meta">
+      <strong class="nft-fab-title">NFT MINT</strong>
+      <small class="nft-fab-sub" id="nftFabBoostTag">0/5 Mint</small>
+    </span>
+  </button>
+
+  <!-- ================= FLOATING GENESIS NFT MINT, ON-CHAIN VAULT & P2P MARKET MODAL ================= -->
+  <div class="nft-modal-backdrop" id="nftFloatingModal" hidden>
+    <div class="nft-modal-window" role="dialog" aria-modal="true" aria-labelledby="nftModalHeaderTitle">
+      <!-- Window Header -->
+      <div class="nft-win-header">
+        <div class="nft-win-brand">
+          <span class="nft-win-gem">💎</span>
+          <div>
+            <h3 id="nftModalHeaderTitle" data-i18n="nft_win_title">MAXIMA GENESIS NFT MINT</h3>
+            <span class="nft-win-sub">On-Chain TEP-62 · 1,000 Supply · Top 10 Rarity Boost</span>
+          </div>
+        </div>
+        <div class="nft-win-controls">
+          <button type="button" class="nft-win-ctrl" id="btnMinimizeNftWindow" title="Minimize">─</button>
+          <button type="button" class="nft-win-ctrl close" id="btnCloseNftWindow" title="Close">✕</button>
+        </div>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="nft-win-body">
+        <!-- Live Schedule & Status Banner -->
+        <div class="nft-sched-banner is-live" id="nftMintScheduleBanner">
+          <div class="nft-sched-left">
+            <span class="nft-live-dot"></span>
+            <strong id="nftSchedTitle">🟢 GENESIS NFT MINTING &amp; ON-CHAIN SYNC LIVE!</strong>
+          </div>
+          <span class="nft-sched-pill" id="nftMintCountdownVal">LIVE NOW</span>
+        </div>
+
+        <!-- On-Chain Collection & Auto Ownership Sync Bar -->
+        <div class="nft-onchain-bar" id="nftOnChainContractBar">
+          <div class="nft-onchain-info">
+            <span class="nft-onchain-kicker">⛓️ AUTO ON-CHAIN OWNERSHIP WATCHER</span>
+            <small id="nftOnChainStatusText">Auto-checking connected TON wallet continuously (Top 10 Rarity Active)</small>
+          </div>
+          <button type="button" class="btn-ghost btn-xs" id="btnSyncOnChainNfts">
+            🔄 Sync On-Chain
+          </button>
+        </div>
+
+        <!-- 4-Column Live NFT Benefit & Quota Summary -->
+        <div class="nft-stats-grid">
+          <div class="nft-stat-box">
+            <span data-i18n="nft_owned_lbl">Mint Quota (Max 5)</span>
+            <strong id="nftOwnedCountVal">0 / 5 Mint</strong>
+          </div>
+          <div class="nft-stat-box highlight">
+            <span data-i18n="nft_power_boost_lbl">Active Boost (Top 10)</span>
+            <strong id="nftTotalBoostThsVal">+0% Power</strong>
+          </div>
+          <div class="nft-stat-box">
+            <span data-i18n="nft_daily_bonus_lbl">1st Mint Bonus</span>
+            <strong id="nftTotalDailyCoinsVal">10K / 20K</strong>
+          </div>
+          <div class="nft-stat-box">
+            <span>Wallet NFTs Held</span>
+            <strong id="nftWalletTotalHeldVal">0 Active / 0 Total</strong>
+          </div>
+        </div>
+
+        <!-- Clear Benefit & Ownership Rules Callout -->
+        <div class="nft-rules-callout">
+          <div>⚡ <b>Max 5x Mint / User</b> seharga <b>10 GRAM</b> per NFT (Total Supply <b>1,000 NFT</b>).</div>
+          <div>🏆 <b>Top 10 Rarity Cap:</b> Maksimal <b>10 NFT Rarity Tertinggi</b> di wallet Anda yang memberikan boost Mining Power aktif (<i>Mythic &gt; Legendary &gt; Epic &gt; Rare &gt; Common</i>).</div>
+          <div>🎁 <b>Exclusive 1st Mint Reward:</b> Bonus <b>+10,000 MAXIMA (Legendary)</b> &amp; <b>+20,000 MAXIMA (Mythic)</b> <u>hanya diberikan 1x saat minting pertama kali</u>.</div>
+          <div>🔄 <b>Transferable Benefit On-Chain:</b> Saat NFT berpindah wallet (transfer / jual beli), benefit otomatis pindah ke pemilik baru &amp; lepas dari pemilik lama!</div>
+        </div>
+
+        <div class="nft-sim-banner" id="nftOfflineSimBanner" hidden></div>
+
+        <!-- Global 1,000 Supply Progress -->
+        <div class="nft-supply-card">
+          <div class="nft-supply-head">
+            <span>🌍 Global Genesis Supply</span>
+            <div>
+              <strong id="nftGlobalMintedVal">0 / 1,000 NFTs</strong>
+              <span class="nft-rem-tag" id="nftGlobalRemVal">1,000 Left</span>
+            </div>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" id="nftGlobalSupplyFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Interactive Mint Stage Box -->
+        <div class="nft-gacha-stage" id="nftGachaStageBox">
+          <div class="nft-stage-top">
+            <span class="nft-box-title" data-i18n="nft_box_name">MAXIMA Genesis Rig NFT</span>
+            <span class="nft-quota-pill" id="nftGachaQuotaPill">Remaining: 5 / 5 Mints</span>
+          </div>
+
+          <div class="nft-chest-wrap">
+            <div class="nft-chest-halo"></div>
+            <img
+              src="/nft/mythic.svg"
+              alt="MAXIMA Genesis NFT"
+              class="nft-chest-img"
+              id="nftGachaChestImg"
+            />
+          </div>
+
+          <p class="nft-stage-desc" data-i18n="nft_win_desc">
+            Mint 1 Genesis NFT (#0001–#1000) for 10 GRAM via TON Connect to unlock +2% to +10% permanent Mining Power! First-time minters pulling Legendary receive +10,000 MAXIMA, or Mythic +20,000 MAXIMA.
+          </p>
+
+          <div class="nft-mint-btn-row">
+            <button type="button" class="btn-gold btn-block btn-lg" id="btnSpinGachaNft">
+              💎 Mint Genesis NFT · 10 GRAM (0/5)
+            </button>
+            <button type="button" class="btn-ghost btn-sm nft-recheck-btn" id="btnRecheckNftMint" title="Re-check 10 GRAM NFT Mint Transaction On-Chain">
+              🔄 Verify Mint Tx On-Chain
+            </button>
+          </div>
+        </div>
+
+        <!-- Mint Reveal Result Banner -->
+        <div class="nft-result-banner" id="nftGachaResultBanner" hidden>
+          <img src="/nft/legendary.svg" alt="Minted NFT" class="nft-res-img" id="nftResImg" />
+          <div class="nft-res-meta">
+            <div class="nft-res-kicker" id="nftResTier">🎉 MINTED LEGENDARY!</div>
+            <h4 id="nftResName">MAXIMA Quantum Core #0001</h4>
+            <div class="nft-res-perks" id="nftResPerks">⚡ +8% Mining Power</div>
+            <div class="nft-res-traits" id="nftResTraits">🧬 DNA 0xMAXIMA</div>
+          </div>
+        </div>
+
+        <!-- Action Panel (On-Chain Transfer / In-App Transfer / P2P Sell) -->
+        <div class="nft-action-panel" id="nftActionPanel" hidden>
+          <div class="nft-action-head">
+            <strong id="nftActionTitle">📤 Transfer NFT</strong>
+            <button type="button" class="nft-win-ctrl close" id="btnCancelNftAction">✕</button>
+          </div>
+          <p class="nft-action-sub" id="nftActionSub">
+            Enter recipient TON Wallet Address (UQ... / EQ...) or Miner ID:
+          </p>
+          <input
+            type="text"
+            id="nftActionInput"
+            class="game-input"
+            autocomplete="off"
+            placeholder="Recipient TON Wallet Address (UQ...) or Miner ID"
+          />
+          <div class="btn-row-2" style="margin-top: 8px">
+            <button type="button" class="btn-gold" id="btnConfirmNftAction">📤 Confirm</button>
+            <button type="button" class="btn-ghost" id="btnCancelNftActionBtn" onclick="document.getElementById('btnCancelNftAction').click()">Cancel</button>
+          </div>
+        </div>
+
+        <!-- User's Owned & On-Chain Synced NFTs -->
+        <div class="nft-section-title" data-i18n="nft_inventory_heading">
+          🎒 Your Wallet NFTs (Top 10 Active · Transfer &amp; Sell)
+        </div>
+        <div class="list-stack" id="nftOwnedListContainer">
+          <div class="empty-box" data-i18n="no_nft_owned_yet">
+            No NFTs owned yet. Mint a Genesis NFT or receive/buy one to boost your Mining Power!
+          </div>
+        </div>
+
+        <!-- Live P2P Player Marketplace -->
+        <div class="nft-section-title">
+          🛒 P2P Player NFT Marketplace (Transferable Mining Power)
+        </div>
+        <div class="list-stack" id="nftMarketListContainer">
+          <div class="empty-box">No player NFTs listed for sale right now.</div>
+        </div>
+
+        <!-- 5 Rarity Tiers & Benefits Reference -->
+        <div class="nft-section-title" data-i18n="nft_odds_heading">
+          🏛️ Genesis NFT Rarity Tiers &amp; Benefits (1,000 Supply)
+        </div>
+        <div class="nft-cards-stack" id="nftCardsContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN AUTO-WITHDRAW MODAL ================= -->
+  <div class="nft-modal-backdrop" id="adminWdModal" style="display: none">
+    <div class="nft-modal-window adm-modal-window" role="dialog" aria-modal="true">
+      <div class="nft-win-header">
+        <div class="nft-win-brand">
+          <span class="nft-win-gem">🛡️</span>
+          <div>
+            <h3>ADMIN AUTO-WITHDRAW</h3>
+            <span class="nft-win-sub">TON Connect Batch Jetton Payout &amp; Audit</span>
+          </div>
+        </div>
+        <div class="nft-win-controls">
+          <button type="button" class="nft-win-ctrl" id="btnAdmRefreshWds" title="Refresh">🔄</button>
+          <button type="button" class="nft-win-ctrl close" id="btnCloseAdminWdModal" title="Close">✕</button>
+        </div>
+      </div>
+      <div class="nft-win-body">
+        <div class="nft-stats-grid">
+          <div class="nft-stat-box"><span>Pending</span><strong id="admStatPendingCount">0</strong></div>
+          <div class="nft-stat-box highlight"><span>Safe</span><strong id="admStatSafeCount">0</strong></div>
+          <div class="nft-stat-box"><span>Warn/Bug</span><strong id="admStatFraudCount">0</strong></div>
+          <div class="nft-stat-box"><span>Net MAXIMA</span><strong id="admStatNetMaxima">0</strong></div>
+        </div>
+
+        <div class="game-card" style="margin-bottom: 10px">
+          <input
+            type="text"
+            id="admInputMemo"
+            class="game-input"
+            value="MAXIMA PAYOUT"
+            placeholder="Jetton Transfer Memo..."
+            style="margin-bottom: 8px"
+          />
+          <div class="adm-toolbar-chips">
+            <button type="button" class="r-chip" id="btnAdmSelectBatch4">☑️ Pilih 4 Aman</button>
+            <button type="button" class="r-chip" id="btnAdmSelectSafe">✅ Semua Aman</button>
+            <button type="button" class="r-chip" id="btnAdmSelectFraud">🚨 Pilih Bug</button>
+            <button type="button" class="r-chip" id="btnAdmClearSelect">✖ Reset</button>
+          </div>
+          <button type="button" class="btn-gold btn-block" id="btnAdmAutoPaySelected" style="margin-top: 8px" disabled>
+            <span id="admBtnAutoPayLabel">⚡ Kirim Otomatis via TON Connect (0 Terpilih)</span>
+          </button>
+          <div class="btn-row-3" style="margin-top: 6px">
+            <button type="button" class="btn-ghost btn-sm" id="btnAdmMarkPaidSelected" disabled>✅ Paid Manual</button>
+            <button type="button" class="btn-ghost btn-sm" id="btnAdmBurnSelected" disabled>🔥 Burn</button>
+            <button type="button" class="btn-ghost btn-sm" id="btnAdmWipeSelected" disabled>🚫 Wipe</button>
+          </div>
+        </div>
+
+        <div class="nft-section-title">
+          ⏳ Pending Queue <span class="pill-mint" id="admQueueCountChip">0 Pending</span>
+        </div>
+        <div class="list-stack" id="admPendingWdList"></div>
+
+        <div class="nft-section-title">📜 Recent Processed Withdrawals</div>
+        <div class="list-stack" id="admHistoryWdList"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div class="toast-msg" id="toastBox"></div>
 
-  <script src="/app.js?v=20261104-ps10nov"></script>
+  <script src="/app.js?v=20261105-nft-onchain"></script>
 </body>
 </html>
