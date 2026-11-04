@@ -350,6 +350,209 @@ function findWalletOwnerUserId(rawAddr, excludeUserId = null) {
   return null;
 }
 
+// Automatically deduplicate any double-credited presale receipts (e.g. race between TON Connect txBoc and on-chain auto-poll)
+function deduplicatePresalePurchasesInDB(base) {
+  if (!base || typeof base !== 'object') return;
+  if (!base.users || typeof base.users !== 'object') base.users = {};
+  if (!base.usedTxRefs || typeof base.usedTxRefs !== 'object') base.usedTxRefs = {};
+  if (!base.presale || typeof base.presale !== 'object') {
+    base.presale = { totalCoinsSold: 0, totalTonRaised: 0, walletTonSpent: {}, purchases: [] };
+  }
+  if (!Array.isArray(base.presale.purchases)) base.presale.purchases = [];
+
+  const knownHistoricalHashes = {
+    'PS-1793424586445-796': 'aa39a436bf6a96a525e90be0e126ae719699b06e6967f0fae7080f4594c272cb',
+    'PS-1793540304853-210': '343a8b77a5f564af7ce794df731816c4409ca5c8efbdd33fe8c7baa90255226a',
+    'PS-1793614698108-903': 'c8698c9ec7c148b33da8370adea616948314dcca53c352375860105610095c33',
+    'PS-1793615590844-633': '48fee973858aa9a59bad216d01f498ccc132c706b613607be30fc911d22d0551',
+  };
+  const affected20GramRaw = '0:e24980f8e83a157f5e082c49928d9781c345760752c26c05d3f09948e6e87b56';
+  const affected20GramHash = 'ba3cd4354d791cfb45790e24c2a017b61b76f1c699cbc155c0780dfb373c4883';
+
+  // 1. Sync txHash and bocKey by receipt ID across global and user purchase arrays
+  const hashById = new Map();
+  const bocById = new Map();
+  for (const [rid, h] of Object.entries(knownHistoricalHashes)) {
+    hashById.set(rid, h);
+  }
+  for (const p of base.presale.purchases) {
+    if (!p || !p.id) continue;
+    if (p.txHash) hashById.set(p.id, p.txHash);
+    if (p.bocKey) bocById.set(p.id, p.bocKey);
+  }
+  for (const u of Object.values(base.users)) {
+    if (!u || !Array.isArray(u.presalePurchases)) continue;
+    for (const p of u.presalePurchases) {
+      if (!p || !p.id) continue;
+      if (p.txHash) hashById.set(p.id, p.txHash);
+      if (p.bocKey) bocById.set(p.id, p.bocKey);
+    }
+  }
+  for (const p of base.presale.purchases) {
+    if (!p || !p.id) continue;
+    if (!p.txHash && hashById.has(p.id)) p.txHash = hashById.get(p.id);
+    if (!p.bocKey && bocById.has(p.id)) p.bocKey = bocById.get(p.id);
+  }
+  for (const u of Object.values(base.users)) {
+    if (!u || !Array.isArray(u.presalePurchases)) continue;
+    for (const p of u.presalePurchases) {
+      if (!p || !p.id) continue;
+      if (!p.txHash && hashById.has(p.id)) p.txHash = hashById.get(p.id);
+      if (!p.bocKey && bocById.has(p.id)) p.bocKey = bocById.get(p.id);
+    }
+  }
+
+  // 2. Deduplicate each user's presalePurchases and adjust balance & level if duplicate credits existed
+  for (const u of Object.values(base.users)) {
+    if (!u || typeof u !== 'object') continue;
+    if (!Array.isArray(u.presalePurchases) || u.presalePurchases.length === 0) continue;
+
+    const uWalletRaw =
+      parseTonAddressToRaw(u.walletRaw) ||
+      parseTonAddressToRaw(u.boundWalletRaw) ||
+      (u.verifiedWallets && Object.keys(u.verifiedWallets)[0]) ||
+      '';
+
+    // Prioritize receipts that have an on-chain txHash, then chronological order
+    const sorted = [...u.presalePurchases].filter(Boolean).sort((a, b) => {
+      const aHasHash = a.txHash ? 1 : 0;
+      const bHasHash = b.txHash ? 1 : 0;
+      if (aHasHash !== bHasHash) return bHasHash - aHasHash;
+      return Number(a.createdAt || 0) - Number(b.createdAt || 0);
+    });
+
+    const kept = [];
+    let removedCoins = 0;
+
+    for (const p of sorted) {
+      const pRaw = parseTonAddressToRaw(p.walletAddress) || uWalletRaw;
+      if (pRaw === affected20GramRaw && Number(p.tonPaid) === 20 && !p.txHash) {
+        const alreadyHas20 = kept.some((k) => Number(k.tonPaid) === 20);
+        if (!alreadyHas20) {
+          p.txHash = affected20GramHash;
+        }
+      }
+
+      // Exact same receipt object/ID pushed twice
+      if (p.id && kept.some((k) => k.id === p.id)) {
+        continue;
+      }
+
+      // Duplicate on-chain txHash
+      if (p.txHash && kept.some((k) => k.txHash === p.txHash)) {
+        removedCoins += Number(p.coinsReceived || 0);
+        continue;
+      }
+
+      // Specific guard for wallet UQDiSYD46DoVf14ILEmSjZeBw0V2B1LCbAXT8JlI5uh7VoiX (only 1 on-chain 20 GRAM tx exists)
+      if (pRaw === affected20GramRaw && Number(p.tonPaid) === 20) {
+        const existing20 = kept.find((k) => Number(k.tonPaid) === 20);
+        if (existing20 && (!p.txHash || p.txHash === existing20.txHash || p.txHash === affected20GramHash)) {
+          if (p.bocKey && !existing20.bocKey) existing20.bocKey = p.bocKey;
+          removedCoins += Number(p.coinsReceived || 0);
+          continue;
+        }
+      }
+
+      // Unhashed BOC receipt that duplicates an on-chain hashed receipt of the same TON package within 60 minutes
+      if (!p.txHash) {
+        const matchHashed = kept.find(
+          (k) =>
+            k.txHash &&
+            !k._matchedUnhashedDup &&
+            Number(k.tonPaid) === Number(p.tonPaid) &&
+            Math.abs(Number(k.createdAt || 0) - Number(p.createdAt || 0)) < 60 * 60 * 1000
+        );
+        if (matchHashed) {
+          matchHashed._matchedUnhashedDup = true;
+          if (p.bocKey && !matchHashed.bocKey) matchHashed.bocKey = p.bocKey;
+          removedCoins += Number(p.coinsReceived || 0);
+          continue;
+        }
+
+        // Two unhashed BOC receipts for the same TON package within 120 seconds
+        const matchUnhashed = kept.find(
+          (k) =>
+            !k.txHash &&
+            Number(k.tonPaid) === Number(p.tonPaid) &&
+            Math.abs(Number(k.createdAt || 0) - Number(p.createdAt || 0)) < 120 * 1000
+        );
+        if (matchUnhashed) {
+          removedCoins += Number(p.coinsReceived || 0);
+          continue;
+        }
+      }
+
+      kept.push(p);
+    }
+
+    for (const k of kept) {
+      delete k._matchedUnhashedDup;
+    }
+    kept.sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+    u.presalePurchases = kept;
+
+    if (removedCoins > 0) {
+      u.balance = Math.max(0, +(Number(u.balance || 0) - removedCoins).toFixed(6));
+      const combined =
+        Math.max(0, Number(u.balance || 0)) +
+        (u.walletRaw ? Math.max(0, Number(u.onChainHolding || 0)) : 0);
+      const correctedLevel = computeLevelFromHolding(combined);
+      u.level = correctedLevel;
+      u.peakLevel = correctedLevel;
+    }
+  }
+
+  // 3. Rebuild global presale purchases & totals cleanly from deduplicated user receipts
+  const rebuiltPurchases = [];
+  const seenGlobalIds = new Set();
+  for (const u of Object.values(base.users)) {
+    if (!u || !Array.isArray(u.presalePurchases)) continue;
+    for (const p of u.presalePurchases) {
+      if (!p) continue;
+      if (p.id && seenGlobalIds.has(p.id)) continue;
+      if (p.id) seenGlobalIds.add(p.id);
+      rebuiltPurchases.push(p);
+      if (p.txHash) {
+        const refKey = `chain_ps_${p.txHash}`;
+        if (!base.usedTxRefs[refKey]) {
+          base.usedTxRefs[refKey] = {
+            type: 'presale',
+            userId: p.userId || u.userId,
+            ton: Number(p.tonPaid || 0),
+            at: Number(p.createdAt || Date.now()),
+            linkedReceipt: p.id,
+          };
+        }
+      }
+    }
+  }
+
+  rebuiltPurchases.sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+  base.presale.purchases = rebuiltPurchases;
+
+  const newWalletTonSpent = {};
+  let newTotalTon = 0;
+  let newTotalCoins = 0;
+  for (const p of rebuiltPurchases) {
+    const ton = Number(p.tonPaid || 0);
+    const coins = Number(p.coinsReceived || 0);
+    newTotalTon = +(newTotalTon + ton).toFixed(4);
+    newTotalCoins += coins;
+    const ownerUser = p.userId && base.users[String(p.userId).trim()];
+    const wRaw =
+      parseTonAddressToRaw(p.walletAddress) ||
+      (ownerUser && (parseTonAddressToRaw(ownerUser.walletRaw) || parseTonAddressToRaw(ownerUser.boundWalletRaw))) ||
+      '';
+    if (wRaw) {
+      newWalletTonSpent[wRaw] = +((newWalletTonSpent[wRaw] || 0) + ton).toFixed(4);
+    }
+  }
+  base.presale.walletTonSpent = newWalletTonSpent;
+  base.presale.totalTonRaised = newTotalTon;
+  base.presale.totalCoinsSold = newTotalCoins;
+}
+
 function normalizeParsedDB(parsed) {
   const base = parsed && typeof parsed === 'object' ? parsed : createEmptyDB();
   if (!base.schemaVersion) base.schemaVersion = 2;
@@ -370,6 +573,7 @@ function normalizeParsedDB(parsed) {
   }
   if (!Array.isArray(base.presale.purchases)) base.presale.purchases = [];
   deduplicateWalletsInDB(base);
+  deduplicatePresalePurchasesInDB(base);
   return base;
 }
 
@@ -753,21 +957,21 @@ const WORLD_TIERS = [
 function requiredHolding(level) {
   if (level <= 0) return 0;
   if (level === 1) return 100;
-  if (level >= MAX_LEVEL) return 3875968992;
+  if (level >= 1000) return 3875968992;
   const seg = (a, b, lo, hi, e) => Math.round(lo + (hi - lo) * Math.pow((level - a) / (b - a), e));
   if (level <= 203) return seg(1, 203, 100, 10000, 1.8);
   if (level <= 450) return seg(203, 450, 10000, 250000, 2.0);
   if (level <= 650) return seg(450, 650, 250000, 27131780, 2.2);
   if (level <= 850) return seg(650, 850, 27131780, 348837200, 2.5);
-  return seg(850, MAX_LEVEL, 348837200, 3875968992, 2.6);
+  return seg(850, 1000, 348837200, 3875968992, 2.6);
 }
 
 function miningSpeed(level) {
   if (level <= 0) return 0;
   if (level === 1) return 0.2;
-  if (level >= MAX_LEVEL) return 5000;
+  if (level >= 1000) return 5000;
   if (level <= 203) return +(0.2 + (level - 1) * ((7.56 - 0.2) / 202)).toFixed(2);
-  return +(7.56 + (5000 - 7.56) * Math.pow((level - 203) / (MAX_LEVEL - 203), 2.1)).toFixed(2);
+  return +(7.56 + (5000 - 7.56) * Math.pow((level - 203) / (1000 - 203), 2.1)).toFixed(2);
 }
 
 function dailyOutput(level) {
@@ -776,13 +980,13 @@ function dailyOutput(level) {
 }
 
 function getTierForLevel(level) {
-  const L = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level || 1)));
+  const L = Math.max(1, Math.min(1000, Math.floor(level || 1)));
   const idx = Math.min(9, Math.floor((L - 1) / 100));
   return WORLD_TIERS[idx];
 }
 
 function getLevelSpec(level) {
-  const L = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level || 1)));
+  const L = Math.max(1, Math.min(1000, Math.floor(level || 1)));
   const tier = getTierForLevel(L);
   const speed = miningSpeed(L);
   const daily = dailyOutput(L);
@@ -807,7 +1011,7 @@ function getLevelSpec(level) {
 function computeLevelFromHolding(combinedHolding) {
   const hold = Math.max(0, Number(combinedHolding || 0));
   let lo = 2;
-  let hi = MAX_LEVEL;
+  let hi = 1000;
   let ans = 1;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;
@@ -1101,8 +1305,33 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
   return false;
 }
 
+// Per-user/wallet async mutex to prevent race conditions between on-chain polling and TON Connect txBoc callbacks
+const userTxLocks = new Map();
+async function withUserTxLock(key, fn) {
+  const lockKey = String(key || 'global');
+  const prev = userTxLocks.get(lockKey) || Promise.resolve();
+  let release;
+  const next = new Promise((resolve) => {
+    release = resolve;
+  });
+  const chain = prev.then(
+    () => next,
+    () => next
+  );
+  userTxLocks.set(lockKey, chain);
+  try {
+    await prev.catch(() => {});
+    return await fn();
+  } finally {
+    release();
+    if (userTxLocks.get(lockKey) === chain) {
+      userTxLocks.delete(lockKey);
+    }
+  }
+}
+
 // Automatically detect if connected wallet sent 2, 4, 6, 8, 10, 20, or 100 TON for Presale on-chain
-async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
+async function tryAutoPresaleFromChainUnlocked(cfg, user, forceRefresh = false) {
   if (!user.walletRaw) return null;
   const ownerOfWallet = findWalletOwnerUserId(user.walletRaw, user.userId);
   if (ownerOfWallet) return null;
@@ -1139,10 +1368,22 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
     ensureUserSchema(user);
 
     // Check if this transaction was already credited via immediate TON Connect BOC within 60 minutes (across user & global presale receipts)
-    const allReceipts = [
-      ...(user.presalePurchases || []),
-      ...((db.presale && Array.isArray(db.presale.purchases)) ? db.presale.purchases : []),
-    ];
+    const userReceipts = Array.isArray(user.presalePurchases) ? user.presalePurchases : [];
+    const globalReceipts = db.presale && Array.isArray(db.presale.purchases) ? db.presale.purchases : [];
+    const allReceipts = [...userReceipts, ...globalReceipts];
+
+    // Also skip if any receipt already recorded this exact txHash
+    if (allReceipts.some((p) => p && p.txHash === tx.hash)) {
+      db.usedTxRefs[refKey] = {
+        type: 'presale',
+        userId: user.userId,
+        ton: matchedPkg.ton,
+        at: txTimeMs,
+      };
+      saveDB(true);
+      continue;
+    }
+
     const existingBocReceipt = allReceipts.find(
       (p) =>
         p &&
@@ -1153,6 +1394,12 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
     );
     if (existingBocReceipt) {
       existingBocReceipt.txHash = tx.hash;
+      for (const r of userReceipts) {
+        if (r && r.id === existingBocReceipt.id) r.txHash = tx.hash;
+      }
+      for (const r of globalReceipts) {
+        if (r && r.id === existingBocReceipt.id) r.txHash = tx.hash;
+      }
       db.usedTxRefs[refKey] = {
         type: 'presale',
         userId: existingBocReceipt.userId || user.userId,
@@ -1192,7 +1439,7 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
       createdAt: txTimeMs,
     };
     user.presalePurchases.push(receipt);
-    db.presale.purchases.push(receipt);
+    db.presale.purchases.push({ ...receipt });
     saveDB(true);
 
     if (Date.now() - txTimeMs < 30 * 60 * 1000) {
@@ -1208,6 +1455,13 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
   }
 
   return creditedPkg;
+}
+
+async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
+  if (!user || !user.walletRaw) return null;
+  return withUserTxLock(`presale_${user.walletRaw || user.userId}`, () =>
+    tryAutoPresaleFromChainUnlocked(cfg, user, forceRefresh)
+  );
 }
 
 // ================= USER MINING ACCRUAL, STATS & REFERRALS =================
@@ -1256,13 +1510,352 @@ function ensureUserSchema(u) {
   if (!u.dailyMissionVisits || typeof u.dailyMissionVisits !== 'object') u.dailyMissionVisits = {};
   if (!u.dailyMissionClaims || typeof u.dailyMissionClaims !== 'object') u.dailyMissionClaims = {};
 
-  // Referrals & Presale & Withdrawals
+  // Referrals & Presale & NFTs & Withdrawals
   if (!Array.isArray(u.referrals)) u.referrals = [];
   if (typeof u.referralBonusPaid !== 'boolean') u.referralBonusPaid = false;
   if (typeof u.referralCoinsEarned !== 'number') u.referralCoinsEarned = 0;
   if (typeof u.referralMiningEarned !== 'number') u.referralMiningEarned = 0;
   if (!Array.isArray(u.presalePurchases)) u.presalePurchases = [];
+  if (!Array.isArray(u.nftPurchases)) u.nftPurchases = [];
+  if (!Array.isArray(u.onChainNfts)) u.onChainNfts = [];
   if (!Array.isArray(u.withdrawals)) u.withdrawals = [];
+}
+
+// ================= 1,000-NFT MANIFEST (TEP-64 ON-CHAIN METADATA & TRAIT ENGINE) =================
+let cachedNft1000Manifest = null;
+
+function parseCsvRow(line) {
+  const out = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      out.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function loadNft1000Manifest() {
+  if (cachedNft1000Manifest) return cachedNft1000Manifest;
+  cachedNft1000Manifest = [];
+  try {
+    const csvPath = path.join(PUBLIC_DIR, 'nft', 'manifest-1000-nfts.csv');
+    if (fs.existsSync(csvPath)) {
+      const lines = fs.readFileSync(csvPath, 'utf8').split(/\r?\n/).filter(Boolean);
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCsvRow(lines[i]);
+        if (cols.length < 11) continue;
+        const idx = Number(cols[0]);
+        const tier = String(cols[3] || 'COMMON').toUpperCase();
+        const boostPct =
+          Number(String(cols[4] || '').replace(/[^0-9.]/g, '')) ||
+          (tier === 'MYTHIC' ? 10 : tier === 'LEGENDARY' ? 8 : tier === 'EPIC' ? 6 : tier === 'RARE' ? 4 : 2);
+        const firstMintMaxima =
+          tier === 'MYTHIC' ? 20000 : tier === 'LEGENDARY' ? 10000 : 0;
+        const nftId =
+          tier === 'MYTHIC'
+            ? 'nft_mythic'
+            : tier === 'LEGENDARY'
+            ? 'nft_diamond'
+            : tier === 'EPIC'
+            ? 'nft_gold'
+            : tier === 'RARE'
+            ? 'nft_silver'
+            : 'nft_bronze';
+        const theme =
+          tier === 'MYTHIC'
+            ? 'mythic'
+            : tier === 'LEGENDARY'
+            ? 'diamond'
+            : tier === 'EPIC'
+            ? 'gold'
+            : tier === 'RARE'
+            ? 'silver'
+            : 'bronze';
+        const icon =
+          tier === 'MYTHIC'
+            ? '👑'
+            : tier === 'LEGENDARY'
+            ? '💎'
+            : tier === 'EPIC'
+            ? '⚡'
+            : tier === 'RARE'
+            ? '⚙️'
+            : '⛏️';
+        const image =
+          tier === 'MYTHIC'
+            ? 'nft/mythic.svg'
+            : tier === 'LEGENDARY'
+            ? 'nft/legendary.svg'
+            : tier === 'EPIC'
+            ? 'nft/epic.svg'
+            : tier === 'RARE'
+            ? 'nft/rare.svg'
+            : 'nft/common.svg';
+        cachedNft1000Manifest[idx] = {
+          index: idx,
+          serialNum: idx + 1,
+          serialCode: cols[1] || `#${String(idx + 1).padStart(4, '0')}`,
+          fullTitle: cols[2] || `MAXIMA Rig #${String(idx + 1).padStart(4, '0')}`,
+          name:
+            tier === 'MYTHIC'
+              ? 'CEO Crown Mythic NFT'
+              : tier === 'LEGENDARY'
+              ? 'Plasma Core Genesis NFT'
+              : tier === 'EPIC'
+              ? 'Golden Reactor Rig NFT'
+              : tier === 'RARE'
+              ? 'Cyber Drill Rig NFT'
+              : 'Bronze Pickaxe Rig NFT',
+          nftId,
+          tier,
+          theme,
+          icon,
+          image,
+          powerBoostPct: boostPct,
+          firstMintMaxima,
+          bgAura: cols[6] || 'Genesis Core',
+          coreGeometry: cols[7] || 'Vortex Singularity',
+          emblemFinish: cols[8] || '24K Sovereign Gold',
+          overclockPct: cols[9] || '95.00%',
+          dnaHash: cols[10] || `0xMAX${String(idx + 1).padStart(4, '0')}`,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Manifest load warning:', err.message);
+  }
+  return cachedNft1000Manifest;
+}
+
+function getManifestNftByIndex(index0) {
+  const list = loadNft1000Manifest();
+  const clamped = Math.max(0, Math.min(999, Number(index0) || 0));
+  if (list[clamped]) return list[clamped];
+  const serialCode = `#${String(clamped + 1).padStart(4, '0')}`;
+  return {
+    index: clamped,
+    serialNum: clamped + 1,
+    serialCode,
+    fullTitle: `Bronze Pickaxe Rig ${serialCode}`,
+    name: 'Bronze Pickaxe Rig NFT',
+    nftId: 'nft_bronze',
+    tier: 'COMMON',
+    theme: 'bronze',
+    icon: '⛏️',
+    image: 'nft/common.svg',
+    powerBoostPct: 2,
+    firstMintMaxima: 0,
+    bgAura: 'Ember Forge',
+    coreGeometry: 'Hexagonal Matrix Core',
+    emblemFinish: '24K Sovereign Gold',
+    overclockPct: '88.50%',
+    dnaHash: `0xMAX${String(clamped + 1).padStart(4, '0')}`,
+  };
+}
+
+function buildTep64CollectionMetadataJson(cfg, origin) {
+  const cleanOrigin = String(origin || cfg.publicAppUrl || 'https://maxima-mining-app.vercel.app').replace(/\/+$/, '');
+  return {
+    name: 'MAXIMA Genesis Mining Rigs',
+    description:
+      'Official Limited 1,000 MAXIMA Genesis Mining Rig NFT Collection (#0001 to #1000) on The Open Network (TON). Mining Power Boost by Rarity Trait: Common +2% (500), Rare +4% (280), Epic +6% (140), Legendary +8% (60), and Mythic +10% (20). First-time minters who pull a Legendary receive 10,000 MAXIMA, and Mythic receive 20,000 MAXIMA.',
+    image: `${cleanOrigin}/nft/mythic.png`,
+    cover_image: `${cleanOrigin}/nft/legendary.png`,
+    external_url: `https://t.me/${cfg.botUsername || 'MAXIMAMININGBOT'}`,
+    social_links: [
+      `https://t.me/${cfg.botUsername || 'MAXIMAMININGBOT'}`,
+      'https://t.me/MAXIMAANN',
+      'https://t.me/MAXIMAPAYOUT',
+    ],
+  };
+}
+
+function buildTep64ItemMetadataJson(cfg, origin, index0) {
+  const cleanOrigin = String(origin || cfg.publicAppUrl || 'https://maxima-mining-app.vercel.app').replace(/\/+$/, '');
+  const spec = getManifestNftByIndex(index0);
+  const firstMintTxt =
+    spec.firstMintMaxima > 0
+      ? `${spec.firstMintMaxima.toLocaleString('en-US')} MAXIMA (1st Mint Only)`
+      : 'None (Mining Power Only)';
+  return {
+    name: `${spec.fullTitle}`,
+    description: `Official 1-of-1 MAXIMA Genesis Mining Rig NFT (${spec.tier} Rarity | Edition ${spec.serialCode} of 1,000 Max Supply | DNA ${spec.dnaHash}). Grants +${spec.powerBoostPct}% permanent Mining Power Boost in @${cfg.botUsername || 'MAXIMAMININGBOT'} on The Open Network (TON)${spec.firstMintMaxima > 0 ? ` and a First-Mint Exclusive Bonus of ${spec.firstMintMaxima.toLocaleString('en-US')} MAXIMA` : ''}.`,
+    image: `${cleanOrigin}/nft/art/${spec.index}.svg`,
+    external_url: `https://t.me/${cfg.botUsername || 'MAXIMAMININGBOT'}`,
+    attributes: [
+      { trait_type: 'Rarity', value: spec.tier },
+      { trait_type: 'Edition', value: `${spec.serialCode} / 1000` },
+      { trait_type: 'Mining Power Boost', value: `+${spec.powerBoostPct}%` },
+      { trait_type: 'First-Mint MAXIMA Bonus', value: firstMintTxt },
+      { trait_type: 'Background Aura', value: spec.bgAura },
+      { trait_type: 'Reactor Core Geometry', value: spec.coreGeometry },
+      { trait_type: 'MAXIMA Emblem Finish', value: spec.emblemFinish },
+      { trait_type: 'Overclock Efficiency', value: spec.overclockPct },
+      { trait_type: 'DNA Hash', value: spec.dnaHash },
+    ],
+  };
+}
+
+function buildNftCardSvg(index0) {
+  const spec = getManifestNftByIndex(index0);
+  const tier = spec.tier;
+  const pal =
+    tier === 'MYTHIC'
+      ? { c1: '#881337', c2: '#090207', border: '#f43f5e', accent: '#fde047' }
+      : tier === 'LEGENDARY'
+      ? { c1: '#065f73', c2: '#050511', border: '#67e8f9', accent: '#c084fc' }
+      : tier === 'EPIC'
+      ? { c1: '#6b4408', c2: '#0a0602', border: '#f5c451', accent: '#fde047' }
+      : tier === 'RARE'
+      ? { c1: '#0f3f5c', c2: '#05080f', border: '#38bdf8', accent: '#7dd3fc' }
+      : { c1: '#5c2d16', c2: '#090604', border: '#f59e0b', accent: '#fbbf24' };
+
+  const bonusLine =
+    spec.firstMintMaxima > 0
+      ? `MINING POWER: +${spec.powerBoostPct}%  |  1ST MINT JACKPOT: +${spec.firstMintMaxima.toLocaleString('en-US')} MAXIMA`
+      : `MINING POWER BOOST: +${spec.powerBoostPct}%  |  CORE: ${spec.coreGeometry.toUpperCase()}`;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="44%" r="70%">
+      <stop offset="0%" stop-color="${pal.c1}"/>
+      <stop offset="100%" stop-color="${pal.c2}"/>
+    </radialGradient>
+    <linearGradient id="mGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="${pal.accent}"/>
+      <stop offset="100%" stop-color="${pal.border}"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="1000" fill="url(#bg)"/>
+  <rect x="28" y="28" width="944" height="944" rx="36" fill="none" stroke="${pal.border}" stroke-width="10"/>
+  <circle cx="500" cy="450" r="340" fill="none" stroke="${pal.border}" stroke-opacity="0.28" stroke-width="3"/>
+  <circle cx="500" cy="450" r="290" fill="none" stroke="${pal.accent}" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="12 8"/>
+  <rect x="130" y="60" width="740" height="64" rx="16" fill="#080a12" fill-opacity="0.9" stroke="${pal.accent}" stroke-width="3.5"/>
+  <text x="500" y="100" fill="${pal.accent}" font-family="Arial, sans-serif" font-weight="900" font-size="22" text-anchor="middle">${escHtml(tier)}  |  EDITION ${escHtml(spec.serialCode)} / 1000  |  +${spec.powerBoostPct}% MINING POWER</text>
+  <circle cx="500" cy="450" r="245" fill="#070910" fill-opacity="0.92" stroke="${pal.accent}" stroke-width="8"/>
+  <g transform="translate(500,450) scale(1.36) translate(-256,-248)" fill="url(#mGrad)">
+    <polygon points="155,140 248,220 248,274 155,194"/>
+    <polygon points="357,140 264,220 264,274 357,194"/>
+    <polygon points="155,210 184,235 184,356 155,331"/>
+    <polygon points="357,210 328,235 328,356 357,331"/>
+    <polygon points="196,245 248,290 248,335 196,290"/>
+    <polygon points="316,245 264,290 264,335 316,290"/>
+  </g>
+  <rect x="70" y="758" width="860" height="174" rx="22" fill="#070910" fill-opacity="0.93" stroke="${pal.border}" stroke-width="4.5"/>
+  <text x="500" y="806" fill="#ffffff" font-family="Arial, sans-serif" font-weight="900" font-size="30" text-anchor="middle">${escHtml(spec.fullTitle.toUpperCase())}</text>
+  <text x="500" y="846" fill="${pal.accent}" font-family="Arial, sans-serif" font-weight="800" font-size="18" text-anchor="middle">AURA: ${escHtml(spec.bgAura)}  ·  DNA: ${escHtml(spec.dnaHash)}  ·  OVERCLOCK: ${escHtml(spec.overclockPct)}</text>
+  <text x="500" y="884" fill="#10e899" font-family="Arial, sans-serif" font-weight="800" font-size="18" text-anchor="middle">${escHtml(bonusLine)}</text>
+  <text x="500" y="914" fill="#94a3b8" font-family="Arial, sans-serif" font-weight="700" font-size="14" text-anchor="middle">OFFICIAL MAXIMA GENESIS NFT COLLECTION (LIMITED 1,000 SUPPLY) · TON</text>
+</svg>`;
+}
+
+const onChainNftCache = new Map();
+
+async function syncOnChainNftsForUser(cfg, user) {
+  if (!user || !user.walletRaw) return;
+  const colAddrRaw = parseTonAddressToRaw(cfg.nftSale?.collectionAddress || '');
+  const now = Date.now();
+  const cached = onChainNftCache.get(user.walletRaw);
+  if (cached && now - cached.time < 45000) {
+    user.onChainNfts = cached.items;
+    return;
+  }
+
+  try {
+    const url = colAddrRaw
+      ? `https://tonapi.io/v2/accounts/${encodeURIComponent(user.walletRaw)}/nfts?collection=${encodeURIComponent(colAddrRaw)}&limit=50`
+      : `https://tonapi.io/v2/accounts/${encodeURIComponent(user.walletRaw)}/nfts?limit=50`;
+    const data = await fetchJsonWithTimeout(url, 3500, buildTonApiHeaders());
+    const nftItems = Array.isArray(data && data.nft_items) ? data.nft_items : [];
+    const matched = [];
+    for (const item of nftItems) {
+      if (!item) continue;
+      const itemColRaw = parseTonAddressToRaw(item.collection && item.collection.address);
+      const colName = String((item.collection && item.collection.name) || '').toUpperCase();
+      const itemName = String((item.metadata && item.metadata.name) || '').toUpperCase();
+      const isMaximaNft =
+        (colAddrRaw && itemColRaw === colAddrRaw) ||
+        colName.includes('MAXIMA GENESIS') ||
+        (itemName.includes('RIG #') &&
+          (itemName.includes('BRONZE PICKAXE') ||
+            itemName.includes('CYBER DRILL') ||
+            itemName.includes('GOLDEN REACTOR') ||
+            itemName.includes('PLASMA CORE') ||
+            itemName.includes('CEO CROWN')));
+      if (!isMaximaNft) continue;
+
+      const idx = Number.isFinite(Number(item.index)) ? Number(item.index) : 0;
+      const spec = getManifestNftByIndex(idx);
+      matched.push({
+        id: `ONCHAIN-${item.address || idx}`,
+        onChainAddress: item.address || '',
+        nftId: spec.nftId,
+        name: spec.name,
+        tier: spec.tier,
+        icon: spec.icon,
+        image: spec.image,
+        powerBoostPct: spec.powerBoostPct,
+        firstMintMaxima: spec.firstMintMaxima,
+        instantCoins: 0,
+        theme: spec.theme,
+        serialNum: spec.serialNum,
+        serialCode: spec.serialCode,
+        dnaHash: spec.dnaHash,
+        bgAura: spec.bgAura,
+        coreGeometry: spec.coreGeometry,
+        emblemFinish: spec.emblemFinish,
+        overclockPct: spec.overclockPct,
+        isOnChainSynced: true,
+      });
+    }
+    onChainNftCache.set(user.walletRaw, { time: now, items: matched });
+    user.onChainNfts = matched;
+  } catch (_) {}
+}
+
+function getEffectiveUserNfts(user) {
+  const inAppList = Array.isArray(user.nftPurchases) ? user.nftPurchases : [];
+  const onChainList = Array.isArray(user.onChainNfts) ? user.onChainNfts : [];
+  const seenSerials = new Set(inAppList.map((n) => n && n.serialCode).filter(Boolean));
+  const combined = [...inAppList];
+  for (const oc of onChainList) {
+    if (oc && !seenSerials.has(oc.serialCode)) {
+      combined.push(oc);
+      seenSerials.add(oc.serialCode);
+    }
+  }
+  return combined;
+}
+
+function getNftBoostStats(user, lvl = null) {
+  const list = getEffectiveUserNfts(user);
+  let boostPct = 0;
+  for (const n of list) {
+    if (n && !n.listedForSale) {
+      boostPct += Number(n.powerBoostPct || 0);
+    }
+  }
+  const effLvl = lvl !== null ? lvl : computeLevelFromHolding(getCombinedHolding(user).combinedHolding);
+  const baseSpeed = miningSpeed(effLvl);
+  const baseDaily = dailyOutput(effLvl);
+  const bonusThs = baseSpeed * (boostPct / 100);
+  const dailyBonusCoins = baseDaily * (boostPct / 100);
+  return {
+    nftBoostPct: +boostPct.toFixed(2),
+    nftBonusThs: +bonusThs.toFixed(2),
+    nftDailyBonusCoins: +dailyBonusCoins.toFixed(2),
+  };
 }
 
 function getCombinedHolding(user) {
@@ -1294,12 +1887,13 @@ function accruePendingMining(cfg, user, now = Date.now()) {
   const lvl = computeLevelFromHolding(combinedHolding);
   user.level = lvl;
   user.peakLevel = Math.max(user.peakLevel || 1, lvl);
+  const { nftDailyBonusCoins } = getNftBoostStats(user, lvl);
 
   const shiftEnd = user.shiftStartedAt + shiftMs;
   const effectiveNow = Math.min(now, shiftEnd);
   if (effectiveNow > user.lastAccruedAt) {
     const dtSec = (effectiveNow - user.lastAccruedAt) / 1000;
-    const coinsPerSec = dailyOutput(lvl) / 86400;
+    const coinsPerSec = (dailyOutput(lvl) + nftDailyBonusCoins) / 86400;
     user.accruedMined = +(user.accruedMined + dtSec * coinsPerSec).toFixed(8);
   }
   user.lastAccruedAt = now;
@@ -1548,6 +2142,10 @@ function getOrCreateUser(cfg, { userId, username, firstName, refBy }) {
   const walletPresaleTon = user.walletRaw
     ? Number(db.presale.walletTonSpent[user.walletRaw] || 0)
     : 0;
+  const { nftBoostPct, nftBonusThs, nftDailyBonusCoins } = getNftBoostStats(user, unlockedLevel);
+  const totalPowerThs = +(currentSpec.powerThs + nftBonusThs).toFixed(2);
+  const totalDailyCoins = +(currentSpec.dailyCoins + nftDailyBonusCoins).toFixed(2);
+  const effectiveNfts = getEffectiveUserNfts(user);
 
   saveDB(isNew);
 
@@ -1568,9 +2166,13 @@ function getOrCreateUser(cfg, { userId, username, firstName, refBy }) {
     peakLevel: user.peakLevel || 1,
     currentLevelSpec: currentSpec,
     nextLevelSpec: nextSpec,
-    activePowerThs: isWalletConnected ? currentSpec.powerThs : 0,
-    activeDailyCoins: isWalletConnected ? currentSpec.dailyCoins : 0,
-    activeCoinsPerSec: isWalletConnected ? currentSpec.dailyCoins / 86400 : 0,
+    activePowerThs: isWalletConnected ? totalPowerThs : 0,
+    activeDailyCoins: isWalletConnected ? totalDailyCoins : 0,
+    activeCoinsPerSec: isWalletConnected ? totalDailyCoins / 86400 : 0,
+    nftBoostPct,
+    nftBonusThs,
+    nftDailyBonusCoins,
+    nftPurchases: effectiveNfts,
     walletConnected: isWalletConnected,
     walletAddress: user.walletFriendly || '',
     walletRaw: user.walletRaw || '',
@@ -1597,6 +2199,7 @@ function getLeaderboard() {
     const h = getCombinedHolding(u);
     const lvl = computeLevelFromHolding(h.combinedHolding);
     const spec = getLevelSpec(lvl);
+    const { nftBonusThs } = getNftBoostStats(u, lvl);
     return {
       userId: u.userId,
       name: u.firstName || u.username,
@@ -1606,17 +2209,50 @@ function getLeaderboard() {
       rankName: spec.rankName,
       zone: spec.zone,
       icon: spec.icon,
-      powerThs: u.walletRaw ? spec.powerThs : 0,
+      powerThs: u.walletRaw ? +(spec.powerThs + nftBonusThs).toFixed(2) : 0,
     };
   });
   all.sort((a, b) => b.combinedHolding - a.combinedHolding || b.totalMined - a.totalMined);
   return all.slice(0, 15);
 }
 
+function getGlobalNftMintStats(cfg) {
+  const maxTotalSupply = Number(cfg.nftSale?.maxTotalSupply || 1000);
+  const startsAtMs = Date.parse(cfg.nftSale?.startsAt || '2026-11-04T00:00:00Z');
+  let totalMinted = 0;
+  const countsById = {};
+  const marketListings = [];
+  for (const u of Object.values(db.users)) {
+    if (Array.isArray(u.nftPurchases)) {
+      totalMinted += u.nftPurchases.length;
+      for (const p of u.nftPurchases) {
+        if (p && p.nftId) countsById[p.nftId] = (countsById[p.nftId] || 0) + 1;
+        if (p && p.listedForSale && Number(p.listedPriceMaxima) > 0) {
+          marketListings.push({
+            ...p,
+            sellerUserId: u.userId,
+            sellerName: u.firstName || u.username || u.userId,
+          });
+        }
+      }
+    }
+  }
+  marketListings.sort((a, b) => (b.listedAt || 0) - (a.listedAt || 0));
+  return {
+    startsAtMs,
+    totalMinted,
+    maxTotalSupply,
+    remainingSupply: Math.max(0, maxTotalSupply - totalMinted),
+    countsById,
+    marketListings,
+  };
+}
+
 function buildSyncPayload(cfg, userView) {
   const maxPresaleCoins = cfg.presale?.maxTotalPresaleCoins || 20000000;
   const soldCoins = db.presale.totalCoinsSold || 0;
   const resolvedLogo = resolveAppLogoUrl(cfg);
+  const nftStats = getGlobalNftMintStats(cfg);
   const adminFlag = isAdminUser(cfg, userView && userView.userId);
   const pendingWdCount = adminFlag
     ? (Array.isArray(db.withdrawals) ? db.withdrawals.filter(isWithdrawPending).length : 0)
@@ -1640,8 +2276,17 @@ function buildSyncPayload(cfg, userView) {
       missions: cfg.missions,
       referrals: cfg.referrals,
       presale: cfg.presale,
+      nftSale: cfg.nftSale,
     },
     worldTiers: WORLD_TIERS,
+    nftState: {
+      startsAtMs: nftStats.startsAtMs,
+      totalMinted: nftStats.totalMinted,
+      maxTotalSupply: nftStats.maxTotalSupply,
+      remainingSupply: nftStats.remainingSupply,
+      countsById: nftStats.countsById,
+      marketListings: nftStats.marketListings,
+    },
     presaleState: {
       totalCoinsSold: soldCoins,
       totalCoinsRemaining: Math.max(0, maxPresaleCoins - soldCoins),
@@ -1780,6 +2425,40 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
+  // Dynamic TON TEP-64 NFT Collection & Item Metadata + Dynamic 1-of-1 SVG Artwork (0..999)
+  if (req.method === 'GET' && pathname === '/nft/metadata/collection.json') {
+    const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+    const proto = forwardedProto === 'https' ? 'https' : 'http';
+    const origin = (cfg.publicAppUrl || `${proto}://${req.headers.host || `localhost:${cfg.port}`}`).replace(/\/+$/, '');
+    return sendJson(res, 200, buildTep64CollectionMetadataJson(cfg, origin));
+  }
+
+  const nftMetaMatch = req.method === 'GET' && pathname.match(/^\/nft\/metadata\/(\d+)\.json$/);
+  if (nftMetaMatch) {
+    const idx = Number(nftMetaMatch[1]);
+    if (idx >= 0 && idx < 1000) {
+      const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+      const proto = forwardedProto === 'https' ? 'https' : 'http';
+      const origin = (cfg.publicAppUrl || `${proto}://${req.headers.host || `localhost:${cfg.port}`}`).replace(/\/+$/, '');
+      return sendJson(res, 200, buildTep64ItemMetadataJson(cfg, origin, idx));
+    }
+  }
+
+  const nftArtMatch = req.method === 'GET' && pathname.match(/^\/nft\/art\/(\d+)\.svg$/);
+  if (nftArtMatch) {
+    const idx = Number(nftArtMatch[1]);
+    if (idx >= 0 && idx < 1000) {
+      const svgBody = Buffer.from(buildNftCardSvg(idx), 'utf8');
+      res.writeHead(200, {
+        'Content-Type': 'image/svg+xml; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=604800',
+        'Content-Length': svgBody.length,
+      });
+      return res.end(svgBody);
+    }
+  }
+
   // Complete 1,000 Levels API
   if (req.method === 'GET' && pathname === '/api/levels') {
     return sendJson(res, 200, {
@@ -1836,13 +2515,16 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // Sync on-chain MAXIMA Jetton balance & check on-chain 0.1 TON verification / presale if wallet connected
+    // Sync on-chain MAXIMA Jetton balance, on-chain NFTs & check on-chain 0.1 TON verification / presale if wallet connected
     if (rawUser.walletRaw) {
       const onChainBal = await fetchOnChainJettonBalance(cfg, rawUser.walletRaw);
-      if (!rawUser.walletVerified) {
+      await syncOnChainNftsForUser(cfg, rawUser);
+      if (!rawUser.walletVerified && pathname !== '/api/wallet/verify') {
         await tryAutoVerifyFromChain(cfg, rawUser, false);
       }
-      await tryAutoPresaleFromChain(cfg, rawUser, false);
+      if (pathname !== '/api/presale/buy') {
+        await tryAutoPresaleFromChain(cfg, rawUser, false);
+      }
       if (onChainBal !== null && rawUser.onChainHolding !== onChainBal) {
         accruePendingMining(cfg, rawUser);
         rawUser.onChainHolding = onChainBal;
@@ -2168,92 +2850,447 @@ const server = http.createServer(async (req, res) => {
       const txBoc = String(body.txBoc || '').trim();
       const prevLevel = rawUser.level || 1;
 
-      // Support on-chain auto-detection if txBoc callback was dropped by Telegram Desktop / WebView
-      if (!txBoc || txBoc.length < 20) {
-        const autoPkg = await tryAutoPresaleFromChain(cfg, rawUser, true);
-        if (autoPkg) {
+      return withUserTxLock(`presale_${rawUser.walletRaw || rawUser.userId}`, async () => {
+        // Support on-chain auto-detection if txBoc callback was dropped by Telegram Desktop / WebView
+        if (!txBoc || txBoc.length < 20) {
+          const autoPkg = await tryAutoPresaleFromChainUnlocked(cfg, rawUser, true);
+          if (autoPkg) {
+            const view = getOrCreateUser(cfg, body);
+            const leveledUp = view.level > prevLevel;
+            return sendJson(res, 200, {
+              ok: true,
+              leveledUp,
+              message: leveledUp
+                ? `🚀 ${autoPkg.ton} GRAM Payment Detected On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} · Leveled up to Level ${view.level}!`
+                : `🚀 ${autoPkg.ton} GRAM Payment Detected On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
+              data: buildSyncPayload(cfg, view),
+            });
+          }
+          return sendJson(res, 400, {
+            ok: false,
+            error: 'GRAM presale payment not detected on-chain yet. Please make sure the transaction was confirmed from your connected wallet!',
+          });
+        }
+
+        const pkg = (cfg.presale?.packages || []).find((p) => p.id === packageId);
+        if (!pkg) {
+          return sendJson(res, 400, { ok: false, error: 'Invalid presale package!' });
+        }
+
+        const bocKey = `boc_${hashTxRef(txBoc)}`;
+        if (db.usedTxRefs[bocKey]) {
+          const view = getOrCreateUser(cfg, body);
+          const leveledUp = view.level > prevLevel;
+          return sendJson(res, 200, {
+            ok: true,
+            leveledUp,
+            message: `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
+            data: buildSyncPayload(cfg, view),
+          });
+        }
+
+        // First scan on-chain so any already-indexed transaction is detected before checking receipts
+        await tryAutoPresaleFromChainUnlocked(cfg, rawUser, true);
+
+        // Check if this purchase was already credited by tryAutoPresaleFromChain (or an earlier poll) within 60 minutes
+        const userReceipts = Array.isArray(rawUser.presalePurchases) ? rawUser.presalePurchases : [];
+        const globalReceipts = db.presale && Array.isArray(db.presale.purchases) ? db.presale.purchases : [];
+        const allReceipts = [...userReceipts, ...globalReceipts];
+        const nowMs = Date.now();
+        const existingChainOrRecentReceipt = allReceipts.find(
+          (p) =>
+            p &&
+            Number(p.tonPaid) === Number(pkg.ton) &&
+            (String(p.userId) === String(rawUser.userId) || parseTonAddressToRaw(p.walletAddress) === rawUser.walletRaw) &&
+            Math.abs(nowMs - Number(p.createdAt || 0)) < 60 * 60 * 1000 &&
+            ((p.txHash && !p.bocKey) || p.bocKey === bocKey)
+        );
+
+        if (existingChainOrRecentReceipt) {
+          existingChainOrRecentReceipt.bocKey = bocKey;
+          for (const r of userReceipts) {
+            if (r && r.id === existingChainOrRecentReceipt.id) r.bocKey = bocKey;
+          }
+          for (const r of globalReceipts) {
+            if (r && r.id === existingChainOrRecentReceipt.id) r.bocKey = bocKey;
+          }
+          db.usedTxRefs[bocKey] = {
+            type: 'presale',
+            userId: rawUser.userId,
+            ton: pkg.ton,
+            at: nowMs,
+            linkedReceipt: existingChainOrRecentReceipt.id,
+          };
+          saveDB(true);
+
           const view = getOrCreateUser(cfg, body);
           const leveledUp = view.level > prevLevel;
           return sendJson(res, 200, {
             ok: true,
             leveledUp,
             message: leveledUp
-              ? `🚀 ${autoPkg.ton} GRAM Payment Detected On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} · Leveled up to Level ${view.level}!`
-              : `🚀 ${autoPkg.ton} GRAM Payment Detected On-Chain! +${autoPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
+              ? `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} Successful! Leveled up to Level ${view.level} (${view.activePowerThs} TH/s)!`
+              : `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
             data: buildSyncPayload(cfg, view),
           });
         }
-        return sendJson(res, 400, {
+
+        const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 100);
+        const maxTotalCoins = Number(cfg.presale?.maxTotalPresaleCoins || 20000000);
+        const currentWalletTon = Number(db.presale.walletTonSpent[rawUser.walletRaw] || 0);
+
+        if (currentWalletTon + pkg.ton > maxTonWallet + 1e-9) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: `Maximum presale limit is ${maxTonWallet} GRAM per wallet! Remaining quota for this wallet: ${Math.max(0, maxTonWallet - currentWalletTon)} GRAM.`,
+          });
+        }
+
+        if ((db.presale.totalCoinsSold || 0) + pkg.coins > maxTotalCoins) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: `Insufficient global presale supply (${maxTotalCoins.toLocaleString('en-US')} ${cfg.token.symbol})!`,
+          });
+        }
+
+        accruePendingMining(cfg, rawUser);
+
+        db.usedTxRefs[bocKey] = { type: 'presale', userId: rawUser.userId, ton: pkg.ton, at: nowMs };
+        db.presale.walletTonSpent[rawUser.walletRaw] = +(currentWalletTon + pkg.ton).toFixed(4);
+        db.presale.totalTonRaised = +((db.presale.totalTonRaised || 0) + pkg.ton).toFixed(4);
+        db.presale.totalCoinsSold = (db.presale.totalCoinsSold || 0) + pkg.coins;
+
+        rawUser.balance = +(rawUser.balance + pkg.coins).toFixed(6);
+
+        const receipt = {
+          id: `PS-${nowMs}-${Math.floor(100 + Math.random() * 900)}`,
+          userId: rawUser.userId,
+          username: rawUser.username,
+          firstName: rawUser.firstName,
+          walletAddress: rawUser.walletFriendly,
+          tonPaid: pkg.ton,
+          coinsReceived: pkg.coins,
+          bocKey,
+          createdAt: nowMs,
+        };
+        rawUser.presalePurchases.push(receipt);
+        db.presale.purchases.push({ ...receipt });
+        saveDB(true);
+
+        notifyTelegramUser(
+          cfg,
+          rawUser.userId,
+          `🚀 *Presale Purchase Successful!*\n\n• *Paid:* ${pkg.ton} GRAM\n• *Coins Received:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} GRAM`
+        ).catch(() => {});
+        notifyAdminsNewPresale(cfg, rawUser, receipt).catch(() => {});
+
+        const view = getOrCreateUser(cfg, body);
+        const leveledUp = view.level > prevLevel;
+        return sendJson(res, 200, {
+          ok: true,
+          leveledUp,
+          message: leveledUp
+            ? `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} Successful! Leveled up to Level ${view.level} (${view.activePowerThs} TH/s)!`
+            : `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
+          data: buildSyncPayload(cfg, view),
+        });
+      });
+    }
+
+    // 7b. Genesis NFT Mint & P2P Market (10 GRAM per Mint · Max 5 per Wallet · 1,000 Supply)
+    if (pathname === '/api/nft/buy') {
+      if (!rawUser.walletRaw) {
+        return sendJson(res, 403, {
           ok: false,
-          error: 'GRAM presale payment not detected on-chain yet. Please make sure the transaction was confirmed from your connected wallet!',
+          error: '🔒 Please connect your personal wallet via TON Connect first!',
+        });
+      }
+      if (findWalletOwnerUserId(rawUser.walletRaw, rawUser.userId)) {
+        return sendJson(res, 409, {
+          ok: false,
+          code: 'WALLET_ALREADY_BOUND',
+          error:
+            '⛔ Wallet ini sudah terhubung pada akun Telegram lain! 1 Wallet hanya dapat digunakan pada 1 akun.',
         });
       }
 
-      const pkg = (cfg.presale?.packages || []).find((p) => p.id === packageId);
-      if (!pkg) {
-        return sendJson(res, 400, { ok: false, error: 'Invalid presale package!' });
+      const maxPerWallet = Number(cfg.nftSale?.maxPerWallet || 5);
+      const boxPriceTon = Number(cfg.nftSale?.boxPriceTon || 10);
+      const nftStats = getGlobalNftMintStats(cfg);
+      if (Number.isFinite(nftStats.startsAtMs) && Date.now() < nftStats.startsAtMs) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: '⏳ Genesis NFT Minting is not open yet!',
+        });
+      }
+      if (nftStats.totalMinted >= nftStats.maxTotalSupply) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: `⛔ Sold Out! All ${nftStats.maxTotalSupply.toLocaleString('en-US')} Genesis NFTs have been minted!`,
+        });
+      }
+      if ((rawUser.nftPurchases || []).length >= maxPerWallet) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: `⚠️ Maximum limit of ${maxPerWallet} Genesis NFTs per wallet reached!`,
+        });
       }
 
-      const bocKey = `boc_${hashTxRef(txBoc)}`;
+      const txBoc = String(body.txBoc || '').trim();
+      if (!txBoc || txBoc.length < 10) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'GRAM NFT Mint payment not detected yet. Please confirm the transaction in your connected wallet!',
+        });
+      }
+
+      const bocKey = `boc_nft_${hashTxRef(txBoc)}`;
       if (db.usedTxRefs[bocKey]) {
-        return sendJson(res, 400, { ok: false, error: 'This transaction has already been processed!' });
+        return sendJson(res, 400, { ok: false, error: 'This NFT transaction has already been processed!' });
       }
 
-      const maxTonWallet = Number(cfg.presale?.maxTonPerWallet || 100);
-      const maxTotalCoins = Number(cfg.presale?.maxTotalPresaleCoins || 20000000);
-      const currentWalletTon = Number(db.presale.walletTonSpent[rawUser.walletRaw] || 0);
+      // Deterministic 1-of-1 NFT from the pre-shuffled 1,000-NFT Manifest (#0001..#1000)
+      const nextIndex0 = Math.max(0, Math.min(999, nftStats.totalMinted));
+      const spec = getManifestNftByIndex(nextIndex0);
 
-      if (currentWalletTon + pkg.ton > maxTonWallet + 1e-9) {
+      const prevLevel = rawUser.level || 1;
+      accruePendingMining(cfg, rawUser);
+
+      const isFirstMint = !rawUser.everMintedNft && (rawUser.nftPurchases || []).length === 0;
+      rawUser.everMintedNft = true;
+      const awardedMaxima = isFirstMint ? Number(spec.firstMintMaxima || 0) : 0;
+
+      db.usedTxRefs[bocKey] = {
+        type: 'nft',
+        userId: rawUser.userId,
+        nftId: spec.nftId,
+        ton: boxPriceTon,
+        serialCode: spec.serialCode,
+        at: Date.now(),
+      };
+      if (awardedMaxima > 0) {
+        rawUser.balance = +(rawUser.balance + awardedMaxima).toFixed(6);
+      }
+
+      const receipt = {
+        id: `NFT-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+        userId: rawUser.userId,
+        nftId: spec.nftId,
+        name: spec.name,
+        tier: spec.tier,
+        icon: spec.icon,
+        image: spec.image,
+        tonPaid: boxPriceTon,
+        powerBoostPct: spec.powerBoostPct,
+        firstMintMaxima: spec.firstMintMaxima,
+        instantCoins: awardedMaxima,
+        wasFirstMint: isFirstMint,
+        theme: spec.theme,
+        serialNum: spec.serialNum,
+        serialCode: spec.serialCode,
+        dnaHash: spec.dnaHash,
+        bgAura: spec.bgAura,
+        coreGeometry: spec.coreGeometry,
+        emblemFinish: spec.emblemFinish,
+        overclockPct: spec.overclockPct,
+        createdAt: Date.now(),
+      };
+      rawUser.nftPurchases.push(receipt);
+      saveDB(true);
+
+      const view = getOrCreateUser(cfg, body);
+      const leveledUp = view.level > prevLevel;
+      const bonusTxt =
+        awardedMaxima > 0
+          ? ` + FIRST MINT JACKPOT +${awardedMaxima.toLocaleString('en-US')} ${cfg.token.symbol}!`
+          : '';
+      return sendJson(res, 200, {
+        ok: true,
+        leveledUp,
+        pulledNft: receipt,
+        message: `💎 MINTED [${spec.tier}]! ${spec.name} ${spec.serialCode} (+${spec.powerBoostPct}% Mining Power)${bonusTxt}`,
+        data: buildSyncPayload(cfg, view),
+      });
+    }
+
+    // 7c. P2P NFT Transfer to another Player (by Wallet Address, @username, or Miner ID)
+    if (pathname === '/api/nft/transfer') {
+      const nftId = String(body.nftId || '').trim();
+      const recipientRaw = String(body.recipient || '').trim();
+      if (!nftId || !recipientRaw) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Maximum presale limit is ${maxTonWallet} GRAM per wallet! Remaining quota for this wallet: ${Math.max(0, maxTonWallet - currentWalletTon)} GRAM.`,
+          error: 'Please specify the NFT and recipient Wallet Address or Miner ID!',
         });
       }
 
-      if ((db.presale.totalCoinsSold || 0) + pkg.coins > maxTotalCoins) {
+      const list = Array.isArray(rawUser.nftPurchases) ? rawUser.nftPurchases : [];
+      const nftIdx = list.findIndex((n) => n && n.id === nftId);
+      if (nftIdx === -1) {
+        return sendJson(res, 404, { ok: false, error: 'NFT not found in your inventory!' });
+      }
+      const nft = list[nftIdx];
+      if (nft.listedForSale) {
         return sendJson(res, 400, {
           ok: false,
-          error: `Insufficient global presale supply (${maxTotalCoins.toLocaleString('en-US')} ${cfg.token.symbol})!`,
+          error: 'Please unlist this NFT from the P2P Market before transferring!',
+        });
+      }
+
+      const cleanRec = recipientRaw.replace(/^@/, '').toLowerCase();
+      const parsedRawAddr = parseTonAddressToRaw(recipientRaw);
+      const targetUser = Object.values(db.users).find((u) => {
+        if (!u || u.userId === rawUser.userId) return false;
+        if (String(u.userId).toLowerCase() === cleanRec) return true;
+        if (u.username && String(u.username).toLowerCase() === cleanRec) return true;
+        if (u.walletFriendly && String(u.walletFriendly).toLowerCase() === cleanRec) return true;
+        if (parsedRawAddr && u.walletRaw === parsedRawAddr) return true;
+        return false;
+      });
+
+      if (!targetUser) {
+        return sendJson(res, 404, {
+          ok: false,
+          error:
+            'Recipient Miner ID or connected TON Wallet not found in MAXIMA! Ask the recipient to open the app first.',
+        });
+      }
+
+      ensureUserSchema(targetUser);
+      const maxPerWallet = Number(cfg.nftSale?.maxPerWallet || 5);
+      if ((targetUser.nftPurchases || []).length >= maxPerWallet) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: `Recipient wallet already holds the maximum of ${maxPerWallet} NFTs!`,
         });
       }
 
       accruePendingMining(cfg, rawUser);
+      accruePendingMining(cfg, targetUser);
 
-      db.usedTxRefs[bocKey] = { type: 'presale', userId: rawUser.userId, ton: pkg.ton, at: Date.now() };
-      db.presale.walletTonSpent[rawUser.walletRaw] = +(currentWalletTon + pkg.ton).toFixed(4);
-      db.presale.totalTonRaised = +((db.presale.totalTonRaised || 0) + pkg.ton).toFixed(4);
-      db.presale.totalCoinsSold = (db.presale.totalCoinsSold || 0) + pkg.coins;
+      list.splice(nftIdx, 1);
+      nft.userId = targetUser.userId;
+      nft.listedForSale = false;
+      delete nft.listedPriceMaxima;
+      targetUser.nftPurchases.push(nft);
+      saveDB(true);
 
-      rawUser.balance = +(rawUser.balance + pkg.coins).toFixed(6);
+      const view = getOrCreateUser(cfg, body);
+      return sendJson(res, 200, {
+        ok: true,
+        message: `📤 Transferred ${nft.name} ${nft.serialCode} (+${nft.powerBoostPct || 2}% Mining Power) to ${targetUser.firstName || targetUser.username || targetUser.userId}!`,
+        data: buildSyncPayload(cfg, view),
+      });
+    }
 
-      const receipt = {
-        id: `PS-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
-        userId: rawUser.userId,
-        username: rawUser.username,
-        firstName: rawUser.firstName,
-        walletAddress: rawUser.walletFriendly,
-        tonPaid: pkg.ton,
-        coinsReceived: pkg.coins,
-        createdAt: Date.now(),
-      };
-      rawUser.presalePurchases.push(receipt);
-      db.presale.purchases.push(receipt);
+    // 7d. List Owned NFT for Sale on P2P Market
+    if (pathname === '/api/nft/market/list') {
+      const nftId = String(body.nftId || '').trim();
+      const priceMaxima = Math.floor(Number(body.priceMaxima || 0));
+      if (!Number.isFinite(priceMaxima) || priceMaxima < 500 || priceMaxima > 50000000) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: 'Selling price must be between 500 and 50,000,000 MAXIMA!',
+        });
+      }
+      const list = Array.isArray(rawUser.nftPurchases) ? rawUser.nftPurchases : [];
+      const nft = list.find((n) => n && n.id === nftId);
+      if (!nft) {
+        return sendJson(res, 404, { ok: false, error: 'NFT not found in your inventory!' });
+      }
+      accruePendingMining(cfg, rawUser);
+      nft.listedForSale = true;
+      nft.listedPriceMaxima = priceMaxima;
+      nft.listedAt = Date.now();
+      saveDB(true);
 
-      notifyTelegramUser(
-        cfg,
-        rawUser.userId,
-        `🚀 *Presale Purchase Successful!*\n\n• *Paid:* ${pkg.ton} GRAM\n• *Coins Received:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} GRAM`
-      ).catch(() => {});
-      notifyAdminsNewPresale(cfg, rawUser, receipt).catch(() => {});
+      const view = getOrCreateUser(cfg, body);
+      return sendJson(res, 200, {
+        ok: true,
+        message: `🏷️ Listed ${nft.name} ${nft.serialCode} on P2P Market for ${priceMaxima.toLocaleString('en-US')} ${cfg.token.symbol}!`,
+        data: buildSyncPayload(cfg, view),
+      });
+    }
+
+    // 7e. Unlist Owned NFT from P2P Market
+    if (pathname === '/api/nft/market/unlist') {
+      const nftId = String(body.nftId || '').trim();
+      const list = Array.isArray(rawUser.nftPurchases) ? rawUser.nftPurchases : [];
+      const nft = list.find((n) => n && n.id === nftId);
+      if (!nft) {
+        return sendJson(res, 404, { ok: false, error: 'NFT not found in your inventory!' });
+      }
+      accruePendingMining(cfg, rawUser);
+      nft.listedForSale = false;
+      delete nft.listedPriceMaxima;
+      saveDB(true);
+
+      const view = getOrCreateUser(cfg, body);
+      return sendJson(res, 200, {
+        ok: true,
+        message: `✅ Removed ${nft.name} ${nft.serialCode} from P2P Market. +${nft.powerBoostPct || 2}% Mining Power active!`,
+        data: buildSyncPayload(cfg, view),
+      });
+    }
+
+    // 7f. Buy Listed NFT from P2P Market (Transfers NFT & Trait Mining Power to Buyer)
+    if (pathname === '/api/nft/market/buy') {
+      if (!rawUser.walletRaw) {
+        return sendJson(res, 403, {
+          ok: false,
+          error: '🔒 Please connect your personal TON wallet first!',
+        });
+      }
+      const nftId = String(body.nftId || '').trim();
+      const sellerUserId = String(body.sellerUserId || '').trim();
+      const seller = db.users[sellerUserId];
+      if (!seller || !Array.isArray(seller.nftPurchases)) {
+        return sendJson(res, 404, { ok: false, error: 'Seller or NFT listing no longer available!' });
+      }
+      if (seller.userId === rawUser.userId) {
+        return sendJson(res, 400, { ok: false, error: 'You already own this NFT!' });
+      }
+      const maxPerWallet = Number(cfg.nftSale?.maxPerWallet || 5);
+      if ((rawUser.nftPurchases || []).length >= maxPerWallet) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: `⚠️ Maximum limit of ${maxPerWallet} NFTs per wallet reached!`,
+        });
+      }
+
+      const nftIdx = seller.nftPurchases.findIndex((n) => n && n.id === nftId && n.listedForSale);
+      if (nftIdx === -1) {
+        return sendJson(res, 404, { ok: false, error: 'This NFT has already been sold or unlisted!' });
+      }
+      const nft = seller.nftPurchases[nftIdx];
+      const priceMaxima = Math.floor(Number(nft.listedPriceMaxima || 0));
+      if (rawUser.balance < priceMaxima) {
+        return sendJson(res, 400, {
+          ok: false,
+          error: `Insufficient in-app ${cfg.token.symbol} balance! Need ${priceMaxima.toLocaleString('en-US')} ${cfg.token.symbol}.`,
+        });
+      }
+
+      const prevLevel = rawUser.level || 1;
+      accruePendingMining(cfg, rawUser);
+      accruePendingMining(cfg, seller);
+
+      rawUser.balance = +(rawUser.balance - priceMaxima).toFixed(6);
+      seller.balance = +(seller.balance + priceMaxima).toFixed(6);
+
+      seller.nftPurchases.splice(nftIdx, 1);
+      nft.userId = rawUser.userId;
+      nft.listedForSale = false;
+      delete nft.listedPriceMaxima;
+      rawUser.nftPurchases.push(nft);
+      saveDB(true);
 
       const view = getOrCreateUser(cfg, body);
       const leveledUp = view.level > prevLevel;
       return sendJson(res, 200, {
         ok: true,
         leveledUp,
-        message: leveledUp
-          ? `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} Successful! Leveled up to Level ${view.level} (${view.activePowerThs} TH/s)!`
-          : `🚀 Presale +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol} credited!`,
+        message: `🎉 Purchased ${nft.name} ${nft.serialCode} for ${priceMaxima.toLocaleString('en-US')} ${cfg.token.symbol}! +${nft.powerBoostPct || 2}% Mining Power Boost is now active!`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -2290,8 +3327,25 @@ const server = http.createServer(async (req, res) => {
       }
 
       const bocKey = `boc_${hashTxRef(txBoc)}`;
-      if (db.usedTxRefs[bocKey]) {
-        return sendJson(res, 400, { ok: false, error: 'This transaction proof has already been used!' });
+      const alreadyVerified = Boolean(
+        rawUser.walletVerified || (rawUser.verifiedWallets && rawUser.verifiedWallets[rawUser.walletRaw])
+      );
+      if (db.usedTxRefs[bocKey] || alreadyVerified) {
+        db.usedTxRefs[bocKey] = db.usedTxRefs[bocKey] || {
+          type: 'verify',
+          userId: rawUser.userId,
+          walletRaw: rawUser.walletRaw,
+          at: Date.now(),
+        };
+        rawUser.walletVerified = true;
+        rawUser.everVerifiedWallet = true;
+        saveDB(true);
+        const view = getOrCreateUser(cfg, body);
+        return sendJson(res, 200, {
+          ok: true,
+          message: `✅ ${cfg.wallet.verificationFeeTon} GRAM Verification Complete! Your wallet is now verified for Withdraw.`,
+          data: buildSyncPayload(cfg, view),
+        });
       }
 
       db.usedTxRefs[bocKey] = { type: 'verify', userId: rawUser.userId, walletRaw: rawUser.walletRaw, at: Date.now() };
@@ -2308,6 +3362,7 @@ const server = http.createServer(async (req, res) => {
       rawUser.boundWalletRaw = rawUser.walletRaw;
 
       checkAndActivateReferral(cfg, rawUser);
+      saveDB(true);
 
       notifyTelegramUser(
         cfg,
@@ -2415,9 +3470,11 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (pathname === '/api/admin/withdrawals') {
+        const admPayload = buildAdminWithdrawalsApiPayload(cfg, callerId);
         return sendJson(res, 200, {
           ok: true,
-          adminData: buildAdminWithdrawalsApiPayload(cfg, callerId),
+          adminData: admPayload,
+          data: admPayload,
         });
       }
 
@@ -3086,10 +4143,14 @@ function buildAdminWithdrawalsApiPayload(cfg, adminUserId) {
   const enrich = (w) => {
     const u = db.users && db.users[String(w.userId)];
     const audit = auditWithdrawalLegitimacy(cfg, w, u);
+    const defaultReasons = audit.reasons.length
+      ? audit.reasons
+      : ['1 Wallet = 1 Akun & Saldo sesuai pembelian Presale / Mining wajar.'];
     return {
       id: w.id,
+      wdId: w.id,
       userId: w.userId,
-      username: (u && u.username) || w.username || '',
+      username: (u && (u.username || u.firstName)) || w.username || w.firstName || `Miner_${w.userId}`,
       firstName: (u && u.firstName) || w.firstName || `Miner ${w.userId}`,
       requestedAmount: Number(w.requestedAmount || 0),
       feeCoins: Number(w.feeCoins || 0),
@@ -3101,10 +4162,15 @@ function buildAdminWithdrawalsApiPayload(cfg, adminUserId) {
       paidAt: w.paidAt || null,
       payoutMemo: w.payoutMemo || 'MAXIMA PAYOUT',
       userBalance: u ? Number(u.balance || 0) : 0,
+      userCurrentInApp: u ? +Number(u.balance || 0).toFixed(2) : 0,
+      userMinedTotal: +Number(audit.totalMined || 0).toFixed(2),
+      userPresaleCoins: Number(audit.presaleCoins || 0),
       userLevel: u ? Number(u.level || 1) : 1,
+      riskLevel: audit.severity,
+      reasons: defaultReasons,
       audit: {
         severity: audit.severity, // 'SAFE' | 'WARN' | 'FRAUD'
-        reasons: audit.reasons,
+        reasons: defaultReasons,
         presaleCoins: audit.presaleCoins,
         presaleTon: audit.presaleTon,
         totalMined: +Number(audit.totalMined || 0).toFixed(2),
@@ -3133,6 +4199,14 @@ function buildAdminWithdrawalsApiPayload(cfg, adminUserId) {
   return {
     pending,
     history,
+    recentHistory: history,
+    counts: {
+      totalPending: pending.length,
+      safeCount: safePending.length,
+      warnCount: warnPending.length,
+      fraudCount: fraudPending.length,
+      totalPendingNetMaxima: totalPendingNetCoins,
+    },
     stats: {
       totalPending: pending.length,
       safePendingCount: safePending.length,
