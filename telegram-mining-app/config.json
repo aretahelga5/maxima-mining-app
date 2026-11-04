@@ -106,5 +106,80 @@
         "coins": 200000
       }
     ]
+  },
+  "nftSale": {
+    "enabled": true,
+    "collectionName": "MAXIMA Genesis Mining Rigs",
+    "collectionAddress": "EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP",
+    "directContractMint": false,
+    "contractMintGasTon": 0.08,
+    "mintPayloadComment": "MAXIMA NFT MINT",
+    "ipfsImagesCid": "",
+    "ipfsMetadataCid": "",
+    "recipientWallet": "UQDUe_P76bjHJ9EIUk8KLnFVRhbHf9_g7lJXHXgchYpZy4R1",
+    "startsAt": "2026-11-04T00:00:00Z",
+    "boxPriceTon": 10,
+    "maxPerWallet": 5,
+    "maxMintPerUser": 5,
+    "maxMintPerWallet": 5,
+    "maxActiveBenefitNfts": 10,
+    "maxTotalSupply": 1000,
+    "items": [
+      {
+        "id": "nft_bronze",
+        "name": "Bronze Pickaxe Rig NFT",
+        "tier": "COMMON",
+        "theme": "bronze",
+        "icon": "⛏️",
+        "image": "nft/common.png",
+        "powerBoostPct": 2,
+        "firstMintMaxima": 0,
+        "maxSupply": 500
+      },
+      {
+        "id": "nft_silver",
+        "name": "Cyber Drill Rig NFT",
+        "tier": "RARE",
+        "theme": "silver",
+        "icon": "⚙️",
+        "image": "nft/rare.png",
+        "powerBoostPct": 4,
+        "firstMintMaxima": 0,
+        "maxSupply": 280
+      },
+      {
+        "id": "nft_gold",
+        "name": "Golden Reactor Rig NFT",
+        "tier": "EPIC",
+        "theme": "gold",
+        "icon": "⚡",
+        "image": "nft/epic.png",
+        "powerBoostPct": 6,
+        "firstMintMaxima": 0,
+        "maxSupply": 140
+      },
+      {
+        "id": "nft_diamond",
+        "name": "Plasma Core Genesis NFT",
+        "tier": "LEGENDARY",
+        "theme": "diamond",
+        "icon": "💎",
+        "image": "nft/legendary.png",
+        "powerBoostPct": 8,
+        "firstMintMaxima": 10000,
+        "maxSupply": 60
+      },
+      {
+        "id": "nft_mythic",
+        "name": "CEO Crown Mythic NFT",
+        "tier": "MYTHIC",
+        "theme": "mythic",
+        "icon": "👑",
+        "image": "nft/mythic.png",
+        "powerBoostPct": 10,
+        "firstMintMaxima": 20000,
+        "maxSupply": 20
+      }
+    ]
   }
 }
