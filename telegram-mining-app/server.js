@@ -610,6 +610,115 @@ function buildBrowserConnectUrl(cfg, user) {
   return `${cleanBase}/?${params.toString()}`;
 }
 
+function buildAdminPanelUrl(cfg, adminUserId) {
+  const cleanBase = String(cfg.publicAppUrl || `http://localhost:${cfg.port || 3000}`)
+    .trim()
+    .replace(/\/+$/, '');
+  const uid = String(adminUserId || (cfg.admin && cfg.admin.telegramIds && cfg.admin.telegramIds[0]) || '8464908276');
+  const sig = signBrowserAuth(cfg, uid);
+  const params = new URLSearchParams({
+    tg_uid: uid,
+    tg_un: 'admin',
+    tg_fn: 'Admin',
+    tg_sig: sig,
+    admin_wd: '1',
+  });
+  return `${cleanBase}/?${params.toString()}`;
+}
+
+// Pure-JS TEP-74 Jetton Transfer BOC Builder (op 0x0f8a7ea5 + forward_ton_amount=1n + inline TextComment memo)
+function buildJettonTransferBocBase64({
+  queryId,
+  jettonAmountNano,
+  destinationRaw,
+  responseDestinationRaw,
+  memo = 'MAXIMA PAYOUT',
+}) {
+  let bits = '';
+  const writeUint = (val, bitCount) => {
+    const v = BigInt(val);
+    for (let i = bitCount - 1; i >= 0; i--) {
+      bits += ((v >> BigInt(i)) & 1n) === 1n ? '1' : '0';
+    }
+  };
+  const writeBytes = (buf) => {
+    for (let i = 0; i < buf.length; i++) {
+      bits += buf[i].toString(2).padStart(8, '0');
+    }
+  };
+  const writeCoins = (val) => {
+    const v = BigInt(val);
+    if (v <= 0n) {
+      writeUint(0n, 4);
+      return;
+    }
+    let hex = v.toString(16);
+    if (hex.length % 2 !== 0) hex = '0' + hex;
+    const len = hex.length / 2;
+    writeUint(BigInt(len), 4);
+    writeBytes(Buffer.from(hex, 'hex'));
+  };
+  const writeAddress = (rawAddr) => {
+    const clean = parseTonAddressToRaw(rawAddr);
+    if (!clean) throw new Error(`Invalid TON address: ${rawAddr}`);
+    const [wcStr, hashHex] = clean.split(':');
+    let wc = parseInt(wcStr, 10);
+    if (wc < 0) wc = 256 + wc;
+    writeUint(2n, 2); // addr_std$10
+    writeUint(0n, 1); // anycast:(Maybe Anycast) = 0
+    writeUint(BigInt(wc), 8);
+    writeBytes(Buffer.from(hashHex, 'hex'));
+  };
+
+  const qid = queryId !== undefined ? BigInt(queryId) : BigInt(Date.now()) * 1000n + BigInt(Math.floor(Math.random() * 1000));
+  const cleanMemo = String(memo || 'MAXIMA PAYOUT').trim() || 'MAXIMA PAYOUT';
+  const memoBuf = Buffer.from(cleanMemo, 'utf8').subarray(0, 36);
+
+  writeUint(0x0f8a7ea5n, 32); // op = transfer#0f8a7ea5
+  writeUint(qid, 64); // query_id:uint64
+  writeCoins(BigInt(jettonAmountNano)); // amount:(VarUInteger 16)
+  writeAddress(destinationRaw); // destination:MsgAddress
+  writeAddress(responseDestinationRaw || destinationRaw); // response_destination:MsgAddress
+  writeUint(0n, 1); // custom_payload:(Maybe ^Cell) = 0
+  writeCoins(1n); // forward_ton_amount:(VarUInteger 16) = 1 nanoTON (triggers notification with memo)
+  writeUint(0n, 1); // forward_payload:(Either Cell ^Cell) = 0 (inline Cell)
+  writeUint(0n, 32); // TextComment op = 0x00000000
+  writeBytes(memoBuf); // UTF-8 memo bytes ("MAXIMA PAYOUT")
+
+  const bitLen = bits.length;
+  const fullBytes = Math.floor(bitLen / 8);
+  const dataByteLen = Math.ceil(bitLen / 8);
+  const d1 = 0; // 0 refs, ordinary cell
+  const d2 = fullBytes + dataByteLen;
+
+  let paddedBits = bits;
+  if (bitLen % 8 !== 0) {
+    paddedBits += '1';
+    while (paddedBits.length % 8 !== 0) paddedBits += '0';
+  }
+
+  const cellData = Buffer.alloc(dataByteLen);
+  for (let i = 0; i < dataByteLen; i++) {
+    cellData[i] = parseInt(paddedBits.slice(i * 8, i * 8 + 8), 2);
+  }
+
+  const totCellsSize = 2 + dataByteLen;
+  const header = Buffer.from([
+    0xb5, 0xee, 0x9c, 0x72, // serialized_boc#b5ee9c72
+    0x01, // flags=0, size_bytes=1
+    0x01, // off_bytes=1
+    0x01, // cells=1
+    0x01, // roots=1
+    0x00, // absent=0
+    totCellsSize, // tot_cells_size
+    0x00, // root_list=[0]
+    d1,
+    d2,
+  ]);
+
+  return Buffer.concat([header, cellData]).toString('base64');
+}
+
 // ================= UTC DATE HELPERS (00:00 UTC DAILY RESET) =================
 function getUtcDateStr(ms = Date.now()) {
   return new Date(ms).toISOString().slice(0, 10);
@@ -802,6 +911,86 @@ async function fetchOnChainJettonBalance(cfg, walletRaw) {
   } catch (_) {}
 
   return cached ? cached.balance : null;
+}
+
+const jettonWalletAddrCache = new Map();
+const KNOWN_CREATOR_RAW = '0:d47bf3fbe9b8c727d108524f0a2e71554616c77fdfe0ee52571d781c858a59cb';
+const KNOWN_CREATOR_JETTON_WALLET_RAW = '0:d42c46fe3257dc2dd8dde9e06784abe12722429805d3c8835a6b77143a8b4f47';
+
+async function resolveOwnerJettonWalletAddress(cfg, ownerWalletRaw) {
+  const rawWallet = parseTonAddressToRaw(ownerWalletRaw);
+  const rawContract =
+    parseTonAddressToRaw(cfg.token?.rawAddress) ||
+    parseTonAddressToRaw(cfg.token?.contractAddress);
+  if (!rawWallet || !rawContract) return null;
+
+  const cacheKey = `${rawWallet}_${rawContract}`;
+  const cached = jettonWalletAddrCache.get(cacheKey);
+  if (cached && Date.now() - cached.time < 10 * 60 * 1000) {
+    return cached;
+  }
+
+  // 1. Primary: TonAPI v2
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const res = await fetch(
+      `https://tonapi.io/v2/accounts/${encodeURIComponent(rawWallet)}/jettons/${encodeURIComponent(rawContract)}`,
+      { headers: buildTonApiHeaders(), signal: ctrl.signal }
+    );
+    clearTimeout(timer);
+    if (res.ok) {
+      const data = await res.json();
+      const jwRaw = parseTonAddressToRaw(data.wallet_address?.address || data.wallet_address);
+      if (jwRaw) {
+        const result = {
+          raw: jwRaw,
+          friendlyBounceable: rawToFriendlyTon(jwRaw, true),
+          time: Date.now(),
+        };
+        jettonWalletAddrCache.set(cacheKey, result);
+        return result;
+      }
+    }
+  } catch (_) {}
+
+  // 2. Fallback: Toncenter API v3
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const res = await fetch(
+      `https://toncenter.com/api/v3/jetton/wallets?owner_address=${encodeURIComponent(rawWallet)}&jetton_address=${encodeURIComponent(rawContract)}&limit=5`,
+      { headers: { Accept: 'application/json' }, signal: ctrl.signal }
+    );
+    clearTimeout(timer);
+    if (res.ok) {
+      const data = await res.json();
+      const first = Array.isArray(data.jetton_wallets) ? data.jetton_wallets[0] : null;
+      const jwRaw = parseTonAddressToRaw(first && first.address);
+      if (jwRaw) {
+        const result = {
+          raw: jwRaw,
+          friendlyBounceable: rawToFriendlyTon(jwRaw, true),
+          time: Date.now(),
+        };
+        jettonWalletAddrCache.set(cacheKey, result);
+        return result;
+      }
+    }
+  } catch (_) {}
+
+  // 3. Built-in fallback for official creator wallet
+  if (rawWallet === KNOWN_CREATOR_RAW) {
+    const result = {
+      raw: KNOWN_CREATOR_JETTON_WALLET_RAW,
+      friendlyBounceable: rawToFriendlyTon(KNOWN_CREATOR_JETTON_WALLET_RAW, true),
+      time: Date.now(),
+    };
+    jettonWalletAddrCache.set(cacheKey, result);
+    return result;
+  }
+
+  return cached || null;
 }
 
 async function fetchRecentCreatorTransactions(cfg, forceRefresh = false) {
@@ -1428,8 +1617,15 @@ function buildSyncPayload(cfg, userView) {
   const maxPresaleCoins = cfg.presale?.maxTotalPresaleCoins || 20000000;
   const soldCoins = db.presale.totalCoinsSold || 0;
   const resolvedLogo = resolveAppLogoUrl(cfg);
+  const adminFlag = isAdminUser(cfg, userView && userView.userId);
+  const pendingWdCount = adminFlag
+    ? (Array.isArray(db.withdrawals) ? db.withdrawals.filter(isWithdrawPending).length : 0)
+    : 0;
   return {
     serverTime: Date.now(),
+    isAdmin: adminFlag,
+    pendingWithdrawCount: pendingWdCount,
+    adminPanelUrl: adminFlag ? buildAdminPanelUrl(cfg, userView.userId) : undefined,
     user: userView,
     config: {
       appName: cfg.appName || 'MAXIMA MINING APP',
@@ -2203,6 +2399,304 @@ const server = http.createServer(async (req, res) => {
         data: buildSyncPayload(cfg, view),
       });
     }
+
+    // 10. ADMIN AUTO-WITHDRAW PANEL ENDPOINTS (1-Click & Batch TON Connect Jetton Transfer with Memo "MAXIMA PAYOUT")
+    if (pathname.startsWith('/api/admin/')) {
+      const callerId = String(body.userId || rawUser.userId || '').trim();
+      const callerSig = String(body.tgSig || '').trim();
+      const isAllowedAdmin =
+        isAdminUser(cfg, callerId) ||
+        (callerSig && isAdminUser(cfg, callerId) && callerSig === signBrowserAuth(cfg, callerId));
+      if (!isAllowedAdmin) {
+        return sendJson(res, 403, {
+          ok: false,
+          error: '⛔ Admin access only (ID: ' + callerId + ').',
+        });
+      }
+
+      if (pathname === '/api/admin/withdrawals') {
+        return sendJson(res, 200, {
+          ok: true,
+          adminData: buildAdminWithdrawalsApiPayload(cfg, callerId),
+        });
+      }
+
+      if (pathname === '/api/admin/withdraw/prepare-tx') {
+        const wdIds = Array.isArray(body.wdIds)
+          ? body.wdIds.map((x) => String(x || '').trim()).filter(Boolean)
+          : [];
+        if (!wdIds.length) {
+          return sendJson(res, 400, { ok: false, error: 'Pilih minimal 1 permintaan withdraw terlebih dahulu!' });
+        }
+
+        const memo = String(body.memo || 'MAXIMA PAYOUT').trim() || 'MAXIMA PAYOUT';
+        const senderRaw =
+          parseTonAddressToRaw(body.senderWalletAddress) ||
+          rawUser.walletRaw ||
+          parseTonAddressToRaw(cfg.wallet?.creatorRawAddress) ||
+          parseTonAddressToRaw(cfg.wallet?.creatorTonWallet);
+
+        if (!senderRaw) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: '🔒 Silakan hubungkan dompet TON Admin melalui TON Connect terlebih dahulu!',
+          });
+        }
+
+        const jwInfo = await resolveOwnerJettonWalletAddress(cfg, senderRaw);
+        if (!jwInfo || !jwInfo.friendlyBounceable) {
+          return sendJson(res, 400, {
+            ok: false,
+            error:
+              '⚠️ Jetton Wallet MAXIMA tidak ditemukan pada dompet yang sedang terhubung! Pastikan dompet TON yang Anda hubungkan memiliki saldo token MAXIMA.',
+          });
+        }
+
+        const decimals = Number(cfg.token?.decimals ?? 9);
+        const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+        const baseQid = BigInt(Date.now()) * 1000n;
+        const preparedItems = [];
+
+        for (let i = 0; i < wdIds.length; i++) {
+          const id = wdIds[i];
+          const wd = allWds.find((w) => w && w.id === id);
+          if (!wd || !isWithdrawPending(wd)) continue;
+
+          const destRaw = parseTonAddressToRaw(wd.walletRaw || wd.walletAddress);
+          if (!destRaw) continue;
+
+          const netCoins = Number(wd.netAmount || 0);
+          if (!Number.isFinite(netCoins) || netCoins <= 0) continue;
+
+          const jettonAmountNano = BigInt(Math.round(netCoins * 10)) * 10n ** BigInt(Math.max(0, decimals - 1));
+          const bocBase64 = buildJettonTransferBocBase64({
+            queryId: baseQid + BigInt(i + 1),
+            jettonAmountNano,
+            destinationRaw: destRaw,
+            responseDestinationRaw: senderRaw,
+            memo,
+          });
+
+          preparedItems.push({
+            wdId: wd.id,
+            userId: wd.userId,
+            memberName: wd.firstName || wd.username || wd.userId,
+            netAmount: netCoins,
+            recipientAddress: wd.walletAddress,
+            message: {
+              address: jwInfo.friendlyBounceable,
+              amount: '50000000', // 0.05 TON gas (sisa gas otomatis dikembalikan ke dompet Admin)
+              payload: bocBase64,
+            },
+          });
+        }
+
+        if (!preparedItems.length) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: 'Tidak ada withdraw berstatus PENDING yang valid dari pilihan tersebut.',
+          });
+        }
+
+        return sendJson(res, 200, {
+          ok: true,
+          memo,
+          senderWalletRaw: senderRaw,
+          jettonWalletAddress: jwInfo.friendlyBounceable,
+          items: preparedItems,
+        });
+      }
+
+      if (pathname === '/api/admin/withdraw/confirm-paid') {
+        const wdIds = Array.isArray(body.wdIds)
+          ? body.wdIds.map((x) => String(x || '').trim()).filter(Boolean)
+          : [];
+        if (!wdIds.length) {
+          return sendJson(res, 400, { ok: false, error: 'Tidak ada ID withdraw yang dipilih!' });
+        }
+
+        const memo = String(body.memo || 'MAXIMA PAYOUT').trim() || 'MAXIMA PAYOUT';
+        const txBoc = String(body.txBoc || '').trim();
+        const now = Date.now();
+        const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+        const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+        const processed = [];
+
+        for (const wdId of wdIds) {
+          const wd = allWds.find((w) => w && w.id === wdId);
+          if (!wd || !isWithdrawPending(wd)) continue;
+
+          wd.status = 'PAID ✅';
+          wd.paidAt = now;
+          wd.payoutMemo = memo;
+          if (txBoc) wd.payoutTxBoc = txBoc.slice(0, 120);
+
+          const u = db.users[String(wd.userId)];
+          if (u && Array.isArray(u.withdrawals)) {
+            const uw = u.withdrawals.find((x) => x && x.id === wdId);
+            if (uw) {
+              uw.status = 'PAID ✅';
+              uw.paidAt = now;
+              uw.payoutMemo = memo;
+            }
+          }
+          processed.push({ wd, u });
+        }
+
+        if (processed.length) {
+          saveDB(true);
+          await flushCloudDB();
+
+          for (const { wd, u } of processed) {
+            await notifyTelegramUserHtml(
+              cfg,
+              wd.userId,
+              [
+                `✅ <b>${sym} Withdrawal Sent!</b>`,
+                `━━━━━━━━━━━━━━━━━━━━━━`,
+                `• <b>ID:</b> <code>${escHtml(wd.id)}</code>`,
+                `• <b>Net Amount Sent:</b> <b>${Number(wd.netAmount).toLocaleString('en-US')} ${sym}</b>`,
+                `• <b>Recipient Wallet:</b> <code>${escHtml(wd.walletAddress)}</code>`,
+                `• <b>Memo:</b> <code>${escHtml(memo)}</code>`,
+                `• <b>Status:</b> <b>PAID ✅</b>`,
+              ].join('\n')
+            ).catch(() => null);
+
+            await postPayoutToChannel(cfg, wd, u).catch(() => null);
+          }
+        }
+
+        const view = getOrCreateUser(cfg, body);
+        return sendJson(res, 200, {
+          ok: true,
+          paidCount: processed.length,
+          message: `✅ ${processed.length} Withdraw berhasil ditandai PAID & diumumkan ke ${getPayoutChannel(cfg)}!`,
+          adminData: buildAdminWithdrawalsApiPayload(cfg, callerId),
+          data: buildSyncPayload(cfg, view),
+        });
+      }
+
+      if (pathname === '/api/admin/withdraw/action') {
+        const wdIds = Array.isArray(body.wdIds)
+          ? body.wdIds.map((x) => String(x || '').trim()).filter(Boolean)
+          : [];
+        const action = String(body.action || '').trim().toLowerCase(); // 'burn' | 'wipe' | 'refund'
+        if (!wdIds.length || !['burn', 'wipe', 'refund'].includes(action)) {
+          return sendJson(res, 400, { ok: false, error: 'Parameter action atau wdIds tidak valid!' });
+        }
+
+        const now = Date.now();
+        const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+        const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+        let count = 0;
+
+        for (const wdId of wdIds) {
+          const wd = allWds.find((w) => w && w.id === wdId);
+          if (!wd || !isWithdrawPending(wd)) continue;
+          const u = db.users[String(wd.userId)];
+
+          if (action === 'burn') {
+            wd.status = 'BURNED (BUG/NO REFUND) 🔥';
+            wd.burnedAt = now;
+            if (u) {
+              ensureUserSchema(u);
+              if (Array.isArray(u.withdrawals)) {
+                const uw = u.withdrawals.find((x) => x && x.id === wdId);
+                if (uw) {
+                  uw.status = 'BURNED (BUG/NO REFUND) 🔥';
+                  uw.burnedAt = now;
+                }
+              }
+              if (findWalletOwnerUserId(u.walletRaw || u.walletAddress, u.userId)) {
+                u.onChainHolding = 0;
+              }
+              u.level = computeLevelFromHolding(Number(u.balance || 0) + Number(u.onChainHolding || 0));
+              u.peakLevel = u.level;
+            }
+            notifyTelegramUserHtml(
+              cfg,
+              wd.userId,
+              `🔥 <b>Withdrawal Rejected (Multi-Account / Bug Violation)</b>\n\nYour withdrawal request <code>${escHtml(wd.id)}</code> of <b>${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> was rejected due to multi-account wallet policy violation. Fraudulent balance has been confiscated (No Refund).`
+            ).catch(() => null);
+          } else if (action === 'wipe') {
+            wd.status = 'CONFISCATED (BUG WIPE) 🚫';
+            wd.burnedAt = now;
+            if (u) {
+              ensureUserSchema(u);
+              u.balance = 0;
+              u.accruedMined = 0;
+              u.onChainHolding = 0;
+              u.level = 1;
+              u.peakLevel = 1;
+              const rawW = parseTonAddressToRaw(u.walletRaw || u.walletAddress || wd.walletRaw || wd.walletAddress || '');
+              const otherOwner = rawW ? findWalletOwnerUserId(rawW, u.userId) : null;
+              if (otherOwner) {
+                u.walletRaw = '';
+                u.walletFriendly = '';
+                u.walletAddress = '';
+                u.boundWalletRaw = '';
+                u.walletVerified = false;
+                u.everVerifiedWallet = false;
+                if (u.verifiedWallets && rawW) delete u.verifiedWallets[rawW];
+              }
+              if (Array.isArray(u.withdrawals)) {
+                const uw = u.withdrawals.find((x) => x && x.id === wdId);
+                if (uw) {
+                  uw.status = 'CONFISCATED (BUG WIPE) 🚫';
+                  uw.burnedAt = now;
+                }
+              }
+            }
+            notifyTelegramUserHtml(
+              cfg,
+              wd.userId,
+              `🚫 <b>Account Sanctioned (Multi-Account / Bug Violation)</b>\n\nYour withdrawal request <code>${escHtml(wd.id)}</code> was rejected and your illegitimate balance has been confiscated &amp; reset to 0 ${sym} due to exploiting the multi-account wallet bug.`
+            ).catch(() => null);
+          } else if (action === 'refund') {
+            wd.status = 'REFUNDED ❌';
+            wd.refundedAt = now;
+            if (u) {
+              ensureUserSchema(u);
+              u.balance = +(Number(u.balance || 0) + Number(wd.requestedAmount || 0)).toFixed(6);
+              if (Array.isArray(u.withdrawals)) {
+                const uw = u.withdrawals.find((x) => x && x.id === wdId);
+                if (uw) {
+                  uw.status = 'REFUNDED ❌';
+                  uw.refundedAt = now;
+                }
+              }
+            }
+            notifyTelegramUserHtml(
+              cfg,
+              wd.userId,
+              `❌ <b>Withdrawal Cancelled & Balance Refunded</b>\n\nYour withdrawal request <code>${escHtml(wd.id)}</code> was cancelled by Admin and the full amount of <b>+${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> has been refunded to your in-app balance.`
+            ).catch(() => null);
+          }
+          count++;
+        }
+
+        if (count > 0) {
+          saveDB(true);
+          await flushCloudDB();
+        }
+
+        const actionLabel =
+          action === 'burn'
+            ? `🔥 ${count} Withdraw ditolak & saldo bug dihanguskan (No Refund)!`
+            : action === 'wipe'
+            ? `🚫 ${count} Withdraw ditolak, saldo akun di-reset 0 & wallet duplikat diputus!`
+            : `🔄 ${count} Withdraw dibatalkan & saldo dikembalikan (Refund)!`;
+
+        const view = getOrCreateUser(cfg, body);
+        return sendJson(res, 200, {
+          ok: true,
+          processedCount: count,
+          message: actionLabel,
+          adminData: buildAdminWithdrawalsApiPayload(cfg, callerId),
+          data: buildSyncPayload(cfg, view),
+        });
+      }
+    }
   }
 
   // Static files from public/ (with Gzip compression & ETag caching to save ~90% Render bandwidth)
@@ -2587,6 +3081,72 @@ function isWithdrawPending(w) {
   );
 }
 
+function buildAdminWithdrawalsApiPayload(cfg, adminUserId) {
+  const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+  const enrich = (w) => {
+    const u = db.users && db.users[String(w.userId)];
+    const audit = auditWithdrawalLegitimacy(cfg, w, u);
+    return {
+      id: w.id,
+      userId: w.userId,
+      username: (u && u.username) || w.username || '',
+      firstName: (u && u.firstName) || w.firstName || `Miner ${w.userId}`,
+      requestedAmount: Number(w.requestedAmount || 0),
+      feeCoins: Number(w.feeCoins || 0),
+      netAmount: Number(w.netAmount || 0),
+      walletAddress: w.walletAddress || (u && u.walletFriendly) || '',
+      walletRaw: w.walletRaw || (u && u.walletRaw) || '',
+      status: w.status || 'QUEUED FOR ON-CHAIN PAYOUT',
+      createdAt: w.createdAt || Date.now(),
+      paidAt: w.paidAt || null,
+      payoutMemo: w.payoutMemo || 'MAXIMA PAYOUT',
+      userBalance: u ? Number(u.balance || 0) : 0,
+      userLevel: u ? Number(u.level || 1) : 1,
+      audit: {
+        severity: audit.severity, // 'SAFE' | 'WARN' | 'FRAUD'
+        reasons: audit.reasons,
+        presaleCoins: audit.presaleCoins,
+        presaleTon: audit.presaleTon,
+        totalMined: +Number(audit.totalMined || 0).toFixed(2),
+        refCoins: +Number(audit.refCoins || 0).toFixed(2),
+        refCount: audit.refCount,
+        userTotalWithdrawn: audit.userTotalWithdrawn,
+        walletTotalWithdrawn: audit.walletTotalWithdrawn,
+        otherUsersWithSameWallet: audit.otherUsersWithSameWallet,
+      },
+    };
+  };
+
+  const pending = allWds.filter(isWithdrawPending).map(enrich);
+  const history = allWds
+    .filter((w) => !isWithdrawPending(w))
+    .slice(-30)
+    .reverse()
+    .map(enrich);
+
+  const safePending = pending.filter((x) => x.audit.severity === 'SAFE');
+  const warnPending = pending.filter((x) => x.audit.severity === 'WARN');
+  const fraudPending = pending.filter((x) => x.audit.severity === 'FRAUD');
+  const totalPendingNetCoins = +pending.reduce((s, x) => s + x.netAmount, 0).toFixed(2);
+  const safePendingNetCoins = +safePending.reduce((s, x) => s + x.netAmount, 0).toFixed(2);
+
+  return {
+    pending,
+    history,
+    stats: {
+      totalPending: pending.length,
+      safePendingCount: safePending.length,
+      warnPendingCount: warnPending.length,
+      fraudPendingCount: fraudPending.length,
+      totalPendingNetCoins,
+      safePendingNetCoins,
+      defaultMemo: 'MAXIMA PAYOUT',
+      creatorWallet: cfg.wallet?.creatorTonWallet || '',
+      adminBrowserUrl: buildAdminPanelUrl(cfg, adminUserId),
+    },
+  };
+}
+
 function buildAdminDashboardPayload(cfg) {
   const sym = escHtml(cfg.token.symbol || 'MAXIMA');
   const usersArr = Object.values(db.users || {});
@@ -2623,13 +3183,24 @@ function buildAdminDashboardPayload(cfg) {
     `<i>Quick commands: /admin · /audit · /withdrawals · /presale · /stats</i>`,
   ].join('\n');
 
-  const keyboard = [
+  const adminPanelWebUrl = buildAdminPanelUrl(cfg, getAdminIds(cfg)[0]);
+  const isHttps = adminPanelWebUrl.startsWith('https://');
+  const keyboard = [];
+  if (isHttps) {
+    keyboard.push([
+      {
+        text: `⚡ Panel Auto-Withdraw 1-Click & Batch (${pendingWds.length} Queued)`,
+        web_app: { url: adminPanelWebUrl },
+      },
+    ]);
+  }
+  keyboard.push(
     [{ text: `💸 Pending Withdrawals (${pendingWds.length} Queued)`, callback_data: 'adm:wd_pending' }],
     [{ text: `🕵️ Audit Withdrawals & Deteksi Bug`, callback_data: 'adm:audit' }],
     [{ text: `🚀 Presale Buyers (${purchases.length})`, callback_data: 'adm:presale' }],
     [{ text: `✅ Paid Withdrawals (${paidWds.length})`, callback_data: 'adm:wd_paid' }],
-    [{ text: '🔄 Refresh Stats', callback_data: 'adm:stats' }],
-  ];
+    [{ text: '🔄 Refresh Stats', callback_data: 'adm:stats' }]
+  );
 
   return { html, keyboard };
 }
