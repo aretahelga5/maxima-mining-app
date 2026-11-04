@@ -2005,7 +2005,7 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
   if (usedByUser >= maxMintPerUser || usedByWallet >= maxMintPerWallet) {
     return {
       ok: false,
-      error: `⚠️ Batas maksimal minting ${maxMintPerUser} NFT per user/wallet telah tercapai! Anda tetap bisa membeli atau menerima transfer NFT dari user lain.`,
+      error: `⚠️ Maximum primary mint limit (${maxMintPerUser} NFTs per user/wallet) reached! You can still buy or receive NFTs from other users.`,
     };
   }
 
@@ -2016,7 +2016,7 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
   if (idx0 >= maxTotalSupply) {
     return {
       ok: false,
-      error: `⛔ Sold Out! Seluruh ${maxTotalSupply.toLocaleString('en-US')} Genesis NFT telah habis di-mint!`,
+      error: `⛔ Sold Out! All ${maxTotalSupply.toLocaleString('en-US')} Genesis NFTs have been minted!`,
     };
   }
 
@@ -3993,7 +3993,7 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletRaw) {
         return sendJson(res, 400, {
           ok: false,
-          error: '🔒 Silakan hubungkan dompet TON Anda terlebih dahulu untuk sinkronisasi NFT on-chain!',
+          error: '🔒 Please connect your personal TON wallet first to sync on-chain NFTs!',
         });
       }
       await reconcileCollectionOnChainOwnership(cfg, true).catch(() => {});
@@ -4004,8 +4004,8 @@ const server = http.createServer(async (req, res) => {
         ok: true,
         pulledNft: mintedFromChain || null,
         message: mintedFromChain
-          ? `💎 Pembayaran 10 GRAM terdeteksi on-chain! Berhasil mint ${mintedFromChain.name} ${mintedFromChain.serialCode}!`
-          : `⛓️ Kepemilikan NFT On-Chain tersinkronisasi (${view.nftActiveBenefitCount}/${view.nftMaxActiveBenefit} Top Rarity Aktif: +${view.nftBoostPct}% Power)!`,
+          ? `💎 10 GRAM payment detected on-chain! Successfully minted ${mintedFromChain.name} ${mintedFromChain.serialCode}!`
+          : `⛓️ On-Chain NFT ownership synced (${view.nftActiveBenefitCount}/${view.nftMaxActiveBenefit} Top Rarity Active: +${view.nftBoostPct}% Power)!`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -4039,7 +4039,7 @@ const server = http.createServer(async (req, res) => {
           ok: false,
           code: 'WALLET_ALREADY_BOUND',
           error:
-            '⛔ Wallet ini sudah terhubung pada akun Telegram lain! 1 Wallet hanya dapat dihubungkan ke 1 akun. / This wallet is already linked to another Telegram account!',
+            '⛔ This wallet is already linked to another Telegram account! Only 1 wallet is allowed per account.',
           data: buildSyncPayload(cfg, view),
         });
       }
@@ -4316,7 +4316,7 @@ const server = http.createServer(async (req, res) => {
           ok: false,
           code: 'WALLET_ALREADY_BOUND',
           error:
-            '⛔ Wallet ini sudah terhubung pada akun Telegram lain! 1 Wallet hanya dapat digunakan pada 1 akun.',
+            '⛔ This wallet is already linked to another Telegram account! Only 1 wallet is allowed per account.',
         });
       }
 
@@ -4485,7 +4485,7 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletRaw) {
         return sendJson(res, 403, {
           ok: false,
-          error: '🔒 Silakan hubungkan dompet pribadi TON Anda via TON Connect terlebih dahulu!',
+          error: '🔒 Please connect your personal TON wallet via TON Connect first!',
         });
       }
       if (findWalletOwnerUserId(rawUser.walletRaw, rawUser.userId)) {
@@ -4493,7 +4493,7 @@ const server = http.createServer(async (req, res) => {
           ok: false,
           code: 'WALLET_ALREADY_BOUND',
           error:
-            '⛔ Wallet ini sudah terhubung pada akun Telegram lain! 1 Wallet hanya dapat digunakan pada 1 akun.',
+            '⛔ This wallet is already linked to another Telegram account! Only 1 wallet is allowed per account.',
         });
       }
 
@@ -4503,7 +4503,7 @@ const server = http.createServer(async (req, res) => {
       if (Number.isFinite(nftStats.startsAtMs) && Date.now() < nftStats.startsAtMs) {
         return sendJson(res, 400, {
           ok: false,
-          error: '⏳ Genesis NFT Minting belum dibuka!',
+          error: '⏳ Genesis NFT Minting is not open yet!',
         });
       }
 
@@ -4534,7 +4534,7 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 400, {
             ok: false,
             error:
-              'Pembayaran 10 GRAM NFT Mint belum terdeteksi on-chain. Pastikan transaksi telah dikonfirmasi di dompet TON Anda!',
+              '10 GRAM NFT Mint payment not detected on-chain yet. Please make sure the transaction was confirmed in your TON wallet!',
           });
         }
 
@@ -4548,7 +4548,7 @@ const server = http.createServer(async (req, res) => {
             pulledNft: existing,
             message: existing
               ? `💎 MINTED [${existing.tier}]! ${existing.name} ${existing.serialCode} (+${existing.powerBoostPct}% Mining Power)`
-              : `💎 NFT Mint telah berhasil diproses!`,
+              : `💎 NFT Mint processed successfully!`,
             data: buildSyncPayload(cfg, view),
           });
         }
@@ -4586,7 +4586,7 @@ const server = http.createServer(async (req, res) => {
         if (getUserPrimaryMintCount(rawUser) >= maxMintPerUser) {
           return sendJson(res, 400, {
             ok: false,
-            error: `⚠️ Batas maksimal minting ${maxMintPerUser} NFT per user/wallet telah tercapai!`,
+            error: `⚠️ Maximum primary mint limit (${maxMintPerUser} NFTs per user/wallet) reached!`,
           });
         }
 
@@ -4599,7 +4599,7 @@ const server = http.createServer(async (req, res) => {
         if (!mintRes || !mintRes.ok) {
           return sendJson(res, 400, {
             ok: false,
-            error: (mintRes && mintRes.error) || 'Gagal melakukan minting NFT.',
+            error: (mintRes && mintRes.error) || 'Failed to mint NFT.',
           });
         }
 
@@ -4627,7 +4627,7 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletRaw) {
         return sendJson(res, 403, {
           ok: false,
-          error: '🔒 Silakan hubungkan dompet TON Anda terlebih dahulu!',
+          error: '🔒 Please connect your personal TON wallet first!',
         });
       }
       const nftId = String(body.nftId || '').trim();
@@ -4637,13 +4637,13 @@ const server = http.createServer(async (req, res) => {
       if (!nft || !nft.onChainAddress) {
         return sendJson(res, 400, {
           ok: false,
-          error: 'NFT ini belum memiliki alamat kontrak item on-chain. Gunakan transfer P2P biasa.',
+          error: 'This NFT does not have an on-chain item contract address yet. Please use standard P2P transfer.',
         });
       }
       if (nft.listedForSale) {
         return sendJson(res, 400, {
           ok: false,
-          error: 'Silakan Unlist NFT ini dari P2P Market terlebih dahulu sebelum mentransfer!',
+          error: 'Please unlist this NFT from the P2P Market first before transferring!',
         });
       }
 
@@ -4668,19 +4668,19 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 400, {
           ok: false,
           error:
-            'Masukkan alamat Wallet TON penerima yang valid (UQ... / EQ...) atau Miner ID yang sudah menghubungkan dompet TON!',
+            'Please enter a valid recipient TON Wallet Address (UQ... / EQ...) or a Miner ID with a connected TON wallet!',
         });
       }
       if (destWalletRaw === rawUser.walletRaw) {
         return sendJson(res, 400, {
           ok: false,
-          error: 'Tidak dapat mentransfer NFT ke dompet Anda sendiri!',
+          error: 'Cannot transfer an NFT to your own wallet!',
         });
       }
 
       const nftContractRaw = parseTonAddressToRaw(nft.onChainAddress);
       if (!nftContractRaw) {
-        return sendJson(res, 400, { ok: false, error: 'Alamat kontrak NFT tidak valid!' });
+        return sendJson(res, 400, { ok: false, error: 'Invalid NFT contract address!' });
       }
 
       const payloadBoc = buildTep62NftTransferBocBase64({
@@ -4710,7 +4710,7 @@ const server = http.createServer(async (req, res) => {
       const serialCode = String(body.serialCode || '').trim();
       const destWalletRaw = parseTonAddressToRaw(body.destWalletRaw || body.recipient || '');
       if (!serialCode || !destWalletRaw) {
-        return sendJson(res, 400, { ok: false, error: 'Data konfirmasi transfer tidak lengkap!' });
+        return sendJson(res, 400, { ok: false, error: 'Incomplete transfer confirmation data!' });
       }
 
       accruePendingMining(cfg, rawUser);
@@ -4754,7 +4754,7 @@ const server = http.createServer(async (req, res) => {
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
         ok: true,
-        message: `⛓️ NFT ${serialCode} berhasil ditransfer on-chain ke ${rawToFriendlyTon(destWalletRaw, false).slice(0, 8)}...! Benefit pada wallet lama dihentikan & dipindahkan ke pemilik baru.`,
+        message: `⛓️ NFT ${serialCode} transferred on-chain to ${rawToFriendlyTon(destWalletRaw, false).slice(0, 8)}...! Boost removed from previous wallet & activated on new owner.`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -4834,7 +4834,7 @@ const server = http.createServer(async (req, res) => {
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
         ok: true,
-        message: `📤 Transferred ${nft.name} ${nft.serialCode} (+${nft.powerBoostPct || 2}% Mining Power) to ${targetUser.firstName || targetUser.username || targetUser.userId}! Benefit pada akun Anda langsung diupdate.`,
+        message: `📤 Transferred ${nft.name} ${nft.serialCode} (+${nft.powerBoostPct || 2}% Mining Power) to ${targetUser.firstName || targetUser.username || targetUser.userId}! Your active mining boost has been updated.`,
         data: buildSyncPayload(cfg, view),
       });
     }
@@ -4975,7 +4975,7 @@ const server = http.createServer(async (req, res) => {
           ok: false,
           code: 'WALLET_ALREADY_BOUND',
           error:
-            '⛔ Wallet ini sudah terhubung pada akun Telegram lain! 1 Wallet hanya dapat digunakan pada 1 akun.',
+            '⛔ This wallet is already linked to another Telegram account! Only 1 wallet is allowed per account.',
         });
       }
       const txBoc = String(body.txBoc || '').trim();
@@ -5067,7 +5067,7 @@ const server = http.createServer(async (req, res) => {
           ok: false,
           code: 'WALLET_ALREADY_BOUND',
           error:
-            '⛔ Wallet ini sudah terdaftar pada akun Telegram lain! Withdraw ditolak karena 1 wallet hanya dapat digunakan pada 1 akun.',
+            '⛔ This wallet is already registered on another Telegram account! Withdrawal rejected because only 1 wallet is allowed per account.',
         });
       }
       if (!rawUser.walletVerified) {
@@ -5153,7 +5153,7 @@ const server = http.createServer(async (req, res) => {
           ? body.wdIds.map((x) => String(x || '').trim()).filter(Boolean)
           : [];
         if (!wdIds.length) {
-          return sendJson(res, 400, { ok: false, error: 'Pilih minimal 1 permintaan withdraw terlebih dahulu!' });
+          return sendJson(res, 400, { ok: false, error: 'Please select at least 1 withdrawal request first!' });
         }
 
         const memo = String(body.memo || 'MAXIMA PAYOUT').trim() || 'MAXIMA PAYOUT';
@@ -5166,7 +5166,7 @@ const server = http.createServer(async (req, res) => {
         if (!senderRaw) {
           return sendJson(res, 400, {
             ok: false,
-            error: '🔒 Silakan hubungkan dompet TON Admin melalui TON Connect terlebih dahulu!',
+            error: '🔒 Please connect your Admin TON Wallet via TON Connect first!',
           });
         }
 
@@ -5175,7 +5175,7 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 400, {
             ok: false,
             error:
-              '⚠️ Jetton Wallet MAXIMA tidak ditemukan pada dompet yang sedang terhubung! Pastikan dompet TON yang Anda hubungkan memiliki saldo token MAXIMA.',
+              '⚠️ MAXIMA Jetton Wallet not found on the connected wallet! Make sure your connected TON wallet holds MAXIMA tokens.',
           });
         }
 
@@ -5212,7 +5212,7 @@ const server = http.createServer(async (req, res) => {
             recipientAddress: wd.walletAddress,
             message: {
               address: jwInfo.friendlyBounceable,
-              amount: '50000000', // 0.05 TON gas (sisa gas otomatis dikembalikan ke dompet Admin)
+              amount: '50000000', // 0.05 TON gas (excess gas automatically refunded to Admin wallet)
               payload: bocBase64,
             },
           });
@@ -5221,7 +5221,7 @@ const server = http.createServer(async (req, res) => {
         if (!preparedItems.length) {
           return sendJson(res, 400, {
             ok: false,
-            error: 'Tidak ada withdraw berstatus PENDING yang valid dari pilihan tersebut.',
+            error: 'No valid PENDING withdrawals found in the selection.',
           });
         }
 
@@ -5239,7 +5239,7 @@ const server = http.createServer(async (req, res) => {
           ? body.wdIds.map((x) => String(x || '').trim()).filter(Boolean)
           : [];
         if (!wdIds.length) {
-          return sendJson(res, 400, { ok: false, error: 'Tidak ada ID withdraw yang dipilih!' });
+          return sendJson(res, 400, { ok: false, error: 'No withdrawal IDs selected!' });
         }
 
         const memo = String(body.memo || 'MAXIMA PAYOUT').trim() || 'MAXIMA PAYOUT';
@@ -5297,7 +5297,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, {
           ok: true,
           paidCount: processed.length,
-          message: `✅ ${processed.length} Withdraw berhasil ditandai PAID & diumumkan ke ${getPayoutChannel(cfg)}!`,
+          message: `✅ ${processed.length} Withdrawals marked PAID & announced on ${getPayoutChannel(cfg)}!`,
           adminData: buildAdminWithdrawalsApiPayload(cfg, callerId),
           data: buildSyncPayload(cfg, view),
         });
@@ -5309,7 +5309,7 @@ const server = http.createServer(async (req, res) => {
           : [];
         const action = String(body.action || '').trim().toLowerCase(); // 'burn' | 'wipe' | 'refund'
         if (!wdIds.length || !['burn', 'wipe', 'refund'].includes(action)) {
-          return sendJson(res, 400, { ok: false, error: 'Parameter action atau wdIds tidak valid!' });
+          return sendJson(res, 400, { ok: false, error: 'Invalid action or wdIds parameter!' });
         }
 
         const now = Date.now();
@@ -5409,10 +5409,10 @@ const server = http.createServer(async (req, res) => {
 
         const actionLabel =
           action === 'burn'
-            ? `🔥 ${count} Withdraw ditolak & saldo bug dihanguskan (No Refund)!`
+            ? `🔥 ${count} Withdrawals rejected & bugged balance burned (No Refund)!`
             : action === 'wipe'
-            ? `🚫 ${count} Withdraw ditolak, saldo akun di-reset 0 & wallet duplikat diputus!`
-            : `🔄 ${count} Withdraw dibatalkan & saldo dikembalikan (Refund)!`;
+            ? `🚫 ${count} Withdrawals rejected, account balance reset to 0 & duplicate wallet unlinked!`
+            : `🔄 ${count} Withdrawals cancelled & balance refunded!`;
 
         const view = getOrCreateUser(cfg, body);
         return sendJson(res, 200, {
@@ -5430,7 +5430,7 @@ const server = http.createServer(async (req, res) => {
         if (!colRaw) {
           return sendJson(res, 400, {
             ok: false,
-            error: 'Isi collectionAddress terlebih dahulu di config.json atau env NFT_COLLECTION_ADDRESS setelah deploy kontrak NFT!',
+            error: 'Please set collectionAddress in config.json or NFT_COLLECTION_ADDRESS env var after deploying the NFT contract!',
           });
         }
         const colFriendly = rawToFriendlyTon(colRaw, true);
@@ -5444,7 +5444,7 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 200, {
             ok: true,
             items: [],
-            message: '✅ Seluruh Genesis NFT yang sudah di-mint telah ter-deploy on-chain!',
+            message: '✅ All minted Genesis NFTs are already deployed on-chain!',
           });
         }
 
@@ -5486,10 +5486,10 @@ const server = http.createServer(async (req, res) => {
     const ext = path.extname(filePath).toLowerCase();
     const etag = `W/"${stat.size}-${Math.floor(stat.mtimeMs)}"`;
 
-    if (req.headers['if-none-match'] === etag) {
+    if (ext !== '.html' && req.headers['if-none-match'] === etag) {
       res.writeHead(304, {
         ETag: etag,
-        'Cache-Control': ext === '.html' ? 'public, max-age=60, must-revalidate' : 'public, max-age=604800',
+        'Cache-Control': 'public, max-age=604800',
       });
       return res.end();
     }
@@ -5512,7 +5512,7 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       ETag: etag,
-      'Cache-Control': ext === '.html' ? 'public, max-age=60, must-revalidate' : 'public, max-age=604800',
+      'Cache-Control': ext === '.html' ? 'no-cache, no-store, must-revalidate' : 'public, max-age=604800',
       'Content-Length': bodyBuf.length,
     };
     if (useGzip) {
@@ -5662,7 +5662,7 @@ function auditWithdrawalLegitimacy(cfg, wd, userObj) {
   }
   if (otherUsersWithSameWallet.length > 0) {
     severity = 'FRAUD';
-    reasons.push(`Wallet dipakai di >1 akun (ID lain: ${otherUsersWithSameWallet.join(', ')})`);
+    reasons.push(`Wallet used across >1 accounts (Other IDs: ${otherUsersWithSameWallet.join(', ')})`);
   }
 
   // 2. Check if this account ever verified multiple different wallets
@@ -5671,7 +5671,7 @@ function auditWithdrawalLegitimacy(cfg, wd, userObj) {
     : [];
   if (verifiedWalletKeys.length > 1) {
     if (severity !== 'FRAUD') severity = 'WARN';
-    reasons.push(`Akun pernah gonta-ganti ${verifiedWalletKeys.length} wallet berbeda`);
+    reasons.push(`Account previously verified ${verifiedWalletKeys.length} different wallets`);
   }
 
   // 3. Calculate Presale Coins & Check on-chain txHash
@@ -5687,7 +5687,7 @@ function auditWithdrawalLegitimacy(cfg, wd, userObj) {
   }
   if (unhashedPresaleCount > 0) {
     if (severity === 'SAFE') severity = 'WARN';
-    reasons.push(`${unhashedPresaleCount} transaksi Presale belum memiliki txHash on-chain`);
+    reasons.push(`${unhashedPresaleCount} Presale transactions do not have an on-chain txHash yet`);
   }
 
   // 4. Calculate total withdrawals by this user & by this wallet across all accounts
@@ -5711,7 +5711,7 @@ function auditWithdrawalLegitimacy(cfg, wd, userObj) {
   }
   if (walletWdUsers.size > 1) {
     severity = 'FRAUD';
-    reasons.push(`Wallet ini dipakai withdraw oleh ${walletWdUsers.size} akun berbeda (${Array.from(walletWdUsers).join(', ')})`);
+    reasons.push(`This wallet was used for withdrawals by ${walletWdUsers.size} different accounts (${Array.from(walletWdUsers).join(', ')})`);
   }
 
   // 5. Calculate Mining, Referrals, NFT First-Mint Jackpots, P2P NFT Sales, and Source-of-Funds Balance Audit
@@ -5737,25 +5737,25 @@ function auditWithdrawalLegitimacy(cfg, wd, userObj) {
 
   if (unexplainedDiff > 300) {
     severity = 'FRAUD';
-    reasons.push(`Saldo/Withdraw melebihi sumber wajar sebesar +${unexplainedDiff.toLocaleString('en-US')} MAXIMA`);
+    reasons.push(`Balance/Withdrawal exceeds legitimate sources by +${unexplainedDiff.toLocaleString('en-US')} MAXIMA`);
   }
   if (walletTotalWithdrawn > maxExplainable + 300) {
     severity = 'FRAUD';
-    reasons.push(`Total withdraw ke wallet ini (${walletTotalWithdrawn.toLocaleString('en-US')}) melebihi kuota wajar akun (${Math.round(maxExplainable).toLocaleString('en-US')})`);
+    reasons.push(`Total withdrawn to this wallet (${walletTotalWithdrawn.toLocaleString('en-US')}) exceeds legitimate quota (${Math.round(maxExplainable).toLocaleString('en-US')})`);
   }
 
   // Check if user has 0 presale but withdrawing >= 2000
   if (presaleCoins === 0 && Number((wd && wd.requestedAmount) || 0) >= 2000) {
     if (severity === 'SAFE') severity = 'WARN';
-    reasons.push(`Withdraw tanpa Presale (Murni dari Mining=${totalMined.toFixed(1)} / Referral=${refCoins.toFixed(1)}) — cek keaslian referral & holding`);
+    reasons.push(`Withdrawal without Presale (Pure Mining=${totalMined.toFixed(1)} / Referral=${refCoins.toFixed(1)}) — verify referrals & holdings`);
   }
 
   const badge =
     severity === 'FRAUD'
-      ? '🚨 <b>TERDETEKSI BUG / MULTI-AKUN (JANGAN BAYAR!)</b>'
+      ? '🚨 <b>FLAGGED BUG / MULTI-ACCOUNT (DO NOT PAY!)</b>'
       : severity === 'WARN'
-      ? '⚠️ <b>PERLU CEK MANUAL (LIHAT RINCIAN)</b>'
-      : '✅ <b>AMAN / ASLI (TERVERIFIKASI)</b>';
+      ? '⚠️ <b>MANUAL REVIEW NEEDED (SEE DETAILS)</b>'
+      : '✅ <b>SAFE / VERIFIED LEGITIMATE</b>';
 
   return {
     severity,
@@ -5779,7 +5779,7 @@ function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
   const audit = auditWithdrawalLegitimacy(cfg, wd, userObj);
   const reasonLines = audit.reasons.length
     ? audit.reasons.map((r) => `  • ⚠️ ${escHtml(r)}`)
-    : [`  • ✅ 1 Wallet = 1 Akun &amp; Saldo sesuai pembelian Presale / Mining wajar.`];
+    : [`  • ✅ 1 Wallet = 1 Account &amp; Balance matches legitimate Presale / Mining / NFT sources.`];
 
   return [
     `💸 <b>MEMBER WITHDRAWAL REQUEST</b>`,
@@ -5793,11 +5793,11 @@ function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
     `👛 <b>Recipient TON Wallet (Tap to Copy):</b>`,
     `<code>${escHtml(wd.walletAddress)}</code>`,
     ``,
-    `🕵️ <b>HASIL AUDIT KEASLIAN (ANTI-BUG DETECTOR):</b>`,
-    `• <b>Status Audit:</b> ${audit.badge}`,
-    `• <b>Beli Presale:</b> <b>${audit.presaleCoins.toLocaleString('en-US')} ${sym}</b> (${audit.presaleTon} GRAM)`,
-    `• <b>Hasil Mining:</b> ${audit.totalMined.toFixed(2)} ${sym} · <b>Referral:</b> ${audit.refCoins.toFixed(2)} ${sym} (${audit.refCount} ref)`,
-    `• <b>Total WD Akun Ini:</b> ${audit.userTotalWithdrawn.toLocaleString('en-US')} ${sym} · <b>Total WD Wallet Ini:</b> ${audit.walletTotalWithdrawn.toLocaleString('en-US')} ${sym}`,
+    `🕵️ <b>LEGITIMACY AUDIT (ANTI-BUG DETECTOR):</b>`,
+    `• <b>Audit Status:</b> ${audit.badge}`,
+    `• <b>Presale Bought:</b> <b>${audit.presaleCoins.toLocaleString('en-US')} ${sym}</b> (${audit.presaleTon} GRAM)`,
+    `• <b>Mined:</b> ${audit.totalMined.toFixed(2)} ${sym} · <b>Referral:</b> ${audit.refCoins.toFixed(2)} ${sym} (${audit.refCount} ref)`,
+    `• <b>Account Total WD:</b> ${audit.userTotalWithdrawn.toLocaleString('en-US')} ${sym} · <b>Wallet Total WD:</b> ${audit.walletTotalWithdrawn.toLocaleString('en-US')} ${sym}`,
     ...reasonLines,
     ``,
     `🕒 <b>Time:</b> ${fmtUtcTime(wd.createdAt)}`,
@@ -5810,9 +5810,9 @@ function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
 function buildWithdrawAdminKeyboard(wdId) {
   return [
     [{ text: '✅ Mark PAID & Post @MAXIMAPAYOUT', callback_data: `wd_paid:${wdId}` }],
-    [{ text: '🔥 Tolak & Hanguskan Saldo Bug (No Refund)', callback_data: `wd_burn:${wdId}` }],
-    [{ text: '🚫 Sita Semua Saldo + Putus Wallet Bug', callback_data: `wd_wipe:${wdId}` }],
-    [{ text: '🔄 Reject & Refund (Kembalikan Saldo)', callback_data: `wd_rej:${wdId}` }],
+    [{ text: '🔥 Reject & Burn Bugged Balance (No Refund)', callback_data: `wd_burn:${wdId}` }],
+    [{ text: '🚫 Confiscate All Balance + Unlink Duplicate Wallet', callback_data: `wd_wipe:${wdId}` }],
+    [{ text: '🔄 Reject & Refund Balance', callback_data: `wd_rej:${wdId}` }],
   ];
 }
 
@@ -5874,7 +5874,7 @@ function buildAdminWithdrawalsApiPayload(cfg, adminUserId) {
     const audit = auditWithdrawalLegitimacy(cfg, w, u);
     const defaultReasons = audit.reasons.length
       ? audit.reasons
-      : ['1 Wallet = 1 Akun & Saldo sesuai pembelian Presale / Mining wajar.'];
+      : ['1 Wallet = 1 Account & Balance matches legitimate Presale / Mining / NFT sources.'];
     return {
       id: w.id,
       wdId: w.id,
@@ -5992,14 +5992,14 @@ function buildAdminDashboardPayload(cfg) {
   if (isHttps) {
     keyboard.push([
       {
-        text: `⚡ Panel Auto-Withdraw 1-Click & Batch (${pendingWds.length} Queued)`,
+        text: `⚡ 1-Click & Batch Auto-Withdraw Panel (${pendingWds.length} Queued)`,
         web_app: { url: adminPanelWebUrl },
       },
     ]);
   }
   keyboard.push(
     [{ text: `💸 Pending Withdrawals (${pendingWds.length} Queued)`, callback_data: 'adm:wd_pending' }],
-    [{ text: `🕵️ Audit Withdrawals & Deteksi Bug`, callback_data: 'adm:audit' }],
+    [{ text: `🕵️ Audit Withdrawals & Bug Detector`, callback_data: 'adm:audit' }],
     [{ text: `🚀 Presale Buyers (${purchases.length})`, callback_data: 'adm:presale' }],
     [{ text: `✅ Paid Withdrawals (${paidWds.length})`, callback_data: 'adm:wd_paid' }],
     [{ text: '🔄 Refresh Stats', callback_data: 'adm:stats' }]
@@ -6015,7 +6015,7 @@ async function sendAdminAuditReport(cfg, chatId) {
     await notifyTelegramUserHtml(
       cfg,
       chatId,
-      `🕵️ <b>AUDIT WITHDRAWAL:</b> Belum ada data permintaan withdraw.`,
+      `🕵️ <b>WITHDRAWAL AUDIT:</b> No withdrawal requests recorded yet.`,
       [[{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }]]
     );
     return;
@@ -6023,7 +6023,7 @@ async function sendAdminAuditReport(cfg, chatId) {
 
   const recentWds = allWds.slice(-20).reverse();
   const lines = [
-    `🕵️ <b>LAPORAN AUDIT WITHDRAWAL &amp; DETEKSI BUG (20 TERBARU)</b>`,
+    `🕵️ <b>WITHDRAWAL AUDIT &amp; ANTI-BUG REPORT (LATEST 20)</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
   ];
 
@@ -6031,7 +6031,7 @@ async function sendAdminAuditReport(cfg, chatId) {
     const u = db.users && db.users[String(w.userId)];
     const audit = auditWithdrawalLegitimacy(cfg, w, u);
     const icon = audit.severity === 'FRAUD' ? '🚨' : audit.severity === 'WARN' ? '⚠️' : '✅';
-    const label = audit.severity === 'FRAUD' ? 'BUG/MULTI-AKUN' : audit.severity === 'WARN' ? 'CEK MANUAL' : 'ASLI/AMAN';
+    const label = audit.severity === 'FRAUD' ? 'BUG/MULTI-ACCT' : audit.severity === 'WARN' ? 'MANUAL CHECK' : 'SAFE/LEGIT';
     const name = escHtml((u && (u.username ? `@${u.username}` : u.firstName)) || w.username || w.firstName || w.userId);
     const note = audit.reasons.length ? `\n   └─ <i>${escHtml(audit.reasons.join('; '))}</i>` : '';
     lines.push(
@@ -6040,7 +6040,7 @@ async function sendAdminAuditReport(cfg, chatId) {
   });
 
   await notifyTelegramUserHtml(cfg, chatId, lines.join('\n'), [
-    [{ text: '💸 Buka Pending Withdrawals', callback_data: 'adm:wd_pending' }],
+    [{ text: '💸 Open Pending Withdrawals', callback_data: 'adm:wd_pending' }],
     [{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }],
   ]);
 }
@@ -6455,7 +6455,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
       await tgCall(cfg.botToken, 'editMessageText', {
         chat_id: chatId,
         message_id: msgId,
-        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n🔥 <b>BURNED (NO REFUND):</b> Permintaan withdraw ditolak &amp; saldo sebesar <b>${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> telah <b>DIHANGUSKAN (Tidak dikembalikan ke user)</b>.`,
+        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n🔥 <b>BURNED (NO REFUND):</b> Withdrawal request rejected &amp; <b>${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> has been <b>BURNED (Not refunded to user)</b>.`,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
       }).catch(() => null);
@@ -6463,7 +6463,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
 
     await tgCall(cfg.botToken, 'answerCallbackQuery', {
       callback_query_id: cq.id,
-      text: '🔥 Withdraw ditolak & saldo bug berhasil dihanguskan (No Refund)!',
+      text: '🔥 Withdrawal rejected & bugged balance burned (No Refund)!',
     }).catch(() => null);
     return;
   }
@@ -6541,7 +6541,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
       await tgCall(cfg.botToken, 'editMessageText', {
         chat_id: chatId,
         message_id: msgId,
-        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n🚫 <b>CONFISCATED &amp; RESET TO 0:</b> Withdraw ditolak tanpa refund, seluruh sisa saldo akun di-reset ke <b>0 ${sym} (Level 1)</b>, dan wallet duplikat telah diputus!`,
+        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n🚫 <b>CONFISCATED &amp; RESET TO 0:</b> Withdrawal rejected without refund, remaining account balance reset to <b>0 ${sym} (Level 1)</b>, and duplicate wallet unlinked!`,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
       }).catch(() => null);
@@ -6549,7 +6549,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
 
     await tgCall(cfg.botToken, 'answerCallbackQuery', {
       callback_query_id: cq.id,
-      text: '🚫 Saldo akun bug berhasil disita (Reset 0) & wallet duplikat diputus!',
+      text: '🚫 Bugged account balance confiscated (Reset 0) & duplicate wallet unlinked!',
     }).catch(() => null);
     return;
   }
