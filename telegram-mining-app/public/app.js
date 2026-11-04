@@ -1126,6 +1126,8 @@
     window.open(url, '_blank', 'noopener');
   }
 
+  const TON_SESSION_UID_KEY = 'maxima_ton_session_uid';
+
   async function syncLocalTonWalletToServer(walletObj) {
     const w = walletObj || (tonConnectUI && tonConnectUI.wallet);
     if (!w || !w.account || !w.account.address) return false;
@@ -1134,11 +1136,32 @@
       walletAppName: (w.device && w.device.appName) || 'TON Connect',
     });
     if (res && res.ok) {
+      try {
+        localStorage.setItem(TON_SESSION_UID_KEY, String(currentTgUser.userId || ''));
+      } catch (_) {}
       appState = res.data;
       sfxSuccess();
       renderAll();
       showToast(res.message);
       return true;
+    }
+    if (res && res.error) {
+      pendingTxAfterConnect = null;
+      if (tonConnectUI) {
+        explicitDisconnectInProgress = true;
+        await tonConnectUI.disconnect().catch(() => {});
+        explicitDisconnectInProgress = false;
+      }
+      hadLocalTonSession = false;
+      try {
+        localStorage.removeItem(TON_SESSION_UID_KEY);
+      } catch (_) {}
+      triggerHaptic('error');
+      showToast(res.error);
+      if (res.data) {
+        appState = res.data;
+        renderAll();
+      }
     }
     return false;
   }
@@ -1306,8 +1329,9 @@
 
     const presaleEndsAtMs =
       (presaleState && presaleState.endsAtMs) ||
-      Date.parse((config.presale && config.presale.endsAt) || '2026-11-05T23:59:59Z');
+      Date.parse((config.presale && config.presale.endsAt) || '2026-11-10T23:59:59Z');
     const isPresaleEnded = Number.isFinite(presaleEndsAtMs) && nowServerMs() >= presaleEndsAtMs;
+    syncPresaleTabVisibility(isPresaleEnded);
 
     const pkgWrap = $('presalePackagesContainer');
     if (pkgWrap && Array.isArray(config.presale.packages)) {
@@ -2057,15 +2081,50 @@
   }
 
   // ================= LIVE 250MS TICKER (MINING CART + PRESALE + 00:00 UTC COUNTDOWN) =================
-  const DEFAULT_PRESALE_END_MS = Date.parse('2026-11-05T23:59:59Z');
+  const DEFAULT_PRESALE_END_MS = Date.parse('2026-11-10T23:59:59Z');
+
+  function syncPresaleTabVisibility(isEnded) {
+    const navBtn = $('navBtnPresale') || document.querySelector('.nav-btn[data-tab="tab-presale"]');
+    const navBar = $('bottomNavBar') || document.querySelector('.bottom-nav');
+    const tabPane = $('tab-presale');
+    if (isEnded) {
+      if (navBtn && navBtn.style.display !== 'none') {
+        const wasActive = navBtn.classList.contains('active') || (tabPane && tabPane.classList.contains('active'));
+        navBtn.style.display = 'none';
+        navBtn.classList.remove('active');
+        if (navBar) navBar.classList.add('presale-hidden');
+        if (tabPane) {
+          tabPane.classList.remove('active');
+          tabPane.style.display = 'none';
+        }
+        if (wasActive) {
+          const miningBtn = document.querySelector('.nav-btn[data-tab="tab-mining"]');
+          const miningPane = $('tab-mining');
+          if (miningBtn) miningBtn.classList.add('active');
+          if (miningPane) miningPane.classList.add('active');
+        }
+      }
+    } else {
+      if (navBtn && navBtn.style.display === 'none') {
+        navBtn.style.display = '';
+      }
+      if (navBar) navBar.classList.remove('presale-hidden');
+      if (tabPane && tabPane.style.display === 'none') {
+        tabPane.style.display = '';
+      }
+    }
+  }
+
   setInterval(() => {
     const curMs = nowServerMs();
 
-    // Presale Countdown until 5 November 2026
+    // Presale Countdown until 10 November 2026
     const psEndMs =
       (appState && appState.presaleState && appState.presaleState.endsAtMs) ||
       (appState && appState.config && appState.config.presale && Date.parse(appState.config.presale.endsAt)) ||
       DEFAULT_PRESALE_END_MS;
+    const isPsEndedNow = Number.isFinite(psEndMs) && curMs >= psEndMs;
+    syncPresaleTabVisibility(isPsEndedNow);
     const psRemSec = Math.max(0, Math.floor((psEndMs - curMs) / 1000));
     const psD = Math.floor(psRemSec / 86400);
     const psH = Math.floor((psRemSec % 86400) / 3600);
@@ -2153,8 +2212,8 @@
         tonConnectUI.onStatusChange(async (wallet) => {
           if (wallet && wallet.account && wallet.account.address) {
             hadLocalTonSession = true;
-            await syncLocalTonWalletToServer(wallet);
-            if (pendingTxAfterConnect) {
+            const ok = await syncLocalTonWalletToServer(wallet);
+            if (ok && pendingTxAfterConnect) {
               const nextTx = pendingTxAfterConnect;
               pendingTxAfterConnect = null;
               setTimeout(() => {
@@ -2176,6 +2235,20 @@
           tonConnectUI.connectionRestored
             .then(async (restored) => {
               if (restored && tonConnectUI.wallet && tonConnectUI.wallet.account) {
+                let storedUid = '';
+                try {
+                  storedUid = localStorage.getItem(TON_SESSION_UID_KEY) || '';
+                } catch (_) {}
+                if (storedUid && storedUid !== String(currentTgUser.userId || '')) {
+                  explicitDisconnectInProgress = true;
+                  await tonConnectUI.disconnect().catch(() => {});
+                  explicitDisconnectInProgress = false;
+                  hadLocalTonSession = false;
+                  try {
+                    localStorage.removeItem(TON_SESSION_UID_KEY);
+                  } catch (_) {}
+                  return;
+                }
                 hadLocalTonSession = true;
                 if (!appState || !appState.user || !appState.user.walletConnected) {
                   await syncLocalTonWalletToServer(tonConnectUI.wallet);
@@ -2215,9 +2288,27 @@
         syncRangeChipsUI();
         renderAll();
 
-        // If local TON Connect session is active but server wasn't synced yet, sync it now
-        if (tonConnectUI && tonConnectUI.connected && tonConnectUI.wallet && !appState.user.walletConnected) {
-          await syncLocalTonWalletToServer(tonConnectUI.wallet);
+        // If local TON Connect session is active, verify it belongs to this Telegram account
+        if (tonConnectUI && tonConnectUI.connected && tonConnectUI.wallet) {
+          let storedUid = '';
+          try {
+            storedUid = localStorage.getItem(TON_SESSION_UID_KEY) || '';
+          } catch (_) {}
+          if (storedUid && storedUid !== String(currentTgUser.userId || '')) {
+            explicitDisconnectInProgress = true;
+            await tonConnectUI.disconnect().catch(() => {});
+            explicitDisconnectInProgress = false;
+            hadLocalTonSession = false;
+            try {
+              localStorage.removeItem(TON_SESSION_UID_KEY);
+            } catch (_) {}
+          } else if (!appState.user.walletConnected) {
+            await syncLocalTonWalletToServer(tonConnectUI.wallet);
+          } else {
+            try {
+              localStorage.setItem(TON_SESSION_UID_KEY, String(currentTgUser.userId || ''));
+            } catch (_) {}
+          }
         }
       }
     } catch (err) {
