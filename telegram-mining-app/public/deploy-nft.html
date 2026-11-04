@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -91,41 +91,41 @@
 </head>
 <body>
   <div class="card">
-    <div class="badge-status" id="contractBadge">⏳ Memeriksa Status Kontrak di TON Mainnet...</div>
-    <h1>💎 Deploy Smart Contract NFT MAXIMA (1,000 Supply)</h1>
+    <div class="badge-status" id="contractBadge">⏳ Checking Contract Status on TON Mainnet...</div>
+    <h1>💎 Deploy MAXIMA NFT Smart Contract (1,000 Supply)</h1>
     <p class="sub">
-      Halaman resmi Admin untuk mengaktifkan kontrak on-chain <b>MAXIMA Genesis Mining Rigs</b> (TEP-62 / TEP-64 / TEP-66) hanya dengan <b>1 Klik via TON Connect</b> tanpa seed phrase.
+      Official Admin page to activate the on-chain <b>MAXIMA Genesis Mining Rigs</b> collection contract (TEP-62 / TEP-64 / TEP-66) in <b>1 Click via TON Connect</b> (no seed phrase needed).
     </p>
 
     <div id="ton-connect" style="margin: 14px 0;"></div>
 
     <div class="field">
-      <label>📌 Alamat Kontrak Koleksi NFT (Sudah Otomatis Terpasang di App):</label>
+      <label>📌 Pre-Configured NFT Collection Contract Address:</label>
       <code id="colAddrCode">EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP</code>
     </div>
 
     <div class="field">
-      <label>👛 Wallet Owner &amp; Penerima Otomatis 10 GRAM / Mint:</label>
+      <label>👛 Owner Wallet &amp; Automatic 10 GRAM / Mint Recipient:</label>
       <code>UQDUe_P76bjHJ9EIUk8KLnFVRhbHf9_g7lJXHXgchYpZy4R1</code>
     </div>
 
     <button class="btn-deploy" id="btnDeploy">
-      🚀 Deploy Smart Contract NFT On-Chain (0.08 TON Gas)
+      🚀 Deploy On-Chain NFT Smart Contract (0.08 TON Gas)
     </button>
 
     <div id="statusMsg" class="msg"></div>
 
     <div class="links">
-      <a href="https://tonviewer.com/EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP" target="_blank" rel="noopener">🔎 Cek di Tonviewer ↗</a>
-      <a href="https://getgems.io/collection/EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP" target="_blank" rel="noopener">💎 Cek di Getgems ↗</a>
-      <a href="/">⛏️ Kembali ke MAXIMA App</a>
+      <a href="https://tonviewer.com/EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP" target="_blank" rel="noopener">🔎 View on Tonviewer ↗</a>
+      <a href="https://getgems.io/collection/EQCd6lafNVnozjheyXOftzXB2lBANxjyub5WDlvLUeywSVLP" target="_blank" rel="noopener">💎 View on Getgems ↗</a>
+      <a href="/">⛏️ Back to MAXIMA App</a>
     </div>
 
     <ul class="rules">
-      <li><b>Max Supply:</b> 1,000 Unique NFTs (#0001 s/d #1000)</li>
-      <li><b>Harga Mint:</b> 10 TON (10 GRAM) diteruskan otomatis ke dompet Owner + ~0.08 TON gas</li>
-      <li><b>Kuota Mint Terkunci On-Chain:</b> Maksimal 5x Mint per Wallet</li>
-      <li><b>Auto-Switch:</b> Begitu kontrak berstatus <b>ACTIVE</b> di TON Mainnet, aplikasi MAXIMA otomatis mengaktifkan Direct On-Chain Smart Contract Minting tanpa perlu ubah kode lagi!</li>
+      <li><b>Max Supply:</b> 1,000 Unique NFTs (#0001 to #1000)</li>
+      <li><b>Mint Price:</b> 10 TON (10 GRAM) automatically forwarded to Owner wallet + ~0.08 TON gas</li>
+      <li><b>On-Chain Mint Cap:</b> Maximum 5x Mints per Wallet enforced on-chain</li>
+      <li><b>Auto-Switch:</b> As soon as this contract becomes <b>ACTIVE</b> on TON Mainnet, MAXIMA App automatically activates Direct On-Chain Smart Contract Minting with zero extra configuration!</li>
     </ul>
   </div>
 
@@ -151,8 +151,8 @@
           const d = await r.json();
           if (d && d.status === 'active') {
             badge.className = 'badge-status live';
-            badge.textContent = '✅ KONTRAK NFT ON-CHAIN SUDAH AKTIF (LIVE DI TON MAINNET)';
-            btn.textContent = '✅ Smart Contract Sudah Aktif di TON Mainnet';
+            badge.textContent = '✅ ON-CHAIN NFT CONTRACT IS ACTIVE (LIVE ON TON MAINNET)';
+            btn.textContent = '✅ Smart Contract Active on TON Mainnet';
             btn.disabled = true;
             fetch('/api/nft/sync-onchain', {
               method: 'POST',
@@ -164,7 +164,7 @@
         }
       } catch (_) {}
       badge.className = 'badge-status';
-      badge.textContent = '🟡 Belum Dideploy — Klik Tombol Deploy di Bawah (0.08 TON)';
+      badge.textContent = '🟡 Not Deployed Yet — Click Deploy Button Below (0.08 TON)';
       return false;
     }
 
@@ -174,12 +174,12 @@
     document.getElementById('btnDeploy').onclick = async () => {
       const statusEl = document.getElementById('statusMsg');
       if (!tc.connected) {
-        statusEl.textContent = '🔗 Hubungkan dompet TON Anda terlebih dahulu pada tombol di atas...';
+        statusEl.textContent = '🔗 Connect your TON Wallet first using the button above...';
         await tc.openModal();
         return;
       }
       try {
-        statusEl.textContent = '⏳ Silakan konfirmasi transaksi Deploy (0.08 TON) di aplikasi dompet TON Anda...';
+        statusEl.textContent = '⏳ Please confirm the Deploy transaction (0.08 TON) in your TON wallet app...';
         const res = await tc.sendTransaction({
           validUntil: Math.floor(Date.now() / 1000) + 360,
           messages: [{
@@ -190,14 +190,14 @@
           }]
         });
         if (res && res.boc) {
-          statusEl.textContent = '🎉 Transaksi Deploy Terkirim! Menunggu konfirmasi blok TON (~10–15 detik)... Status di atas akan berubah menjadi HIJAU secara otomatis!';
+          statusEl.textContent = '🎉 Deploy Transaction Broadcast! Waiting for TON block finality (~10–15 seconds)... The badge above will turn GREEN automatically!';
           setTimeout(checkContractActive, 6000);
           setTimeout(checkContractActive, 12000);
           setTimeout(checkContractActive, 20000);
         }
       } catch (e) {
         statusEl.style.color = '#fda4af';
-        statusEl.textContent = '⚠️ Transaksi dibatalkan atau gagal: ' + ((e && e.message) || e);
+        statusEl.textContent = '⚠️ Transaction cancelled or failed: ' + ((e && e.message) || e);
         setTimeout(() => { statusEl.style.color = '#10e899'; }, 4000);
       }
     };

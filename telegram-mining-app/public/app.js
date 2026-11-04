@@ -544,11 +544,19 @@
     },
   };
 
-  if (!localStorage.getItem('maxima_default_en_v2')) {
-    localStorage.setItem('maxima_lang', 'en');
-    localStorage.setItem('maxima_default_en_v2', '1');
+  const LANG_STORAGE_KEY = 'maxima_lang_en_v3';
+  let currentLang = 'en';
+  try {
+    if (!localStorage.getItem('maxima_default_en_v3')) {
+      localStorage.setItem('maxima_lang', 'en');
+      localStorage.setItem(LANG_STORAGE_KEY, 'en');
+      localStorage.setItem('maxima_lang_chosen', '1');
+      localStorage.setItem('maxima_default_en_v3', '1');
+    }
+    currentLang = localStorage.getItem(LANG_STORAGE_KEY) || 'en';
+  } catch (_) {
+    currentLang = 'en';
   }
-  let currentLang = localStorage.getItem('maxima_lang') || 'en';
   if (!LANGUAGES.some((l) => l.code === currentLang)) currentLang = 'en';
 
   function t(key, vars = {}) {
@@ -992,8 +1000,11 @@
   function setLanguage(code, closeModal = false) {
     if (!LANGUAGES.some((l) => l.code === code)) return;
     currentLang = code;
-    localStorage.setItem('maxima_lang', code);
-    localStorage.setItem('maxima_lang_chosen', '1');
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, code);
+      localStorage.setItem('maxima_lang', code);
+      localStorage.setItem('maxima_lang_chosen', '1');
+    } catch (_) {}
     sfxClick();
     triggerHaptic('light');
     if (closeModal && $('langModal')) {
@@ -1020,9 +1031,9 @@
     if ($('inputWithdrawAmount')) $('inputWithdrawAmount').placeholder = t('wd_placeholder');
   }
 
-  // Open Language Modal on First Launch!
-  if (!localStorage.getItem('maxima_lang_chosen')) {
-    if ($('langModal')) $('langModal').hidden = false;
+  // English ('en') is strictly active by default on launch; users can open #langModal anytime via header 🌐 button or Settings
+  if ($('langModal')) {
+    $('langModal').hidden = true;
   }
 
   if ($('btnOpenLangModal')) {
@@ -3217,7 +3228,7 @@
 
   async function loadAdminWithdrawals(silent = false) {
     if (!silent && $('admPendingWdList') && !adminWdData) {
-      $('admPendingWdList').innerHTML = `<div class="empty-box">⏳ Memuat antrean withdraw & audit anti-bug...</div>`;
+      $('admPendingWdList').innerHTML = `<div class="empty-box">⏳ Loading withdrawal queue & anti-bug audit...</div>`;
     }
     try {
       const res = await apiPost('/api/admin/withdrawals');
@@ -3236,10 +3247,10 @@
         }
         renderAdminWithdrawModal();
       } else if (!silent) {
-        showToast((res && res.error) || 'Gagal memuat data Admin Withdraw.');
+        showToast((res && res.error) || 'Failed to load Admin Withdrawals.');
       }
     } catch (err) {
-      if (!silent) showToast('⚠️ Gagal memuat antrean withdraw.');
+      if (!silent) showToast('⚠️ Failed to load withdrawal queue.');
     }
   }
 
@@ -3258,8 +3269,8 @@
     if ($('admBtnAutoPayLabel')) {
       $('admBtnAutoPayLabel').textContent =
         selCount > 0
-          ? `⚡ Kirim Otomatis via TON Connect (${selCount} Terpilih · ${nf.format(selNetMaxima)} MAXIMA)`
-          : `⚡ Kirim Otomatis via TON Connect (0 Terpilih)`;
+          ? `⚡ Auto-Send via TON Connect (${selCount} Selected · ${nf.format(selNetMaxima)} MAXIMA)`
+          : `⚡ Auto-Send via TON Connect (0 Selected)`;
     }
     const disableBatch = adminBusy || selCount === 0;
     if ($('btnAdmAutoPaySelected')) $('btnAdmAutoPaySelected').disabled = disableBatch;
@@ -3285,7 +3296,7 @@
     const listEl = $('admPendingWdList');
     if (listEl) {
       if (!pending.length) {
-        listEl.innerHTML = `<div class="empty-box">🎉 Tidak ada antrean withdraw PENDING saat ini. Semua withdraw telah selesai diproses!</div>`;
+        listEl.innerHTML = `<div class="empty-box">🎉 No PENDING withdrawals right now. All withdrawal requests have been processed!</div>`;
       } else {
         listEl.innerHTML = pending
           .map((w) => {
@@ -3294,10 +3305,10 @@
               w.riskLevel === 'FRAUD' ? 'fraud-card' : w.riskLevel === 'WARN' ? 'warn-card' : '';
             const badgeHtml =
               w.riskLevel === 'FRAUD'
-                ? `<span class="adm-risk-badge fraud">🚨 TERINDIKASI BUG</span>`
+                ? `<span class="adm-risk-badge fraud">🚨 FLAGGED BUG</span>`
                 : w.riskLevel === 'WARN'
-                ? `<span class="adm-risk-badge warn">⚠️ PERINGATAN</span>`
-                : `<span class="adm-risk-badge safe">✅ AMAN (MURNI)</span>`;
+                ? `<span class="adm-risk-badge warn">⚠️ WARNING</span>`
+                : `<span class="adm-risk-badge safe">✅ SAFE (VERIFIED)</span>`;
             const timeStr = w.createdAt ? new Date(w.createdAt).toISOString().replace('T', ' ').slice(0, 16) + ' UTC' : '-';
             const reasonsHtml = (w.reasons || []).map((r) => `<div>• ${escapeHtml(r)}</div>`).join('');
 
@@ -3316,12 +3327,12 @@
 
                 <div class="adm-wd-user-meta">
                   👤 <b>${escapeHtml(w.username)}</b> (ID: <code>${escapeHtml(w.userId)}</code>) · Lv.${nf.format(w.userLevel || 1)}<br/>
-                  💰 Sisa Saldo App: <b>${nf.format(w.userCurrentInApp || 0)}</b> · Total Mined: <b>${nf.format(w.userMinedTotal || 0)}</b> · Presale: <b>${nf.format(w.userPresaleCoins || 0)}</b>
+                  💰 Remaining App Bal: <b>${nf.format(w.userCurrentInApp || 0)}</b> · Total Mined: <b>${nf.format(w.userMinedTotal || 0)}</b> · Presale: <b>${nf.format(w.userPresaleCoins || 0)}</b>
                 </div>
 
                 <div class="adm-wd-wallet-box">
                   <span class="adm-wd-wallet-addr">${escapeHtml(w.walletAddress)}</span>
-                  <button type="button" class="btn-mini" data-adm-copy="${escapeHtml(w.walletAddress)}">Salin</button>
+                  <button type="button" class="btn-mini" data-adm-copy="${escapeHtml(w.walletAddress)}">Copy</button>
                 </div>
 
                 <div class="adm-wd-reasons">${reasonsHtml}</div>
@@ -3334,10 +3345,10 @@
                     ✅ PAID Manual
                   </button>
                   <button type="button" class="adm-single-btn burn" data-adm-burn="${escapeHtml(w.wdId)}" ${adminBusy ? 'disabled' : ''}>
-                    🔥 Hanguskan Bug
+                    🔥 Burn Bug
                   </button>
                   <button type="button" class="adm-single-btn wipe" data-adm-wipe="${escapeHtml(w.wdId)}" ${adminBusy ? 'disabled' : ''}>
-                    🚫 Sita Reset 0
+                    🚫 Wipe Reset 0
                   </button>
                   <button type="button" class="adm-single-btn refund" data-adm-refund="${escapeHtml(w.wdId)}" ${adminBusy ? 'disabled' : ''}>
                     🔄 Refund
@@ -3353,7 +3364,7 @@
     const histEl = $('admHistoryWdList');
     if (histEl) {
       if (!recentHistory.length) {
-        histEl.innerHTML = `<div class="empty-box">Belum ada riwayat withdraw yang selesai diproses.</div>`;
+        histEl.innerHTML = `<div class="empty-box">No processed withdrawal history yet.</div>`;
       } else {
         histEl.innerHTML = recentHistory
           .map(
@@ -3382,7 +3393,7 @@
 
     if (!tonConnectUI) initTonConnect();
     if (!tonConnectUI || !tonConnectUI.connected || !tonConnectUI.wallet || !tonConnectUI.wallet.account) {
-      showToast('🔗 Hubungkan dompet TON Admin (Creator Wallet) terlebih dahulu, lalu klik Auto-Pay lagi.');
+      showToast('🔗 Connect your Admin TON Wallet (Creator Wallet) first, then click Auto-Pay again.');
       await openTonConnect(false);
       return;
     }
@@ -3395,7 +3406,7 @@
     updateAdminSelectionButtons();
 
     try {
-      showToast(`⏳ Menyiapkan payload Jetton MAXIMA (${targetIds.length} withdraw, Memo: "${memo}")...`);
+      showToast(`⏳ Preparing MAXIMA Jetton payload (${targetIds.length} withdrawals, Memo: "${memo}")...`);
       const prep = await apiPost('/api/admin/withdraw/prepare-tx', {
         wdIds: targetIds,
         memo,
@@ -3403,14 +3414,14 @@
       });
 
       if (!prep || !prep.ok || !Array.isArray(prep.items) || !prep.items.length) {
-        showToast((prep && prep.error) || '⚠️ Gagal menyiapkan transaksi Jetton.');
+        showToast((prep && prep.error) || '⚠️ Failed to prepare Jetton transaction.');
         adminBusy = false;
         updateAdminSelectionButtons();
         return;
       }
 
       const items = prep.items;
-      const CHUNK_SIZE = 4; // Standar TON Wallet v4r2: maks 4 pesan per 1 transaksi
+      const CHUNK_SIZE = 4; // Standard TON Wallet v4r2: max 4 messages per transaction
       let totalConfirmed = 0;
 
       for (let i = 0; i < items.length; i += CHUNK_SIZE) {
@@ -3422,7 +3433,7 @@
             : '';
 
         showToast(
-          `🚀 ${batchLabel}Membuka TON Connect (${chunk.length} penerima · ${nf.format(chunkNet)} MAXIMA · Memo: "${memo}")...`
+          `🚀 ${batchLabel}Opening TON Connect (${chunk.length} recipients · ${nf.format(chunkNet)} MAXIMA · Memo: "${memo}")...`
         );
 
         const validUntilSec = Math.floor(nowServerMs() / 1000) + 600;
@@ -3455,15 +3466,15 @@
       }
 
       if (totalConfirmed > 0) {
-        showToast(`✅ ${totalConfirmed} Withdraw berhasil dikirim via TON Connect, ditandai PAID & dipost ke @MAXIMAPAYOUT!`);
+        showToast(`✅ ${totalConfirmed} Withdrawals sent via TON Connect, marked PAID & posted to @MAXIMAPAYOUT!`);
         await loadAdminWithdrawals(true);
       }
     } catch (err) {
       const msg = String((err && err.message) || err || '').toLowerCase();
       if (msg.includes('reject') || msg.includes('decline') || msg.includes('cancel') || msg.includes('user_rejects')) {
-        showToast('❌ Transaksi dibatalkan di dompet TON.');
+        showToast('❌ Transaction cancelled in TON wallet.');
       } else {
-        showToast('⚠️ Transaksi TON Connect gagal atau dibatalkan.');
+        showToast('⚠️ TON Connect transaction failed or cancelled.');
       }
     } finally {
       adminBusy = false;
@@ -3493,12 +3504,12 @@
         }
         sfxSuccess();
         triggerHaptic('success');
-        showToast(res.message || '✅ Berhasil ditandai PAID & dipost ke @MAXIMAPAYOUT.');
+        showToast(res.message || '✅ Marked PAID & posted to @MAXIMAPAYOUT.');
       } else {
-        showToast((res && res.error) || 'Gagal menandai PAID.');
+        showToast((res && res.error) || 'Failed to mark PAID.');
       }
     } catch (_) {
-      showToast('⚠️ Gagal menghubungi server.');
+      showToast('⚠️ Failed to reach server.');
     } finally {
       adminBusy = false;
       renderAdminWithdrawModal();
@@ -3525,12 +3536,12 @@
         }
         sfxSuccess();
         triggerHaptic('success');
-        showToast(res.message || '✅ Aksi admin berhasil dijalankan.');
+        showToast(res.message || '✅ Admin action executed successfully.');
       } else {
-        showToast((res && res.error) || 'Gagal menjalankan aksi admin.');
+        showToast((res && res.error) || 'Failed to execute admin action.');
       }
     } catch (_) {
-      showToast('⚠️ Gagal menghubungi server.');
+      showToast('⚠️ Failed to reach server.');
     } finally {
       adminBusy = false;
       renderAdminWithdrawModal();
@@ -3559,7 +3570,7 @@
         .slice(0, 4)
         .forEach((w) => selectedAdminWdIds.add(w.wdId));
       renderAdminWithdrawModal();
-      showToast(`☑️ ${selectedAdminWdIds.size} withdraw AMAN dipilih (1 Batch TON Connect).`);
+      showToast(`☑️ ${selectedAdminWdIds.size} SAFE withdrawals selected (1 TON Connect Batch).`);
     });
   }
   if ($('btnAdmSelectSafe')) {
@@ -3571,7 +3582,7 @@
         .filter((w) => w.riskLevel === 'SAFE')
         .forEach((w) => selectedAdminWdIds.add(w.wdId));
       renderAdminWithdrawModal();
-      showToast(`☑️ ${selectedAdminWdIds.size} withdraw AMAN dipilih.`);
+      showToast(`☑️ ${selectedAdminWdIds.size} SAFE withdrawals selected.`);
     });
   }
   if ($('btnAdmSelectFraud')) {
@@ -3583,7 +3594,7 @@
         .filter((w) => w.riskLevel === 'FRAUD')
         .forEach((w) => selectedAdminWdIds.add(w.wdId));
       renderAdminWithdrawModal();
-      showToast(`🚨 ${selectedAdminWdIds.size} withdraw TERINDIKASI BUG dipilih.`);
+      showToast(`🚨 ${selectedAdminWdIds.size} FLAGGED BUG withdrawals selected.`);
     });
   }
   if ($('btnAdmClearSelect')) {

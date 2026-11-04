@@ -18,10 +18,10 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Official TON Connect UI SDK (Patched Local Bundle for Telegram Desktop & Mobile + CDN Fallback) -->
   <script
-    src="/tonconnect-ui.min.js?v=20261105-nft-onchain"
+    src="/tonconnect-ui.min.js?v=20261105-en-default"
     onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';s.onerror=function(){var u=document.createElement('script');u.src='https://unpkg.com/@tonconnect/ui@2.0.12/dist/tonconnect-ui.min.js';document.head.appendChild(u);};document.head.appendChild(s);"
   ></script>
-  <link rel="stylesheet" href="/style.css?v=20261105-nft-onchain" />
+  <link rel="stylesheet" href="/style.css?v=20261105-en-default" />
 </head>
 <body>
   <!-- ================= INITIAL 10-LANGUAGE SELECTION POPUP MODAL ================= -->
@@ -506,7 +506,7 @@
             class="btn-ghost btn-block"
             style="margin-top: 8px; display: block; text-align: center; text-decoration: none;"
           >
-            💎 1-Click Deploy Smart Contract NFT On-Chain
+            💎 1-Click Deploy On-Chain NFT Smart Contract
           </a>
         </div>
 
@@ -818,10 +818,10 @@
 
         <!-- Clear Benefit & Ownership Rules Callout -->
         <div class="nft-rules-callout">
-          <div>⚡ <b>Max 5x Mint / User</b> seharga <b>10 GRAM</b> per NFT (Total Supply <b>1,000 NFT</b>).</div>
-          <div>🏆 <b>Top 10 Rarity Cap:</b> Maksimal <b>10 NFT Rarity Tertinggi</b> di wallet Anda yang memberikan boost Mining Power aktif (<i>Mythic &gt; Legendary &gt; Epic &gt; Rare &gt; Common</i>).</div>
-          <div>🎁 <b>Exclusive 1st Mint Reward:</b> Bonus <b>+10,000 MAXIMA (Legendary)</b> &amp; <b>+20,000 MAXIMA (Mythic)</b> <u>hanya diberikan 1x saat minting pertama kali</u>.</div>
-          <div>🔄 <b>Transferable Benefit On-Chain:</b> Saat NFT berpindah wallet (transfer / jual beli), benefit otomatis pindah ke pemilik baru &amp; lepas dari pemilik lama!</div>
+          <div>⚡ <b>Max 5x Mints / User</b> at <b>10 GRAM</b> per NFT (Limited <b>1,000 NFT</b> Total Supply).</div>
+          <div>🏆 <b>Top 10 Rarity Cap:</b> Up to your <b>Top 10 Highest-Rarity NFTs</b> held in your connected wallet grant active Mining Power boost (<i>Mythic &gt; Legendary &gt; Epic &gt; Rare &gt; Common</i>).</div>
+          <div>🎁 <b>Exclusive 1st-Mint Bonus:</b> <b>+10,000 MAXIMA (Legendary)</b> &amp; <b>+20,000 MAXIMA (Mythic)</b> are awarded <u>once only to the very first minter</u>.</div>
+          <div>🔄 <b>Transferable On-Chain Benefit:</b> When an NFT is transferred or sold to another wallet, its Mining Power boost automatically moves to the new owner &amp; deactivates on the old wallet!</div>
         </div>
 
         <div class="nft-sim-banner" id="nftOfflineSimBanner" hidden></div>
@@ -965,13 +965,13 @@
             style="margin-bottom: 8px"
           />
           <div class="adm-toolbar-chips">
-            <button type="button" class="r-chip" id="btnAdmSelectBatch4">☑️ Pilih 4 Aman</button>
-            <button type="button" class="r-chip" id="btnAdmSelectSafe">✅ Semua Aman</button>
-            <button type="button" class="r-chip" id="btnAdmSelectFraud">🚨 Pilih Bug</button>
+            <button type="button" class="r-chip" id="btnAdmSelectBatch4">☑️ Select 4 Safe</button>
+            <button type="button" class="r-chip" id="btnAdmSelectSafe">✅ All Safe</button>
+            <button type="button" class="r-chip" id="btnAdmSelectFraud">🚨 Select Bug</button>
             <button type="button" class="r-chip" id="btnAdmClearSelect">✖ Reset</button>
           </div>
           <button type="button" class="btn-gold btn-block" id="btnAdmAutoPaySelected" style="margin-top: 8px" disabled>
-            <span id="admBtnAutoPayLabel">⚡ Kirim Otomatis via TON Connect (0 Terpilih)</span>
+            <span id="admBtnAutoPayLabel">⚡ Auto-Send via TON Connect (0 Selected)</span>
           </button>
           <div class="btn-row-3" style="margin-top: 6px">
             <button type="button" class="btn-ghost btn-sm" id="btnAdmMarkPaidSelected" disabled>✅ Paid Manual</button>
@@ -994,6 +994,6 @@
   <!-- Toast Notification -->
   <div class="toast-msg" id="toastBox"></div>
 
-  <script src="/app.js?v=20261105-nft-onchain"></script>
+  <script src="/app.js?v=20261105-en-default"></script>
 </body>
 </html>
