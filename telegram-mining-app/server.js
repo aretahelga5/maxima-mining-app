@@ -93,6 +93,7 @@ function createEmptyDB() {
   return {
     schemaVersion: 2,
     users: {},
+    walletOwners: {},
     withdrawals: [],
     usedTxRefs: {},
     presale: {
@@ -104,10 +105,256 @@ function createEmptyDB() {
   };
 }
 
+// Enforce strict 1-Wallet-Per-Account across all users in DB & clean any legacy duplicate wallet links
+function deduplicateWalletsInDB(base) {
+  if (!base || typeof base !== 'object') return;
+  if (!base.users || typeof base.users !== 'object') base.users = {};
+  if (!base.walletOwners || typeof base.walletOwners !== 'object') base.walletOwners = {};
+  const allWds = Array.isArray(base.withdrawals) ? base.withdrawals : [];
+  const allPs = base.presale && Array.isArray(base.presale.purchases) ? base.presale.purchases : [];
+
+  // Normalize wallet fields on each user first
+  for (const u of Object.values(base.users)) {
+    if (!u || typeof u !== 'object') continue;
+    if (u.walletAddress && !u.walletRaw) {
+      const parsed = parseTonAddressToRaw(u.walletAddress);
+      if (parsed) {
+        u.walletRaw = parsed;
+        u.walletFriendly = rawToFriendlyTon(parsed, false);
+      } else {
+        u.walletAddress = '';
+      }
+    }
+    if (u.walletRaw) {
+      const cleanRaw = parseTonAddressToRaw(u.walletRaw);
+      if (cleanRaw) {
+        u.walletRaw = cleanRaw;
+        u.walletFriendly = rawToFriendlyTon(cleanRaw, false);
+        u.walletAddress = u.walletFriendly;
+      } else {
+        u.walletRaw = '';
+        u.walletFriendly = '';
+        u.walletAddress = '';
+      }
+    }
+    if (!u.verifiedWallets || typeof u.verifiedWallets !== 'object') u.verifiedWallets = {};
+  }
+
+  // Group all users referencing each wallet address
+  const candidatesByWallet = new Map();
+  const addCandidate = (wRaw, u) => {
+    const clean = parseTonAddressToRaw(wRaw);
+    if (!clean || !u || !u.userId) return;
+    if (!candidatesByWallet.has(clean)) candidatesByWallet.set(clean, new Map());
+    candidatesByWallet.get(clean).set(String(u.userId).trim(), u);
+  };
+
+  for (const [wRaw, ownerUid] of Object.entries(base.walletOwners)) {
+    const clean = parseTonAddressToRaw(wRaw);
+    const u = base.users[String(ownerUid || '').trim()];
+    if (clean && u) addCandidate(clean, u);
+  }
+
+  for (const u of Object.values(base.users)) {
+    if (!u || !u.userId) continue;
+    if (u.walletRaw) addCandidate(u.walletRaw, u);
+    if (u.boundWalletRaw) addCandidate(u.boundWalletRaw, u);
+    if (u.verifiedWallets && typeof u.verifiedWallets === 'object') {
+      for (const wKey of Object.keys(u.verifiedWallets)) {
+        addCandidate(wKey, u);
+      }
+    }
+    if (Array.isArray(u.withdrawals)) {
+      for (const wd of u.withdrawals) {
+        if (wd) addCandidate(wd.walletRaw || wd.walletAddress, u);
+      }
+    }
+    if (Array.isArray(u.presalePurchases)) {
+      for (const p of u.presalePurchases) {
+        if (p) addCandidate(p.walletAddress, u);
+      }
+    }
+  }
+
+  for (const wd of allWds) {
+    if (!wd || !wd.userId) continue;
+    const u = base.users[String(wd.userId).trim()];
+    if (u) addCandidate(wd.walletRaw || wd.walletAddress, u);
+  }
+
+  for (const p of allPs) {
+    if (!p || !p.userId) continue;
+    const u = base.users[String(p.userId).trim()];
+    if (u) addCandidate(p.walletAddress, u);
+  }
+
+  const newWalletOwners = {};
+
+  for (const [wRaw, userMap] of candidatesByWallet.entries()) {
+    const usersList = Array.from(userMap.values());
+    if (!usersList.length) continue;
+
+    // Score each candidate so the rightful original owner keeps the wallet
+    const scored = usersList.map((u) => {
+      const uid = String(u.userId).trim();
+      const userWds = [
+        ...(Array.isArray(u.withdrawals) ? u.withdrawals : []),
+        ...allWds.filter((x) => x && String(x.userId).trim() === uid),
+      ].filter((x) => x && (x.walletRaw === wRaw || parseTonAddressToRaw(x.walletAddress) === wRaw));
+
+      const paidWds = userWds.filter((x) => String(x.status || '').toUpperCase().startsWith('PAID'));
+      const earliestPaidWdAt = paidWds.length
+        ? Math.min(...paidWds.map((x) => Number(x.createdAt || Infinity)))
+        : Infinity;
+      const earliestWdAt = userWds.length
+        ? Math.min(...userWds.map((x) => Number(x.createdAt || Infinity)))
+        : Infinity;
+
+      const userPs = [
+        ...(Array.isArray(u.presalePurchases) ? u.presalePurchases : []),
+        ...allPs.filter((x) => x && String(x.userId).trim() === uid),
+      ].filter((x) => x && parseTonAddressToRaw(x.walletAddress) === wRaw);
+      const earliestPsAt = userPs.length
+        ? Math.min(...userPs.map((x) => Number(x.createdAt || Infinity)))
+        : Infinity;
+
+      const verInfo = u.verifiedWallets && u.verifiedWallets[wRaw];
+      const tonConnectVerifiedAt =
+        verInfo && verInfo.source === 'tonconnect' ? Number(verInfo.verifiedAt || 1) : Infinity;
+      const anyVerifiedAt = verInfo ? Number(verInfo.verifiedAt || 1) : Infinity;
+      const isCurrentlyActive = u.walletRaw === wRaw;
+      const connectedOrCreatedAt = Number(u.walletConnectedAt || u.verifiedAt || u.createdAt || Infinity);
+
+      return {
+        u,
+        uid,
+        earliestPaidWdAt,
+        earliestWdAt,
+        earliestPsAt,
+        tonConnectVerifiedAt,
+        anyVerifiedAt,
+        isCurrentlyActive,
+        connectedOrCreatedAt,
+      };
+    });
+
+    scored.sort((a, b) => {
+      if (a.earliestPaidWdAt !== b.earliestPaidWdAt) return a.earliestPaidWdAt - b.earliestPaidWdAt;
+      if (a.earliestWdAt !== b.earliestWdAt) return a.earliestWdAt - b.earliestWdAt;
+      if (a.earliestPsAt !== b.earliestPsAt) return a.earliestPsAt - b.earliestPsAt;
+      if (a.tonConnectVerifiedAt !== b.tonConnectVerifiedAt) return a.tonConnectVerifiedAt - b.tonConnectVerifiedAt;
+      if (a.anyVerifiedAt !== b.anyVerifiedAt) return a.anyVerifiedAt - b.anyVerifiedAt;
+      if (a.isCurrentlyActive !== b.isCurrentlyActive) return a.isCurrentlyActive ? -1 : 1;
+      if (a.connectedOrCreatedAt !== b.connectedOrCreatedAt) return a.connectedOrCreatedAt - b.connectedOrCreatedAt;
+      return a.uid.localeCompare(b.uid);
+    });
+
+    const winner = scored[0];
+    newWalletOwners[wRaw] = winner.uid;
+    if (winner.u.walletRaw === wRaw && !winner.u.boundWalletRaw) {
+      winner.u.boundWalletRaw = wRaw;
+    }
+
+    // Disconnect and strip this wallet from all secondary/duplicate accounts
+    for (let i = 1; i < scored.length; i++) {
+      const dup = scored[i].u;
+      if (dup.walletRaw === wRaw) {
+        dup.walletRaw = '';
+        dup.walletFriendly = '';
+        dup.walletAddress = '';
+        dup.walletAppName = '';
+        dup.onChainHolding = 0;
+      }
+      if (dup.boundWalletRaw === wRaw) {
+        dup.boundWalletRaw = '';
+      }
+      if (dup.verifiedWallets && dup.verifiedWallets[wRaw]) {
+        delete dup.verifiedWallets[wRaw];
+      }
+      dup.walletVerified = Boolean(dup.walletRaw && dup.verifiedWallets && dup.verifiedWallets[dup.walletRaw]);
+      dup.everVerifiedWallet = Boolean(dup.verifiedWallets && Object.keys(dup.verifiedWallets).length > 0);
+      if (!dup.everVerifiedWallet) {
+        dup.verifiedAt = null;
+      }
+    }
+  }
+
+  base.walletOwners = newWalletOwners;
+}
+
+// Check if a raw TON wallet is already connected, verified, bound, or used by another Telegram account
+function findWalletOwnerUserId(rawAddr, excludeUserId = null) {
+  const cleanRaw = parseTonAddressToRaw(rawAddr);
+  if (!cleanRaw) return null;
+  const exId = excludeUserId !== null && excludeUserId !== undefined ? String(excludeUserId).trim() : null;
+
+  if (!db.walletOwners || typeof db.walletOwners !== 'object') {
+    db.walletOwners = {};
+  }
+
+  // 1. Check persistent walletOwners registry first
+  const recordedOwner = db.walletOwners[cleanRaw];
+  if (recordedOwner) {
+    const recUid = String(recordedOwner).trim();
+    if (db.users && db.users[recUid]) {
+      if (!exId || recUid !== exId) return recUid;
+    }
+  }
+
+  // 2. Scan all users for active walletRaw, boundWalletRaw, verifiedWallets, withdrawals, or presale
+  for (const u of Object.values(db.users || {})) {
+    if (!u || !u.userId) continue;
+    const uid = String(u.userId).trim();
+    if (exId && uid === exId) continue;
+
+    if (u.walletRaw === cleanRaw || u.boundWalletRaw === cleanRaw) {
+      db.walletOwners[cleanRaw] = uid;
+      return uid;
+    }
+    if (u.verifiedWallets && u.verifiedWallets[cleanRaw]) {
+      db.walletOwners[cleanRaw] = uid;
+      return uid;
+    }
+    if (
+      Array.isArray(u.withdrawals) &&
+      u.withdrawals.some((w) => w && (w.walletRaw === cleanRaw || parseTonAddressToRaw(w.walletAddress) === cleanRaw))
+    ) {
+      db.walletOwners[cleanRaw] = uid;
+      return uid;
+    }
+    if (
+      Array.isArray(u.presalePurchases) &&
+      u.presalePurchases.some((p) => p && parseTonAddressToRaw(p.walletAddress) === cleanRaw)
+    ) {
+      db.walletOwners[cleanRaw] = uid;
+      return uid;
+    }
+  }
+
+  // 3. Check global withdrawals array
+  if (Array.isArray(db.withdrawals)) {
+    const wdMatch = db.withdrawals.find(
+      (w) =>
+        w &&
+        w.userId &&
+        (!exId || String(w.userId).trim() !== exId) &&
+        (w.walletRaw === cleanRaw || parseTonAddressToRaw(w.walletAddress) === cleanRaw)
+    );
+    if (wdMatch) {
+      const uid = String(wdMatch.userId).trim();
+      db.walletOwners[cleanRaw] = uid;
+      return uid;
+    }
+  }
+
+  return null;
+}
+
 function normalizeParsedDB(parsed) {
   const base = parsed && typeof parsed === 'object' ? parsed : createEmptyDB();
   if (!base.schemaVersion) base.schemaVersion = 2;
   if (!base.users || typeof base.users !== 'object') base.users = {};
+  if (!base.walletOwners || typeof base.walletOwners !== 'object') base.walletOwners = {};
   if (!Array.isArray(base.withdrawals)) base.withdrawals = [];
   if (!base.usedTxRefs || typeof base.usedTxRefs !== 'object') base.usedTxRefs = {};
   if (!base.presale || typeof base.presale !== 'object') {
@@ -122,14 +369,22 @@ function normalizeParsedDB(parsed) {
     base.presale.walletTonSpent = {};
   }
   if (!Array.isArray(base.presale.purchases)) base.presale.purchases = [];
+  deduplicateWalletsInDB(base);
   return base;
 }
 
 function loadDB() {
   try {
     if (fs.existsSync(DB_PATH)) {
-      const parsed = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-      return normalizeParsedDB(parsed);
+      const rawStr = fs.readFileSync(DB_PATH, 'utf8');
+      const parsed = normalizeParsedDB(JSON.parse(rawStr));
+      const nextStr = JSON.stringify(parsed, null, 2);
+      if (nextStr !== rawStr) {
+        try {
+          fs.writeFileSync(DB_PATH, nextStr, 'utf8');
+        } catch (_) {}
+      }
+      return parsed;
     }
   } catch (_) {}
   return createEmptyDB();
@@ -193,14 +448,19 @@ async function ensureCloudDBLoaded() {
         const parsed = normalizeParsedDB(JSON.parse(data.result));
         db.schemaVersion = parsed.schemaVersion;
         db.users = parsed.users;
+        db.walletOwners = parsed.walletOwners || {};
         db.withdrawals = parsed.withdrawals;
         db.usedTxRefs = parsed.usedTxRefs;
         db.presale = parsed.presale;
-        lastCloudJson = JSON.stringify(db);
+        const normalizedSnap = JSON.stringify(db);
+        lastCloudJson = data.result;
         cloudDbLoaded = true;
         try {
           fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
         } catch (_) {}
+        if (normalizedSnap !== data.result) {
+          await flushCloudDB().catch(() => {});
+        }
         console.log(`☁️  [Cloud DB] Loaded ${Object.keys(db.users).length} permanent member accounts from Upstash!`);
       } else if (data && data.result === null) {
         cloudDbLoaded = true;
@@ -601,6 +861,10 @@ async function fetchRecentCreatorTransactions(cfg, forceRefresh = false) {
 // Automatically detect if connected wallet sent 0.1 TON to creator wallet on-chain
 async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
   if (!user.walletRaw) return false;
+  // Strictly block auto-verification if this wallet belongs to another Telegram account
+  if (findWalletOwnerUserId(user.walletRaw, user.userId)) {
+    return false;
+  }
   if (user.verifiedWallets && user.verifiedWallets[user.walletRaw]) {
     user.walletVerified = true;
     return false;
@@ -615,9 +879,11 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
     const val = Number(tx.in_msg.value || 0);
     const refKey = `chain_${tx.hash}`;
     if (srcRaw === user.walletRaw && val >= minNano && val <= maxNano && !db.usedTxRefs[refKey]) {
+      // Never reuse a verification tx if this wallet was already verified by another user
+      if (findWalletOwnerUserId(srcRaw, user.userId)) continue;
       const txTimeMs = tx.utime ? tx.utime * 1000 : Date.now();
       const isRecentTx = Date.now() - txTimeMs < 30 * 60 * 1000;
-      db.usedTxRefs[refKey] = { type: 'verify', userId: user.userId, at: txTimeMs };
+      db.usedTxRefs[refKey] = { type: 'verify', userId: user.userId, walletRaw: user.walletRaw, at: txTimeMs };
       if (!user.verifiedWallets) user.verifiedWallets = {};
       user.verifiedWallets[user.walletRaw] = {
         verifiedAt: txTimeMs,
@@ -627,6 +893,9 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
       user.walletVerified = true;
       user.everVerifiedWallet = true;
       user.verifiedAt = txTimeMs;
+      if (!db.walletOwners || typeof db.walletOwners !== 'object') db.walletOwners = {};
+      db.walletOwners[user.walletRaw] = String(user.userId);
+      user.boundWalletRaw = user.walletRaw;
       checkAndActivateReferral(cfg, user);
       saveDB(true);
       if (isRecentTx) {
@@ -646,7 +915,9 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
 // Automatically detect if connected wallet sent 2, 4, 6, 8, 10, 20, or 100 TON for Presale on-chain
 async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
   if (!user.walletRaw) return null;
-  const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-05T23:59:59Z');
+  const ownerOfWallet = findWalletOwnerUserId(user.walletRaw, user.userId);
+  if (ownerOfWallet) return null;
+  const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-10T23:59:59Z');
   if (Number.isFinite(presaleEndsAtMs) && Date.now() >= presaleEndsAtMs) return null;
 
   const packages = Array.isArray(cfg.presale?.packages) ? cfg.presale.packages : [];
@@ -678,18 +949,24 @@ async function tryAutoPresaleFromChain(cfg, user, forceRefresh = false) {
     const txTimeMs = tx.utime ? tx.utime * 1000 : Date.now();
     ensureUserSchema(user);
 
-    // Check if this transaction was already credited via immediate TON Connect BOC within 15 minutes
-    const existingBocReceipt = (user.presalePurchases || []).find(
+    // Check if this transaction was already credited via immediate TON Connect BOC within 60 minutes (across user & global presale receipts)
+    const allReceipts = [
+      ...(user.presalePurchases || []),
+      ...((db.presale && Array.isArray(db.presale.purchases)) ? db.presale.purchases : []),
+    ];
+    const existingBocReceipt = allReceipts.find(
       (p) =>
+        p &&
         Number(p.tonPaid) === Number(matchedPkg.ton) &&
         !p.txHash &&
-        Math.abs(Number(p.createdAt || 0) - txTimeMs) < 15 * 60 * 1000
+        (String(p.userId) === String(user.userId) || parseTonAddressToRaw(p.walletAddress) === user.walletRaw) &&
+        Math.abs(Number(p.createdAt || 0) - txTimeMs) < 60 * 60 * 1000
     );
     if (existingBocReceipt) {
       existingBocReceipt.txHash = tx.hash;
       db.usedTxRefs[refKey] = {
         type: 'presale',
-        userId: user.userId,
+        userId: existingBocReceipt.userId || user.userId,
         ton: matchedPkg.ton,
         at: txTimeMs,
         linkedReceipt: existingBocReceipt.id,
@@ -1175,7 +1452,7 @@ function buildSyncPayload(cfg, userView) {
       maxTotalPresaleCoins: maxPresaleCoins,
       totalTonRaised: +(db.presale.totalTonRaised || 0).toFixed(2),
       progressPct: Math.min(100, +((soldCoins / maxPresaleCoins) * 100).toFixed(4)),
-      endsAtMs: Date.parse(cfg.presale?.endsAt || '2026-11-05T23:59:59Z'),
+      endsAtMs: Date.parse(cfg.presale?.endsAt || '2026-11-10T23:59:59Z'),
     },
     leaderboard: getLeaderboard(),
   };
@@ -1337,6 +1614,32 @@ const server = http.createServer(async (req, res) => {
     const rawUser = db.users[String(body.userId || 'guest_demo').trim()];
     ensureUserSchema(rawUser);
 
+    // Enforce 1 Wallet = 1 Account on every API request in case of legacy duplicate state
+    if (rawUser.walletRaw) {
+      const conflictOwnerId = findWalletOwnerUserId(rawUser.walletRaw, rawUser.userId);
+      if (conflictOwnerId) {
+        const dupRaw = rawUser.walletRaw;
+        rawUser.walletRaw = '';
+        rawUser.walletFriendly = '';
+        rawUser.walletAddress = '';
+        rawUser.walletAppName = '';
+        rawUser.onChainHolding = 0;
+        if (rawUser.boundWalletRaw === dupRaw) rawUser.boundWalletRaw = '';
+        if (rawUser.verifiedWallets && rawUser.verifiedWallets[dupRaw]) {
+          delete rawUser.verifiedWallets[dupRaw];
+        }
+        rawUser.walletVerified = false;
+        rawUser.everVerifiedWallet = Boolean(
+          rawUser.verifiedWallets && Object.keys(rawUser.verifiedWallets).length > 0
+        );
+        if (!rawUser.everVerifiedWallet) rawUser.verifiedAt = null;
+        saveDB(true);
+      } else {
+        if (!db.walletOwners || typeof db.walletOwners !== 'object') db.walletOwners = {};
+        db.walletOwners[rawUser.walletRaw] = String(rawUser.userId);
+      }
+    }
+
     // Sync on-chain MAXIMA Jetton balance & check on-chain 0.1 TON verification / presale if wallet connected
     if (rawUser.walletRaw) {
       const onChainBal = await fetchOnChainJettonBalance(cfg, rawUser.walletRaw);
@@ -1357,7 +1660,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, data: buildSyncPayload(cfg, view) });
     }
 
-    // 2. Connect Personal TON Wallet (Strictly via TON Connect SDK - No manual paste!)
+    // 2. Connect Personal TON Wallet (Strictly via TON Connect SDK - 1 Wallet = 1 Account!)
     if (pathname === '/api/wallet/connect') {
       const rawAddr = parseTonAddressToRaw(body.walletAddress);
       const appName = String(body.walletAppName || '').trim();
@@ -1368,12 +1671,39 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
+      // Strictly enforce 1 Wallet = 1 Telegram Account (cannot be connected to multiple accounts)
+      const existingOwnerId = findWalletOwnerUserId(rawAddr, rawUser.userId);
+      if (existingOwnerId) {
+        if (rawUser.walletRaw === rawAddr) {
+          accruePendingMining(cfg, rawUser);
+          rawUser.walletRaw = '';
+          rawUser.walletFriendly = '';
+          rawUser.walletAddress = '';
+          rawUser.walletAppName = '';
+          rawUser.onChainHolding = 0;
+          rawUser.walletVerified = false;
+          saveDB(true);
+        }
+        const view = getOrCreateUser(cfg, body);
+        return sendJson(res, 409, {
+          ok: false,
+          code: 'WALLET_ALREADY_BOUND',
+          error:
+            '⛔ Wallet ini sudah terhubung pada akun Telegram lain! 1 Wallet hanya dapat dihubungkan ke 1 akun. / This wallet is already linked to another Telegram account!',
+          data: buildSyncPayload(cfg, view),
+        });
+      }
+
       accruePendingMining(cfg, rawUser);
       const wasDisconnected = !rawUser.walletRaw;
       rawUser.walletRaw = rawAddr;
+      rawUser.boundWalletRaw = rawAddr;
       rawUser.walletFriendly = rawToFriendlyTon(rawAddr, false);
       rawUser.walletAddress = rawUser.walletFriendly;
       rawUser.walletAppName = appName;
+      if (!rawUser.walletConnectedAt) rawUser.walletConnectedAt = Date.now();
+      if (!db.walletOwners || typeof db.walletOwners !== 'object') db.walletOwners = {};
+      db.walletOwners[rawAddr] = String(rawUser.userId);
       rawUser.walletVerified = Boolean(rawUser.verifiedWallets && rawUser.verifiedWallets[rawAddr]);
 
       const now = Date.now();
@@ -1630,11 +1960,11 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-05T23:59:59Z');
+      const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-10T23:59:59Z');
       if (Number.isFinite(presaleEndsAtMs) && Date.now() >= presaleEndsAtMs) {
         return sendJson(res, 400, {
           ok: false,
-          error: '⏳ MAXIMA Presale has ended (November 5, 2026)!',
+          error: '⏳ MAXIMA Presale has ended (November 10, 2026)!',
         });
       }
 
@@ -1737,6 +2067,14 @@ const server = http.createServer(async (req, res) => {
       if (!rawUser.walletRaw) {
         return sendJson(res, 400, { ok: false, error: 'Wallet is not connected!' });
       }
+      if (findWalletOwnerUserId(rawUser.walletRaw, rawUser.userId)) {
+        return sendJson(res, 409, {
+          ok: false,
+          code: 'WALLET_ALREADY_BOUND',
+          error:
+            '⛔ Wallet ini sudah terhubung pada akun Telegram lain! 1 Wallet hanya dapat digunakan pada 1 akun.',
+        });
+      }
       const txBoc = String(body.txBoc || '').trim();
       if (!txBoc || txBoc.length < 20) {
         // Force fresh on-chain scan if user clicked "Check Verification" after sending 0.1 TON
@@ -1760,7 +2098,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 400, { ok: false, error: 'This transaction proof has already been used!' });
       }
 
-      db.usedTxRefs[bocKey] = { type: 'verify', userId: rawUser.userId, at: Date.now() };
+      db.usedTxRefs[bocKey] = { type: 'verify', userId: rawUser.userId, walletRaw: rawUser.walletRaw, at: Date.now() };
       rawUser.verifiedWallets[rawUser.walletRaw] = {
         verifiedAt: Date.now(),
         txRef: bocKey.slice(0, 20),
@@ -1769,6 +2107,9 @@ const server = http.createServer(async (req, res) => {
       rawUser.walletVerified = true;
       rawUser.everVerifiedWallet = true;
       rawUser.verifiedAt = Date.now();
+      if (!db.walletOwners || typeof db.walletOwners !== 'object') db.walletOwners = {};
+      db.walletOwners[rawUser.walletRaw] = String(rawUser.userId);
+      rawUser.boundWalletRaw = rawUser.walletRaw;
 
       checkAndActivateReferral(cfg, rawUser);
 
@@ -1798,6 +2139,14 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 403, {
           ok: false,
           error: '🔒 Please connect your personal wallet via TON Connect first!',
+        });
+      }
+      if (findWalletOwnerUserId(rawUser.walletRaw, rawUser.userId)) {
+        return sendJson(res, 409, {
+          ok: false,
+          code: 'WALLET_ALREADY_BOUND',
+          error:
+            '⛔ Wallet ini sudah terdaftar pada akun Telegram lain! Withdraw ditolak karena 1 wallet hanya dapat digunakan pada 1 akun.',
         });
       }
       if (!rawUser.walletVerified) {
@@ -2013,9 +2362,145 @@ function formatMemberLabelHtml(u, fallbackId) {
   return `${name}${uname} · ID: <code>${uid}</code>`;
 }
 
+function auditWithdrawalLegitimacy(cfg, wd, userObj) {
+  const uid = String((wd && wd.userId) || (userObj && userObj.userId) || '');
+  const u = userObj || (db.users && db.users[uid]) || {};
+  const rawAddr = parseTonAddressToRaw((wd && (wd.walletRaw || wd.walletAddress)) || u.walletRaw || u.walletAddress || '');
+  const reasons = [];
+  let severity = 'SAFE'; // 'SAFE' | 'WARN' | 'FRAUD'
+
+  // 1. Check if this wallet is owned by or shared with other userIds
+  const otherUsersWithSameWallet = [];
+  if (rawAddr) {
+    const regOwner = findWalletOwnerUserId(rawAddr, uid);
+    if (regOwner && !otherUsersWithSameWallet.includes(String(regOwner))) {
+      otherUsersWithSameWallet.push(String(regOwner));
+    }
+    for (const [otherId, otherU] of Object.entries((db && db.users) || {})) {
+      if (!otherU || String(otherId) === uid) continue;
+      const oRaw = parseTonAddressToRaw(otherU.walletRaw || otherU.walletAddress || '');
+      const oBound = parseTonAddressToRaw(otherU.boundWalletRaw || '');
+      const hasInVerified = Boolean(otherU.verifiedWallets && otherU.verifiedWallets[rawAddr]);
+      const hasInWd = Array.isArray(otherU.withdrawals) && otherU.withdrawals.some(
+        (x) => x && parseTonAddressToRaw(x.walletRaw || x.walletAddress || '') === rawAddr
+      );
+      if (oRaw === rawAddr || oBound === rawAddr || hasInVerified || hasInWd) {
+        if (!otherUsersWithSameWallet.includes(String(otherId))) {
+          otherUsersWithSameWallet.push(String(otherId));
+        }
+      }
+    }
+  }
+  if (otherUsersWithSameWallet.length > 0) {
+    severity = 'FRAUD';
+    reasons.push(`Wallet dipakai di >1 akun (ID lain: ${otherUsersWithSameWallet.join(', ')})`);
+  }
+
+  // 2. Check if this account ever verified multiple different wallets
+  const verifiedWalletKeys = u.verifiedWallets && typeof u.verifiedWallets === 'object'
+    ? Object.keys(u.verifiedWallets)
+    : [];
+  if (verifiedWalletKeys.length > 1) {
+    if (severity !== 'FRAUD') severity = 'WARN';
+    reasons.push(`Akun pernah gonta-ganti ${verifiedWalletKeys.length} wallet berbeda`);
+  }
+
+  // 3. Calculate Presale Coins & Check on-chain txHash
+  const purchases = Array.isArray(u.presalePurchases) ? u.presalePurchases : [];
+  let presaleCoins = 0;
+  let presaleTon = 0;
+  let unhashedPresaleCount = 0;
+  for (const p of purchases) {
+    if (!p) continue;
+    presaleCoins += Number(p.coinsReceived || 0);
+    presaleTon += Number(p.tonPaid || 0);
+    if (!p.txHash) unhashedPresaleCount++;
+  }
+  if (unhashedPresaleCount > 0) {
+    if (severity === 'SAFE') severity = 'WARN';
+    reasons.push(`${unhashedPresaleCount} transaksi Presale belum memiliki txHash on-chain`);
+  }
+
+  // 4. Calculate total withdrawals by this user & by this wallet across all accounts
+  const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+  let userTotalWithdrawn = 0;
+  let walletTotalWithdrawn = 0;
+  const walletWdUsers = new Set();
+  for (const item of allWds) {
+    if (!item) continue;
+    const st = String(item.status || '').toUpperCase();
+    if (st.startsWith('REFUNDED') || st.startsWith('REJECT') || st.startsWith('BURNED') || st.startsWith('CONFISCATED')) continue;
+    const reqAmt = Number(item.requestedAmount || 0);
+    if (String(item.userId) === uid) {
+      userTotalWithdrawn += reqAmt;
+    }
+    const itemRaw = parseTonAddressToRaw(item.walletRaw || item.walletAddress || '');
+    if (rawAddr && itemRaw === rawAddr) {
+      walletTotalWithdrawn += reqAmt;
+      if (item.userId) walletWdUsers.add(String(item.userId));
+    }
+  }
+  if (walletWdUsers.size > 1) {
+    severity = 'FRAUD';
+    reasons.push(`Wallet ini dipakai withdraw oleh ${walletWdUsers.size} akun berbeda (${Array.from(walletWdUsers).join(', ')})`);
+  }
+
+  // 5. Calculate Mining, Referrals, and Source-of-Funds Balance Audit
+  const totalMined = Number(u.totalMined || 0);
+  const refCoins = Number(u.referralCoinsEarned || 0);
+  const refList = Array.isArray(u.referrals) ? u.referrals : [];
+  const currentBal = Number(u.balance || 0);
+  const missionAllowance = 350; // check-in + daily missions buffer
+  const maxExplainable = presaleCoins + totalMined + refCoins + missionAllowance;
+  const totalUsedByUser = currentBal + userTotalWithdrawn;
+  const unexplainedDiff = +(totalUsedByUser - maxExplainable).toFixed(2);
+
+  if (unexplainedDiff > 300) {
+    severity = 'FRAUD';
+    reasons.push(`Saldo/Withdraw melebihi sumber wajar sebesar +${unexplainedDiff.toLocaleString('en-US')} MAXIMA`);
+  }
+  if (walletTotalWithdrawn > maxExplainable + 300) {
+    severity = 'FRAUD';
+    reasons.push(`Total withdraw ke wallet ini (${walletTotalWithdrawn.toLocaleString('en-US')}) melebihi kuota wajar akun (${Math.round(maxExplainable).toLocaleString('en-US')})`);
+  }
+
+  // Check if user has 0 presale but withdrawing >= 2000
+  if (presaleCoins === 0 && Number((wd && wd.requestedAmount) || 0) >= 2000) {
+    if (severity === 'SAFE') severity = 'WARN';
+    reasons.push(`Withdraw tanpa Presale (Murni dari Mining=${totalMined.toFixed(1)} / Referral=${refCoins.toFixed(1)}) — cek keaslian referral & holding`);
+  }
+
+  const badge =
+    severity === 'FRAUD'
+      ? '🚨 <b>TERDETEKSI BUG / MULTI-AKUN (JANGAN BAYAR!)</b>'
+      : severity === 'WARN'
+      ? '⚠️ <b>PERLU CEK MANUAL (LIHAT RINCIAN)</b>'
+      : '✅ <b>AMAN / ASLI (TERVERIFIKASI)</b>';
+
+  return {
+    severity,
+    badge,
+    reasons,
+    presaleCoins,
+    presaleTon,
+    totalMined,
+    refCoins,
+    refCount: refList.length,
+    userTotalWithdrawn,
+    walletTotalWithdrawn,
+    currentBal,
+    otherUsersWithSameWallet,
+  };
+}
+
 function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
   const sym = escHtml(cfg.token.symbol || 'MAXIMA');
   const memberStr = formatMemberLabelHtml(userObj || wd, wd.userId);
+  const audit = auditWithdrawalLegitimacy(cfg, wd, userObj);
+  const reasonLines = audit.reasons.length
+    ? audit.reasons.map((r) => `  • ⚠️ ${escHtml(r)}`)
+    : [`  • ✅ 1 Wallet = 1 Akun &amp; Saldo sesuai pembelian Presale / Mining wajar.`];
+
   return [
     `💸 <b>MEMBER WITHDRAWAL REQUEST</b>`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
@@ -2028,6 +2513,13 @@ function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
     `👛 <b>Recipient TON Wallet (Tap to Copy):</b>`,
     `<code>${escHtml(wd.walletAddress)}</code>`,
     ``,
+    `🕵️ <b>HASIL AUDIT KEASLIAN (ANTI-BUG DETECTOR):</b>`,
+    `• <b>Status Audit:</b> ${audit.badge}`,
+    `• <b>Beli Presale:</b> <b>${audit.presaleCoins.toLocaleString('en-US')} ${sym}</b> (${audit.presaleTon} GRAM)`,
+    `• <b>Hasil Mining:</b> ${audit.totalMined.toFixed(2)} ${sym} · <b>Referral:</b> ${audit.refCoins.toFixed(2)} ${sym} (${audit.refCount} ref)`,
+    `• <b>Total WD Akun Ini:</b> ${audit.userTotalWithdrawn.toLocaleString('en-US')} ${sym} · <b>Total WD Wallet Ini:</b> ${audit.walletTotalWithdrawn.toLocaleString('en-US')} ${sym}`,
+    ...reasonLines,
+    ``,
     `🕒 <b>Time:</b> ${fmtUtcTime(wd.createdAt)}`,
     `📋 <b>Status:</b> ${escHtml(wd.status)}`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
@@ -2038,7 +2530,9 @@ function buildWithdrawAdminCardHtml(cfg, wd, userObj) {
 function buildWithdrawAdminKeyboard(wdId) {
   return [
     [{ text: '✅ Mark PAID & Post @MAXIMAPAYOUT', callback_data: `wd_paid:${wdId}` }],
-    [{ text: '❌ Reject & Refund Balance', callback_data: `wd_rej:${wdId}` }],
+    [{ text: '🔥 Tolak & Hanguskan Saldo Bug (No Refund)', callback_data: `wd_burn:${wdId}` }],
+    [{ text: '🚫 Sita Semua Saldo + Putus Wallet Bug', callback_data: `wd_wipe:${wdId}` }],
+    [{ text: '🔄 Reject & Refund (Kembalikan Saldo)', callback_data: `wd_rej:${wdId}` }],
   ];
 }
 
@@ -2084,7 +2578,13 @@ async function notifyAdminsWalletVerified(cfg, rawUser) {
 
 function isWithdrawPending(w) {
   const st = String((w && w.status) || '').toUpperCase();
-  return !st.startsWith('PAID') && !st.startsWith('REFUNDED');
+  return (
+    !st.startsWith('PAID') &&
+    !st.startsWith('REFUNDED') &&
+    !st.startsWith('BURNED') &&
+    !st.startsWith('CONFISCATED') &&
+    !st.startsWith('REJECTED')
+  );
 }
 
 function buildAdminDashboardPayload(cfg) {
@@ -2120,17 +2620,55 @@ function buildAdminDashboardPayload(cfg) {
     `• <b>Pending Withdrawals:</b> <b>${pendingWds.length} queued</b> (${pendingNetSum.toLocaleString('en-US')} ${sym})`,
     `• <b>Completed Withdrawals (Paid):</b> <b>${paidWds.length} paid</b> (${paidNetSum.toLocaleString('en-US')} ${sym})`,
     `━━━━━━━━━━━━━━━━━━━━━━`,
-    `<i>Quick commands: /admin · /withdrawals · /presale · /stats</i>`,
+    `<i>Quick commands: /admin · /audit · /withdrawals · /presale · /stats</i>`,
   ].join('\n');
 
   const keyboard = [
     [{ text: `💸 Pending Withdrawals (${pendingWds.length} Queued)`, callback_data: 'adm:wd_pending' }],
+    [{ text: `🕵️ Audit Withdrawals & Deteksi Bug`, callback_data: 'adm:audit' }],
     [{ text: `🚀 Presale Buyers (${purchases.length})`, callback_data: 'adm:presale' }],
     [{ text: `✅ Paid Withdrawals (${paidWds.length})`, callback_data: 'adm:wd_paid' }],
     [{ text: '🔄 Refresh Stats', callback_data: 'adm:stats' }],
   ];
 
   return { html, keyboard };
+}
+
+async function sendAdminAuditReport(cfg, chatId) {
+  const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+  const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+  if (!allWds.length) {
+    await notifyTelegramUserHtml(
+      cfg,
+      chatId,
+      `🕵️ <b>AUDIT WITHDRAWAL:</b> Belum ada data permintaan withdraw.`,
+      [[{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }]]
+    );
+    return;
+  }
+
+  const recentWds = allWds.slice(-20).reverse();
+  const lines = [
+    `🕵️ <b>LAPORAN AUDIT WITHDRAWAL &amp; DETEKSI BUG (20 TERBARU)</b>`,
+    `━━━━━━━━━━━━━━━━━━━━━━`,
+  ];
+
+  recentWds.forEach((w, idx) => {
+    const u = db.users && db.users[String(w.userId)];
+    const audit = auditWithdrawalLegitimacy(cfg, w, u);
+    const icon = audit.severity === 'FRAUD' ? '🚨' : audit.severity === 'WARN' ? '⚠️' : '✅';
+    const label = audit.severity === 'FRAUD' ? 'BUG/MULTI-AKUN' : audit.severity === 'WARN' ? 'CEK MANUAL' : 'ASLI/AMAN';
+    const name = escHtml((u && (u.username ? `@${u.username}` : u.firstName)) || w.username || w.firstName || w.userId);
+    const note = audit.reasons.length ? `\n   └─ <i>${escHtml(audit.reasons.join('; '))}</i>` : '';
+    lines.push(
+      `<b>${idx + 1}. ${icon} [${label}] ${name}</b> (ID: <code>${escHtml(w.userId)}</code>)\n   • Req: <b>${Number(w.requestedAmount).toLocaleString('en-US')} ${sym}</b> (${escHtml(w.status)}) · Presale: <b>${audit.presaleCoins.toLocaleString('en-US')} ${sym}</b> (${audit.presaleTon} GRAM)\n   • Wallet: <code>${escHtml(maskWalletShort(w.walletAddress))}</code>${note}`
+    );
+  });
+
+  await notifyTelegramUserHtml(cfg, chatId, lines.join('\n'), [
+    [{ text: '💸 Buka Pending Withdrawals', callback_data: 'adm:wd_pending' }],
+    [{ text: '⬅️ Back to Admin Panel', callback_data: 'adm:stats' }],
+  ]);
 }
 
 async function sendAdminPendingWithdrawals(cfg, chatId) {
@@ -2338,6 +2876,12 @@ async function handleAdminCallbackQuery(cfg, cq) {
     return;
   }
 
+  if (data === 'adm:audit') {
+    await tgCall(cfg.botToken, 'answerCallbackQuery', { callback_query_id: cq.id }).catch(() => null);
+    await sendAdminAuditReport(cfg, chatId || fromId);
+    return;
+  }
+
   if (data.startsWith('wd_paid:')) {
     const wdId = data.slice('wd_paid:'.length).trim();
     const wd = (db.withdrawals || []).find((w) => w.id === wdId);
@@ -2475,6 +3019,165 @@ async function handleAdminCallbackQuery(cfg, cq) {
       callback_query_id: cq.id,
       text: '❌ Withdrawal rejected & balance refunded to member.',
     }).catch(() => null);
+    return;
+  }
+
+  // Reject WITHOUT Refund (Burn Fraudulent / Bugged Withdrawal Amount)
+  if (data.startsWith('wd_burn:')) {
+    const wdId = data.slice('wd_burn:'.length).trim();
+    const wd = (db.withdrawals || []).find((w) => w.id === wdId);
+    if (!wd) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: 'Withdrawal record not found!',
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+    if (!isWithdrawPending(wd)) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: `This withdrawal has already been processed (${wd.status})!`,
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+
+    const now = Date.now();
+    wd.status = 'BURNED (BUG/NO REFUND) 🔥';
+    wd.burnedAt = now;
+
+    const u = db.users[String(wd.userId)];
+    if (u) {
+      ensureUserSchema(u);
+      // Do NOT refund wd.requestedAmount back to u.balance!
+      if (Array.isArray(u.withdrawals)) {
+        const uw = u.withdrawals.find((x) => x.id === wdId);
+        if (uw) {
+          uw.status = 'BURNED (BUG/NO REFUND) 🔥';
+          uw.burnedAt = now;
+        }
+      }
+      // Recalculate level cleanly based on remaining real balance
+      const conflictOwner = findWalletOwnerUserId(u.walletRaw || u.walletAddress, u.userId);
+      if (conflictOwner) {
+        u.onChainHolding = 0;
+      }
+      u.level = computeLevelFromHolding(Number(u.balance || 0) + Number(u.onChainHolding || 0));
+      u.peakLevel = u.level;
+    }
+
+    saveDB(true);
+    await flushCloudDB();
+
+    const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+    await notifyTelegramUserHtml(
+      cfg,
+      wd.userId,
+      `🔥 <b>Withdrawal Rejected (Multi-Account / Bug Violation)</b>\n\nYour withdrawal request <code>${escHtml(wd.id)}</code> of <b>${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> was rejected due to multi-account wallet policy violation. Fraudulent balance has been confiscated (No Refund).`
+    ).catch(() => null);
+
+    if (chatId && msgId) {
+      await tgCall(cfg.botToken, 'editMessageText', {
+        chat_id: chatId,
+        message_id: msgId,
+        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n🔥 <b>BURNED (NO REFUND):</b> Permintaan withdraw ditolak &amp; saldo sebesar <b>${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> telah <b>DIHANGUSKAN (Tidak dikembalikan ke user)</b>.`,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+      }).catch(() => null);
+    }
+
+    await tgCall(cfg.botToken, 'answerCallbackQuery', {
+      callback_query_id: cq.id,
+      text: '🔥 Withdraw ditolak & saldo bug berhasil dihanguskan (No Refund)!',
+    }).catch(() => null);
+    return;
+  }
+
+  // Reject + Wipe All Account Balance & Unbind Duplicate Wallet
+  if (data.startsWith('wd_wipe:')) {
+    const wdId = data.slice('wd_wipe:'.length).trim();
+    const wd = (db.withdrawals || []).find((w) => w.id === wdId);
+    if (!wd) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: 'Withdrawal record not found!',
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+    if (!isWithdrawPending(wd)) {
+      await tgCall(cfg.botToken, 'answerCallbackQuery', {
+        callback_query_id: cq.id,
+        text: `This withdrawal has already been processed (${wd.status})!`,
+        show_alert: true,
+      }).catch(() => null);
+      return;
+    }
+
+    const now = Date.now();
+    wd.status = 'CONFISCATED (BUG WIPE) 🚫';
+    wd.burnedAt = now;
+
+    const u = db.users[String(wd.userId)];
+    if (u) {
+      ensureUserSchema(u);
+      // Zero out all balances and reset level to 1
+      u.balance = 0;
+      u.accruedMined = 0;
+      u.onChainHolding = 0;
+      u.level = 1;
+      u.peakLevel = 1;
+
+      // If wallet belongs to another user, unbind it from this account; even if not, clear duplicate state
+      const rawW = parseTonAddressToRaw(u.walletRaw || u.walletAddress || wd.walletRaw || wd.walletAddress || '');
+      const otherOwner = rawW ? findWalletOwnerUserId(rawW, u.userId) : null;
+      if (otherOwner) {
+        u.walletRaw = '';
+        u.walletFriendly = '';
+        u.walletAddress = '';
+        u.boundWalletRaw = '';
+        u.walletVerified = false;
+        u.everVerifiedWallet = false;
+        if (u.verifiedWallets && rawW) {
+          delete u.verifiedWallets[rawW];
+        }
+      }
+
+      if (Array.isArray(u.withdrawals)) {
+        const uw = u.withdrawals.find((x) => x.id === wdId);
+        if (uw) {
+          uw.status = 'CONFISCATED (BUG WIPE) 🚫';
+          uw.burnedAt = now;
+        }
+      }
+    }
+
+    saveDB(true);
+    await flushCloudDB();
+
+    const sym = escHtml(cfg.token.symbol || 'MAXIMA');
+    await notifyTelegramUserHtml(
+      cfg,
+      wd.userId,
+      `🚫 <b>Account Sanctioned (Multi-Account / Bug Violation)</b>\n\nYour withdrawal request <code>${escHtml(wd.id)}</code> was rejected and your illegitimate balance has been confiscated &amp; reset to 0 ${sym} due to exploiting the multi-account wallet bug.`
+    ).catch(() => null);
+
+    if (chatId && msgId) {
+      await tgCall(cfg.botToken, 'editMessageText', {
+        chat_id: chatId,
+        message_id: msgId,
+        text: `${buildWithdrawAdminCardHtml(cfg, wd, u)}\n\n🚫 <b>CONFISCATED &amp; RESET TO 0:</b> Withdraw ditolak tanpa refund, seluruh sisa saldo akun di-reset ke <b>0 ${sym} (Level 1)</b>, dan wallet duplikat telah diputus!`,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+      }).catch(() => null);
+    }
+
+    await tgCall(cfg.botToken, 'answerCallbackQuery', {
+      callback_query_id: cq.id,
+      text: '🚫 Saldo akun bug berhasil disita (Reset 0) & wallet duplikat diputus!',
+    }).catch(() => null);
+    return;
   }
 }
 
@@ -2496,8 +3199,8 @@ async function handleTelegramUpdate(cfg, u) {
   const text = msg.text.trim();
   const cmd = text.split(/\s+/)[0].split('@')[0].toLowerCase();
 
-  // Admin-Only Commands (/admin, /stats, /withdrawals, /wd, /presale)
-  if (['/admin', '/stats', '/withdrawals', '/wd', '/presale'].includes(cmd)) {
+  // Admin-Only Commands (/admin, /stats, /withdrawals, /wd, /presale, /audit)
+  if (['/admin', '/stats', '/withdrawals', '/wd', '/presale', '/audit'].includes(cmd)) {
     if (!isAdminUser(cfg, senderId)) {
       await notifyTelegramUserHtml(cfg, chatId, '⛔ This command is for Admins only.');
       return;
@@ -2508,6 +3211,10 @@ async function handleTelegramUpdate(cfg, u) {
     }
     if (cmd === '/presale') {
       await sendAdminPresaleList(cfg, chatId);
+      return;
+    }
+    if (cmd === '/audit') {
+      await sendAdminAuditReport(cfg, chatId);
       return;
     }
     const dash = buildAdminDashboardPayload(cfg);
@@ -2596,6 +3303,7 @@ async function registerBotCommandsForAdmins(cfg) {
   if (!cfg.botToken) return;
   const adminCommands = [
     { command: 'admin', description: '🛠️ Open Admin Panel (Withdrawals & Presale)' },
+    { command: 'audit', description: '🕵️ Audit Withdrawals & Anti-Bug Detector' },
     { command: 'withdrawals', description: '💸 Pending Member Withdrawals' },
     { command: 'presale', description: '🚀 MAXIMA Presale Buyers List' },
     { command: 'stats', description: '📊 App Statistics Summary' },
@@ -2738,6 +3446,8 @@ Object.assign(requestHandler, {
   computeLevelFromHolding,
   parseTonAddressToRaw,
   rawToFriendlyTon,
+  findWalletOwnerUserId,
+  deduplicateWalletsInDB,
 });
 
 module.exports = requestHandler;
