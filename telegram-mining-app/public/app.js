@@ -2855,6 +2855,18 @@
               txBoc: txResult.boc,
             });
             if (res && res.ok) {
+              if (res.pendingConfirmation) {
+                if (res.data) {
+                  appState = res.data;
+                  renderAll();
+                }
+                showToast(
+                  res.message ||
+                    '⏳ Transaction broadcast to TON blockchain! Waiting for on-chain NFT confirmation...'
+                );
+                startAutoOnChainPoll(cfg);
+                return;
+              }
               if (!alreadyCreditedByPoll && res.pulledNft) {
                 playGachaRevealAnimation(res.pulledNft, () => {
                   appState = res.data;
@@ -3181,19 +3193,37 @@
       updateWithdrawPreview();
     });
   }
+  let withdrawInFlight = false;
   if ($('btnSubmitWithdraw')) {
     $('btnSubmitWithdraw').addEventListener('click', async () => {
-      const amount = Number($('inputWithdrawAmount').value || 0);
-      const res = await apiPost('/api/wallet/withdraw', { amount });
-      if (res && res.ok) {
-        $('inputWithdrawAmount').value = '';
-        appState = res.data;
-        sfxSuccess();
-        triggerHaptic('success');
+      if (withdrawInFlight) return;
+      const btn = $('btnSubmitWithdraw');
+      const amount = Number(($('inputWithdrawAmount') && $('inputWithdrawAmount').value) || 0);
+      withdrawInFlight = true;
+      const origHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ PROCESSING...';
+      }
+      try {
+        const res = await apiPost('/api/wallet/withdraw', { amount });
+        if (res && res.ok) {
+          if ($('inputWithdrawAmount')) $('inputWithdrawAmount').value = '';
+          appState = res.data;
+          sfxSuccess();
+          triggerHaptic('success');
+          renderAll();
+          showToast(res.message);
+        } else {
+          showToast((res && res.error) || 'Withdraw failed');
+        }
+      } finally {
+        withdrawInFlight = false;
+        if (btn) {
+          btn.disabled = false;
+          if (origHtml) btn.innerHTML = origHtml;
+        }
         renderAll();
-        showToast(res.message);
-      } else {
-        showToast((res && res.error) || 'Withdraw failed');
       }
     });
   }
