@@ -122,6 +122,7 @@ function createEmptyDB() {
     users: {},
     walletOwners: {},
     withdrawals: [],
+    processedWithdrawIds: {},
     usedTxRefs: {},
     notifiedAdminRefs: {},
     presale: {
@@ -593,12 +594,41 @@ function isWithdrawStatusPending(statusStr) {
   );
 }
 
+function recordProcessedWithdrawal(base, wd) {
+  if (!base || typeof base !== 'object' || !wd || !wd.id) return;
+  if (isWithdrawStatusPending(wd.status)) return;
+  if (!base.processedWithdrawIds || typeof base.processedWithdrawIds !== 'object') {
+    base.processedWithdrawIds = {};
+  }
+  const id = String(wd.id).trim();
+  if (!id) return;
+  const existing = base.processedWithdrawIds[id];
+  const nextIsPaid = String(wd.status || '').toUpperCase().startsWith('PAID');
+  const existingIsPaid = existing && String(existing.status || '').toUpperCase().startsWith('PAID');
+  if (existingIsPaid && !nextIsPaid) {
+    return;
+  }
+  base.processedWithdrawIds[id] = {
+    status: wd.status,
+    paidAt: wd.paidAt || (existing && existing.paidAt) || null,
+    burnedAt: wd.burnedAt || (existing && existing.burnedAt) || null,
+    refundedAt: wd.refundedAt || (existing && existing.refundedAt) || null,
+    payoutMemo: wd.payoutMemo || (existing && existing.payoutMemo) || 'MAXIMA PAYOUT',
+    payoutTxBoc: wd.payoutTxBoc || (existing && existing.payoutTxBoc) || '',
+    payoutEventId: wd.payoutEventId || (existing && existing.payoutEventId) || '',
+    updatedAt: Date.now(),
+  };
+}
+
 function deduplicateWithdrawalsInDB(base) {
   if (!base || typeof base !== 'object') return;
   if (!Array.isArray(base.withdrawals)) base.withdrawals = [];
   if (!base.users || typeof base.users !== 'object') base.users = {};
   if (!base.notifiedAdminRefs || typeof base.notifiedAdminRefs !== 'object') {
     base.notifiedAdminRefs = {};
+  }
+  if (!base.processedWithdrawIds || typeof base.processedWithdrawIds !== 'object') {
+    base.processedWithdrawIds = {};
   }
 
   // 1. Collect all withdrawals from global list and per-user lists, preferring finalized status for identical IDs
@@ -609,6 +639,23 @@ function deduplicateWithdrawalsInDB(base) {
     if (!id) return;
     const uid = String(w.userId || fallbackUid || '').trim();
     const copy = { ...w, id, userId: uid };
+    if (!isWithdrawStatusPending(copy.status)) {
+      recordProcessedWithdrawal(base, copy);
+    }
+    const lockedFinal = base.processedWithdrawIds[id];
+    if (lockedFinal && !isWithdrawStatusPending(lockedFinal.status)) {
+      const lockedIsPaid = String(lockedFinal.status || '').toUpperCase().startsWith('PAID');
+      const copyIsPaid = String(copy.status || '').toUpperCase().startsWith('PAID');
+      if (isWithdrawStatusPending(copy.status) || (lockedIsPaid && !copyIsPaid)) {
+        copy.status = lockedFinal.status;
+        if (lockedFinal.paidAt) copy.paidAt = lockedFinal.paidAt;
+        if (lockedFinal.burnedAt) copy.burnedAt = lockedFinal.burnedAt;
+        if (lockedFinal.refundedAt) copy.refundedAt = lockedFinal.refundedAt;
+        if (lockedFinal.payoutMemo) copy.payoutMemo = lockedFinal.payoutMemo;
+        if (lockedFinal.payoutTxBoc) copy.payoutTxBoc = lockedFinal.payoutTxBoc;
+        if (lockedFinal.payoutEventId) copy.payoutEventId = lockedFinal.payoutEventId;
+      }
+    }
     if (!byId.has(id)) {
       byId.set(id, copy);
       return;
@@ -616,7 +663,9 @@ function deduplicateWithdrawalsInDB(base) {
     const existing = byId.get(id);
     const existingPending = isWithdrawStatusPending(existing.status);
     const copyPending = isWithdrawStatusPending(copy.status);
-    if (existingPending && !copyPending) {
+    const existingPaid = String(existing.status || '').toUpperCase().startsWith('PAID');
+    const copyPaid = String(copy.status || '').toUpperCase().startsWith('PAID');
+    if ((existingPending && !copyPending) || (!existingPaid && copyPaid)) {
       byId.set(id, { ...existing, ...copy });
     }
   };
@@ -877,6 +926,9 @@ function normalizeParsedDB(parsed) {
   if (!base.users || typeof base.users !== 'object') base.users = {};
   if (!base.walletOwners || typeof base.walletOwners !== 'object') base.walletOwners = {};
   if (!Array.isArray(base.withdrawals)) base.withdrawals = [];
+  if (!base.processedWithdrawIds || typeof base.processedWithdrawIds !== 'object') {
+    base.processedWithdrawIds = {};
+  }
   if (!base.usedTxRefs || typeof base.usedTxRefs !== 'object') base.usedTxRefs = {};
   if (!base.notifiedAdminRefs || typeof base.notifiedAdminRefs !== 'object') base.notifiedAdminRefs = {};
   if (!base.presale || typeof base.presale !== 'object') {
@@ -903,6 +955,45 @@ function normalizeParsedDB(parsed) {
   deduplicateWithdrawalsInDB(base);
   normalizeNftRegistryInDB(base);
   return base;
+}
+
+// Monotonically merges finalized withdrawal statuses, notification locks, and used tx refs from sourceDb into targetDb
+// so no concurrent or warm serverless container can ever downgrade a PAID/BURNED/REFUNDED withdrawal back to PENDING!
+function mergeMonotonicCloudState(targetDb, sourceDb) {
+  if (!targetDb || !sourceDb || typeof targetDb !== 'object' || typeof sourceDb !== 'object') return;
+  if (!targetDb.processedWithdrawIds || typeof targetDb.processedWithdrawIds !== 'object') {
+    targetDb.processedWithdrawIds = {};
+  }
+  if (!targetDb.notifiedAdminRefs || typeof targetDb.notifiedAdminRefs !== 'object') {
+    targetDb.notifiedAdminRefs = {};
+  }
+  if (!targetDb.usedTxRefs || typeof targetDb.usedTxRefs !== 'object') {
+    targetDb.usedTxRefs = {};
+  }
+
+  for (const [k, v] of Object.entries(sourceDb.notifiedAdminRefs || {})) {
+    if (v && !targetDb.notifiedAdminRefs[k]) {
+      targetDb.notifiedAdminRefs[k] = v;
+    }
+  }
+  for (const [k, v] of Object.entries(sourceDb.usedTxRefs || {})) {
+    if (v && !targetDb.usedTxRefs[k]) {
+      targetDb.usedTxRefs[k] = v;
+    }
+  }
+  for (const [id, rec] of Object.entries(sourceDb.processedWithdrawIds || {})) {
+    if (rec && !isWithdrawStatusPending(rec.status)) {
+      recordProcessedWithdrawal(targetDb, { id, ...rec });
+    }
+  }
+  if (Array.isArray(sourceDb.withdrawals)) {
+    for (const w of sourceDb.withdrawals) {
+      if (w && w.id && !isWithdrawStatusPending(w.status)) {
+        recordProcessedWithdrawal(targetDb, w);
+      }
+    }
+  }
+  deduplicateWithdrawalsInDB(targetDb);
 }
 
 function loadDB() {
@@ -993,27 +1084,30 @@ async function ensureCloudDBLoaded(forceRefresh = false) {
       lastCloudPingAt = Date.now();
       lastCloudLoadAt = Date.now();
       if (data && typeof data.result === 'string' && data.result.trim().startsWith('{')) {
-        if (cloudDbLoaded && data.result === lastCloudJson) {
+        const cleanRaw = data.result.replace(/^\uFEFF/, '');
+        if (cloudDbLoaded && cleanRaw === lastCloudJson) {
           return;
         }
-        const parsed = normalizeParsedDB(JSON.parse(data.result));
+        const parsed = normalizeParsedDB(JSON.parse(cleanRaw));
+        mergeMonotonicCloudState(parsed, db);
         db.schemaVersion = parsed.schemaVersion;
         db.users = parsed.users;
         db.walletOwners = parsed.walletOwners || {};
         db.withdrawals = parsed.withdrawals;
+        db.processedWithdrawIds = parsed.processedWithdrawIds || {};
         db.usedTxRefs = parsed.usedTxRefs;
         db.notifiedAdminRefs = parsed.notifiedAdminRefs || {};
         db.presale = parsed.presale;
         db.nftRegistry = parsed.nftRegistry || createEmptyNftRegistry();
         const normalizedSnap = JSON.stringify(db);
-        lastCloudJson = data.result;
+        lastCloudJson = cleanRaw;
         cloudDbLoaded = true;
         if (!process.env.VERCEL) {
           try {
             fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
           } catch (_) {}
         }
-        if (normalizedSnap !== data.result) {
+        if (normalizedSnap !== cleanRaw) {
           dbDirty = true;
           await flushCloudDB().catch(() => {});
         }
@@ -1054,6 +1148,21 @@ async function flushCloudDB() {
   cloudFlushPromise = (async () => {
     do {
       cloudFlushPendingAgain = false;
+      // Pre-flush monotonic merge: if more than 600ms passed since last Upstash read (e.g., slow TonAPI scan),
+      // pull finalized withdrawals/refs from Upstash first so we NEVER overwrite a concurrent Admin payout back to PENDING!
+      if (Date.now() - lastCloudLoadAt > 600) {
+        try {
+          const latest = await upstashCommand(creds, ['GET', CLOUD_DB_KEY]);
+          if (latest && typeof latest.result === 'string' && latest.result.trim().startsWith('{')) {
+            const latestClean = latest.result.replace(/^\uFEFF/, '');
+            if (latestClean !== lastCloudJson) {
+              const latestParsed = JSON.parse(latestClean);
+              mergeMonotonicCloudState(db, latestParsed);
+            }
+          }
+        } catch (_) {}
+      }
+      deduplicateWithdrawalsInDB(db);
       const snapshot = JSON.stringify(db);
       if (snapshot === lastCloudJson) {
         dbDirty = false;
@@ -4434,9 +4543,7 @@ const server = http.createServer(async (req, res) => {
 
   // POST API Endpoints
   if (req.method === 'POST' && pathname.startsWith('/api/')) {
-    const isMutatingEndpoint =
-      pathname !== '/api/user/sync' &&
-      pathname !== '/api/admin/withdrawals';
+    const isMutatingEndpoint = pathname !== '/api/user/sync';
     await ensureCloudDBLoaded(isMutatingEndpoint);
     res._flushCloud = pathname !== '/api/user/sync';
     const body = await parseBody(req);
@@ -5752,6 +5859,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (pathname === '/api/admin/withdrawals') {
+        await reconcileAdminOnChainPayouts(cfg, false);
         const admPayload = buildAdminWithdrawalsApiPayload(cfg, callerId);
         return sendJson(res, 200, {
           ok: true,
@@ -5767,6 +5875,8 @@ const server = http.createServer(async (req, res) => {
         if (!wdIds.length) {
           return sendJson(res, 400, { ok: false, error: 'Please select at least 1 withdrawal request first!' });
         }
+
+        await reconcileAdminOnChainPayouts(cfg, true);
 
         const memo = String(body.memo || 'MAXIMA PAYOUT').trim() || 'MAXIMA PAYOUT';
         const senderRaw =
@@ -5869,6 +5979,7 @@ const server = http.createServer(async (req, res) => {
           wd.paidAt = now;
           wd.payoutMemo = memo;
           if (txBoc) wd.payoutTxBoc = txBoc.slice(0, 120);
+          recordProcessedWithdrawal(db, wd);
 
           const u = db.users[String(wd.userId)];
           if (u && Array.isArray(u.withdrawals)) {
@@ -6011,6 +6122,7 @@ const server = http.createServer(async (req, res) => {
               `❌ <b>Withdrawal Cancelled & Balance Refunded</b>\n\nYour withdrawal request <code>${escHtml(wd.id)}</code> was cancelled by Admin and the full amount of <b>+${Number(wd.requestedAmount).toLocaleString('en-US')} ${sym}</b> has been refunded to your in-app balance.`
             ).catch(() => null);
           }
+          recordProcessedWithdrawal(db, wd);
           count++;
         }
 
@@ -6515,6 +6627,17 @@ async function notifyAdminsWalletVerified(cfg, rawUser, txRef = '') {
 }
 
 function isWithdrawPending(w) {
+  if (w && w.id && db && db.processedWithdrawIds && db.processedWithdrawIds[w.id]) {
+    const locked = db.processedWithdrawIds[w.id];
+    if (locked && !isWithdrawStatusPending(locked.status)) {
+      w.status = locked.status;
+      if (locked.paidAt && !w.paidAt) w.paidAt = locked.paidAt;
+      if (locked.burnedAt && !w.burnedAt) w.burnedAt = locked.burnedAt;
+      if (locked.refundedAt && !w.refundedAt) w.refundedAt = locked.refundedAt;
+      if (locked.payoutEventId && !w.payoutEventId) w.payoutEventId = locked.payoutEventId;
+      return false;
+    }
+  }
   const st = String((w && w.status) || '').toUpperCase();
   return (
     !st.startsWith('PAID') &&
@@ -6523,6 +6646,159 @@ function isWithdrawPending(w) {
     !st.startsWith('CONFISCATED') &&
     !st.startsWith('REJECTED')
   );
+}
+
+let lastAdminPayoutReconcileAt = 0;
+let adminPayoutReconcileInFlight = null;
+
+// Automatically verifies on-chain MAXIMA Jetton transfers sent by the Admin/Creator wallet on TON
+// so any withdrawal already paid on-chain is automatically marked PAID ✅ and can NEVER reappear as PENDING!
+async function reconcileAdminOnChainPayouts(cfg, forceRefresh = false) {
+  const creatorRaw = parseTonAddressToRaw(
+    (cfg && cfg.wallet && (cfg.wallet.creatorRawAddress || cfg.wallet.creatorTonWallet)) || ''
+  );
+  if (!creatorRaw) return false;
+
+  const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+  if (!allWds.length) return false;
+
+  const now = Date.now();
+  if (now - lastAdminPayoutReconcileAt < (forceRefresh ? 2500 : 12000)) {
+    return false;
+  }
+  if (adminPayoutReconcileInFlight) return adminPayoutReconcileInFlight;
+
+  adminPayoutReconcileInFlight = (async () => {
+    try {
+      const url = `https://tonapi.io/v2/accounts/${encodeURIComponent(creatorRaw)}/events?limit=80`;
+      const data = await fetchJsonWithTimeout(url, 5500, buildTonApiHeaders());
+      const events = Array.isArray(data && data.events) ? data.events : [];
+      if (!events.length) return false;
+      lastAdminPayoutReconcileAt = Date.now();
+
+      const decimals = Number(cfg.token?.decimals ?? 9);
+      const divisor = 10 ** decimals;
+      const onChainTransfers = [];
+
+      for (const ev of events) {
+        if (!ev || ev.in_progress) continue;
+        const tsMs = Number(ev.timestamp || 0) * 1000;
+        const evId = String(ev.event_id || '').trim();
+        const actions = Array.isArray(ev.actions) ? ev.actions : [];
+        for (let i = 0; i < actions.length; i++) {
+          const act = actions[i];
+          if (!act || act.type !== 'JettonTransfer' || act.status !== 'ok' || !act.JettonTransfer) continue;
+          const jt = act.JettonTransfer;
+          const senderRaw = parseTonAddressToRaw(jt.sender && (jt.sender.address || jt.sender));
+          if (senderRaw && senderRaw !== creatorRaw) continue;
+          const recipientRaw = parseTonAddressToRaw(jt.recipient && (jt.recipient.address || jt.recipient));
+          if (!recipientRaw) continue;
+          const amountCoins = Number(jt.amount || 0) / divisor;
+          if (!Number.isFinite(amountCoins) || amountCoins <= 0) continue;
+          const comment = String(jt.comment || '').trim();
+          onChainTransfers.push({
+            actionKey: `${evId || ev.lt}_${i}`,
+            eventId: evId,
+            recipientRaw,
+            amountCoins,
+            comment,
+            timestampMs: tsMs,
+          });
+        }
+      }
+
+      if (!onChainTransfers.length) return false;
+
+      // Sort transfers chronologically (oldest first)
+      onChainTransfers.sort((a, b) => a.timestampMs - b.timestampMs);
+      const usedActionKeys = new Set();
+      let changed = false;
+
+      // 1. Reserve transfers already corresponding to existing PAID withdrawals
+      const paidWds = allWds
+        .filter((w) => w && String(w.status || '').toUpperCase().startsWith('PAID'))
+        .sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+
+      for (const w of paidWds) {
+        recordProcessedWithdrawal(db, w);
+        const wRaw = parseTonAddressToRaw(w.walletRaw || w.walletAddress || '');
+        const net = Number(w.netAmount || 0);
+        if (!wRaw || net <= 0) continue;
+
+        const match = onChainTransfers.find(
+          (tr) =>
+            !usedActionKeys.has(tr.actionKey) &&
+            tr.recipientRaw === wRaw &&
+            Math.abs(tr.amountCoins - net) < 0.01 &&
+            tr.timestampMs >= Number(w.createdAt || 0) - 180000
+        );
+        if (match) {
+          usedActionKeys.add(match.actionKey);
+          if (!w.payoutEventId && match.eventId) {
+            w.payoutEventId = match.eventId;
+            recordProcessedWithdrawal(db, w);
+            changed = true;
+          }
+        }
+      }
+
+      // 2. Auto-reconcile any PENDING withdrawal (or BURNED withdrawal that was actually paid on-chain with MAXIMA PAYOUT)
+      const candidates = allWds
+        .filter((w) => {
+          if (!w) return false;
+          if (isWithdrawPending(w)) return true;
+          const st = String(w.status || '').toUpperCase();
+          return st.startsWith('BURNED');
+        })
+        .sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+
+      for (const w of candidates) {
+        const wRaw = parseTonAddressToRaw(w.walletRaw || w.walletAddress || '');
+        const net = Number(w.netAmount || 0);
+        if (!wRaw || net <= 0) continue;
+
+        const match = onChainTransfers.find(
+          (tr) =>
+            !usedActionKeys.has(tr.actionKey) &&
+            tr.recipientRaw === wRaw &&
+            Math.abs(tr.amountCoins - net) < 0.01 &&
+            tr.timestampMs >= Number(w.createdAt || 0) - 180000
+        );
+        if (!match) continue;
+
+        usedActionKeys.add(match.actionKey);
+        w.status = 'PAID ✅';
+        w.paidAt = match.timestampMs || Date.now();
+        w.payoutMemo = match.comment || w.payoutMemo || 'MAXIMA PAYOUT';
+        w.payoutEventId = match.eventId;
+        recordProcessedWithdrawal(db, w);
+
+        const u = db.users && db.users[String(w.userId)];
+        if (u && Array.isArray(u.withdrawals)) {
+          const uw = u.withdrawals.find((x) => x && x.id === w.id);
+          if (uw) {
+            uw.status = 'PAID ✅';
+            uw.paidAt = w.paidAt;
+            uw.payoutMemo = w.payoutMemo;
+            uw.payoutEventId = w.payoutEventId;
+          }
+        }
+        changed = true;
+      }
+
+      if (changed) {
+        deduplicateWithdrawalsInDB(db);
+        saveDB(true);
+      }
+      return changed;
+    } catch (_) {
+      return false;
+    } finally {
+      adminPayoutReconcileInFlight = null;
+    }
+  })();
+
+  return adminPayoutReconcileInFlight;
 }
 
 function buildAdminWithdrawalsApiPayload(cfg, adminUserId) {
@@ -6704,6 +6980,7 @@ async function sendAdminAuditReport(cfg, chatId) {
 }
 
 async function sendAdminPendingWithdrawals(cfg, chatId) {
+  await reconcileAdminOnChainPayouts(cfg, false);
   const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
   const pendingWds = allWds.filter(isWithdrawPending);
 
@@ -6937,6 +7214,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     const now = Date.now();
     wd.status = 'PAID ✅';
     wd.paidAt = now;
+    recordProcessedWithdrawal(db, wd);
 
     const u = db.users[String(wd.userId)];
     if (u && Array.isArray(u.withdrawals)) {
@@ -7013,6 +7291,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     const now = Date.now();
     wd.status = 'REFUNDED ❌';
     wd.refundedAt = now;
+    recordProcessedWithdrawal(db, wd);
 
     const u = db.users[String(wd.userId)];
     if (u) {
@@ -7078,6 +7357,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     const now = Date.now();
     wd.status = 'BURNED (BUG/NO REFUND) 🔥';
     wd.burnedAt = now;
+    recordProcessedWithdrawal(db, wd);
 
     const u = db.users[String(wd.userId)];
     if (u) {
@@ -7150,6 +7430,7 @@ async function handleAdminCallbackQuery(cfg, cq) {
     const now = Date.now();
     wd.status = 'CONFISCATED (BUG WIPE) 🚫';
     wd.burnedAt = now;
+    recordProcessedWithdrawal(db, wd);
 
     const u = db.users[String(wd.userId)];
     if (u) {
