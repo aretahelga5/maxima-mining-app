@@ -123,6 +123,7 @@ function createEmptyDB() {
     walletOwners: {},
     withdrawals: [],
     usedTxRefs: {},
+    notifiedAdminRefs: {},
     presale: {
       totalCoinsSold: 0,
       totalTonRaised: 0,
@@ -581,6 +582,132 @@ function deduplicatePresalePurchasesInDB(base) {
   base.presale.totalCoinsSold = newTotalCoins;
 }
 
+function isWithdrawStatusPending(statusStr) {
+  const st = String(statusStr || '').toUpperCase();
+  return (
+    !st.startsWith('PAID') &&
+    !st.startsWith('REFUNDED') &&
+    !st.startsWith('BURNED') &&
+    !st.startsWith('CONFISCATED') &&
+    !st.startsWith('REJECTED')
+  );
+}
+
+function deduplicateWithdrawalsInDB(base) {
+  if (!base || typeof base !== 'object') return;
+  if (!Array.isArray(base.withdrawals)) base.withdrawals = [];
+  if (!base.users || typeof base.users !== 'object') base.users = {};
+  if (!base.notifiedAdminRefs || typeof base.notifiedAdminRefs !== 'object') {
+    base.notifiedAdminRefs = {};
+  }
+
+  // 1. Collect all withdrawals from global list and per-user lists, preferring finalized status for identical IDs
+  const byId = new Map();
+  const absorbWd = (w, fallbackUid = '') => {
+    if (!w || typeof w !== 'object') return;
+    const id = String(w.id || '').trim();
+    if (!id) return;
+    const uid = String(w.userId || fallbackUid || '').trim();
+    const copy = { ...w, id, userId: uid };
+    if (!byId.has(id)) {
+      byId.set(id, copy);
+      return;
+    }
+    const existing = byId.get(id);
+    const existingPending = isWithdrawStatusPending(existing.status);
+    const copyPending = isWithdrawStatusPending(copy.status);
+    if (existingPending && !copyPending) {
+      byId.set(id, { ...existing, ...copy });
+    }
+  };
+
+  for (const w of base.withdrawals) {
+    absorbWd(w);
+  }
+  for (const [uid, u] of Object.entries(base.users)) {
+    if (!u || !Array.isArray(u.withdrawals)) continue;
+    for (const w of u.withdrawals) {
+      absorbWd(w, uid);
+    }
+  }
+
+  const allMerged = Array.from(byId.values()).sort(
+    (a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0)
+  );
+
+  // 2. Enforce at most 1 PENDING withdrawal per user and per wallet; remove duplicate pending requests
+  const activePendingByUser = new Map();
+  const activePendingByWallet = new Map();
+  const keptWithdrawals = [];
+
+  for (const w of allMerged) {
+    if (w.id) {
+      base.notifiedAdminRefs[`wd_id_${w.id}`] = Number(w.createdAt || Date.now());
+    }
+    if (!isWithdrawStatusPending(w.status)) {
+      keptWithdrawals.push(w);
+      continue;
+    }
+
+    const uid = String(w.userId || '').trim();
+    const wRaw = parseTonAddressToRaw(w.walletRaw || w.walletAddress || '') || '';
+    const hasPendingForUser = uid && activePendingByUser.has(uid);
+    const hasPendingForWallet = wRaw && activePendingByWallet.has(wRaw);
+
+    if (hasPendingForUser || hasPendingForWallet) {
+      // Duplicate pending withdrawal from the same user/wallet
+      const u = uid ? base.users[uid] : null;
+      if (u && !hasPendingForWallet) {
+        // Restore balance only up to legitimate explainable earnings ceiling
+        const psList = Array.isArray(u.presalePurchases) ? u.presalePurchases : [];
+        const presaleCoins = psList.reduce((acc, p) => acc + Number((p && p.coinsReceived) || 0), 0);
+        const totalMined = Number(u.totalMined || 0);
+        const refCoins = Number(u.referralCoinsEarned || 0);
+        const nftBonus = Number(u.nftFirstMintCoinsEarned || 0);
+        const maxExplainable = presaleCoins + totalMined + refCoins + nftBonus + 350;
+        const paidSum = allMerged
+          .filter(
+            (x) =>
+              x &&
+              String(x.userId) === uid &&
+              String(x.status || '').toUpperCase().startsWith('PAID')
+          )
+          .reduce((acc, x) => acc + Number(x.requestedAmount || 0), 0);
+        const firstPending = activePendingByUser.get(uid);
+        const keptPendingAmt = firstPending ? Number(firstPending.requestedAmount || 0) : 0;
+        const legitimateRemaining = Math.max(0, maxExplainable - paidSum - keptPendingAmt);
+        const curBal = Number(u.balance || 0);
+        if (curBal < legitimateRemaining) {
+          const refundAmt = Math.min(Number(w.requestedAmount || 0), legitimateRemaining - curBal);
+          if (refundAmt > 0) {
+            u.balance = +(curBal + refundAmt).toFixed(6);
+          }
+        }
+      }
+      continue;
+    }
+
+    if (uid) activePendingByUser.set(uid, w);
+    if (wRaw) activePendingByWallet.set(wRaw, w);
+    keptWithdrawals.push(w);
+  }
+
+  base.withdrawals = keptWithdrawals;
+
+  // Rebuild per-user withdrawals arrays cleanly from keptWithdrawals
+  const perUserMap = new Map();
+  for (const w of keptWithdrawals) {
+    const uid = String(w.userId || '').trim();
+    if (!uid) continue;
+    if (!perUserMap.has(uid)) perUserMap.set(uid, []);
+    perUserMap.get(uid).push({ ...w });
+  }
+  for (const [uid, u] of Object.entries(base.users)) {
+    if (!u || typeof u !== 'object') continue;
+    u.withdrawals = perUserMap.get(String(uid).trim()) || [];
+  }
+}
+
 function normalizeNftRegistryInDB(base) {
   if (!base || typeof base !== 'object') return;
   if (!base.nftRegistry || typeof base.nftRegistry !== 'object') {
@@ -595,16 +722,97 @@ function normalizeNftRegistryInDB(base) {
   if (!reg.marketNetCoinsByUser || typeof reg.marketNetCoinsByUser !== 'object') reg.marketNetCoinsByUser = {};
   if (!reg.pendingTxIntents || typeof reg.pendingTxIntents !== 'object') reg.pendingTxIntents = {};
 
-  // Reconcile any historical in-app NFT purchases into nftRegistry non-destructively
-  let maxSeenNext = reg.nextMintIndex;
+  const cfgForNft = loadConfig();
+  const collectionContractActive = Boolean(
+    cfgForNft.nftSale && cfgForNft.nftSale.collectionAddress
+  );
+
+  // Build map of verified on-chain NFTs from users' onChainNfts and registry entries that have onChainAddress
+  const verifiedOnChainByIndex = new Map();
+  const verifiedOnChainBySerial = new Map();
+  for (const [k, entry] of Object.entries(reg.mintedByIndex)) {
+    if (entry && entry.onChainAddress) {
+      const idx0 = Number(entry.index ?? k);
+      verifiedOnChainByIndex.set(idx0, entry);
+      if (entry.serialCode) verifiedOnChainBySerial.set(entry.serialCode, entry);
+    }
+  }
+  for (const u of Object.values(base.users || {})) {
+    if (!u || !Array.isArray(u.onChainNfts)) continue;
+    for (const oc of u.onChainNfts) {
+      if (!oc || !oc.onChainAddress) continue;
+      const serialNum = Number(oc.serialNum || String(oc.serialCode || '').replace(/[^0-9]/g, '') || 0);
+      if (serialNum >= 1 && serialNum <= 1000) {
+        const idx0 = serialNum - 1;
+        verifiedOnChainByIndex.set(idx0, oc);
+        if (oc.serialCode) verifiedOnChainBySerial.set(oc.serialCode, oc);
+      }
+    }
+  }
+
+  // If on-chain collection contract is active and we have verified on-chain state, purge any phantom off-chain NFT entries
+  if (collectionContractActive && verifiedOnChainByIndex.size > 0) {
+    for (const [k, entry] of Object.entries(reg.mintedByIndex)) {
+      const idx0 = Number(entry?.index ?? k);
+      if (!verifiedOnChainByIndex.has(idx0) && (!entry || !entry.onChainAddress)) {
+        // Relink txHash/minter info to the same wallet's verified on-chain NFT if it was unlinked
+        const phantomWallet = entry && (entry.firstMinterWalletRaw || entry.currentOwnerWalletRaw);
+        if (entry && entry.txHash && phantomWallet) {
+          for (const [realIdx, realEntry] of Object.entries(reg.mintedByIndex)) {
+            if (
+              realEntry &&
+              realEntry.onChainAddress &&
+              !realEntry.txHash &&
+              (realEntry.currentOwnerWalletRaw === phantomWallet || realEntry.firstMinterWalletRaw === phantomWallet)
+            ) {
+              realEntry.txHash = entry.txHash;
+              realEntry.bocKey = entry.bocKey || realEntry.bocKey || '';
+              realEntry.firstMinterUserId = entry.firstMinterUserId || realEntry.currentOwnerUserId || '';
+              realEntry.firstMinterWalletRaw = phantomWallet;
+              if (entry.mintedAt) realEntry.mintedAt = entry.mintedAt;
+              const txRefKey = `chain_nft_${entry.txHash}`;
+              if (base.usedTxRefs && base.usedTxRefs[txRefKey]) {
+                base.usedTxRefs[txRefKey].nftIndex = Number(realIdx);
+                base.usedTxRefs[txRefKey].serialCode = realEntry.serialCode;
+              }
+              break;
+            }
+          }
+        }
+        delete reg.mintedByIndex[k];
+        delete reg.firstMintBonusClaimed[k];
+      }
+    }
+
+    for (const u of Object.values(base.users || {})) {
+      if (!u || !Array.isArray(u.nftPurchases)) continue;
+      u.nftPurchases = u.nftPurchases.filter((p) => {
+        if (!p) return false;
+        const serialNum = Number(p.serialNum || String(p.serialCode || '').replace(/[^0-9]/g, '') || 0);
+        const idx0 = serialNum - 1;
+        if (p.onChainAddress || verifiedOnChainByIndex.has(idx0) || verifiedOnChainBySerial.has(p.serialCode)) {
+          const v = verifiedOnChainByIndex.get(idx0) || verifiedOnChainBySerial.get(p.serialCode);
+          if (v && v.onChainAddress && !p.onChainAddress) {
+            p.onChainAddress = v.onChainAddress;
+            p.isOnChainMinted = true;
+          }
+          return true;
+        }
+        // Phantom off-chain duplicate (no onChainAddress and not in verified on-chain set)
+        return false;
+      });
+    }
+  }
+
+  // Reconcile any valid in-app NFT purchases into nftRegistry
   for (const u of Object.values(base.users || {})) {
     if (!u || !Array.isArray(u.nftPurchases)) continue;
     for (const p of u.nftPurchases) {
       if (!p) continue;
+      if (collectionContractActive && verifiedOnChainByIndex.size > 0 && !p.onChainAddress) continue;
       const serialNum = Number(p.serialNum || String(p.serialCode || '').replace(/[^0-9]/g, '') || 0);
       if (serialNum >= 1 && serialNum <= 1000) {
         const idx0 = serialNum - 1;
-        if (idx0 + 1 > maxSeenNext) maxSeenNext = idx0 + 1;
         const key = String(idx0);
         if (!reg.mintedByIndex[key]) {
           const minterUid = String(p.firstMinterUserId || p.userId || u.userId || '');
@@ -623,12 +831,6 @@ function normalizeNftRegistryInDB(base) {
             currentOwnerUserId: String(u.userId || ''),
             currentOwnerWalletRaw: parseTonAddressToRaw(u.walletRaw || '') || '',
           };
-          if (minterUid && reg.userMintCounts[minterUid] === undefined) {
-            reg.userMintCounts[minterUid] = (reg.userMintCounts[minterUid] || 0) + 1;
-          }
-          if (minterWallet && reg.walletMintCounts[minterWallet] === undefined) {
-            reg.walletMintCounts[minterWallet] = (reg.walletMintCounts[minterWallet] || 0) + 1;
-          }
         }
         if (Number(p.instantCoins || 0) > 0 && !reg.firstMintBonusClaimed[key]) {
           reg.firstMintBonusClaimed[key] = {
@@ -641,8 +843,31 @@ function normalizeNftRegistryInDB(base) {
       }
     }
   }
-  if (maxSeenNext > reg.nextMintIndex) {
-    reg.nextMintIndex = maxSeenNext;
+
+  // Recalculate nextMintIndex, userMintCounts, walletMintCounts, and u.nftMintCount strictly from reg.mintedByIndex
+  let calcNextIndex = 0;
+  const newUserMintCounts = {};
+  const newWalletMintCounts = {};
+  for (const [k, entry] of Object.entries(reg.mintedByIndex)) {
+    if (!entry) continue;
+    const idx0 = Number(entry.index ?? k);
+    if (Number.isFinite(idx0) && idx0 + 1 > calcNextIndex) {
+      calcNextIndex = idx0 + 1;
+    }
+    const uid = String(entry.firstMinterUserId || entry.currentOwnerUserId || '').trim();
+    const wRaw = String(entry.firstMinterWalletRaw || entry.currentOwnerWalletRaw || '').trim();
+    if (uid) newUserMintCounts[uid] = (newUserMintCounts[uid] || 0) + 1;
+    if (wRaw) newWalletMintCounts[wRaw] = (newWalletMintCounts[wRaw] || 0) + 1;
+  }
+  reg.nextMintIndex = calcNextIndex;
+  reg.userMintCounts = newUserMintCounts;
+  reg.walletMintCounts = newWalletMintCounts;
+  for (const [uid, u] of Object.entries(base.users || {})) {
+    if (!u || typeof u !== 'object') continue;
+    const wRaw = parseTonAddressToRaw(u.walletRaw || '') || '';
+    const cnt = Math.max(newUserMintCounts[uid] || 0, wRaw ? newWalletMintCounts[wRaw] || 0 : 0);
+    u.nftMintCount = cnt;
+    u.everMintedNft = cnt > 0;
   }
 }
 
@@ -653,6 +878,7 @@ function normalizeParsedDB(parsed) {
   if (!base.walletOwners || typeof base.walletOwners !== 'object') base.walletOwners = {};
   if (!Array.isArray(base.withdrawals)) base.withdrawals = [];
   if (!base.usedTxRefs || typeof base.usedTxRefs !== 'object') base.usedTxRefs = {};
+  if (!base.notifiedAdminRefs || typeof base.notifiedAdminRefs !== 'object') base.notifiedAdminRefs = {};
   if (!base.presale || typeof base.presale !== 'object') {
     base.presale = {
       totalCoinsSold: 0,
@@ -667,24 +893,35 @@ function normalizeParsedDB(parsed) {
   if (!Array.isArray(base.presale.purchases)) base.presale.purchases = [];
   deduplicateWalletsInDB(base);
   deduplicatePresalePurchasesInDB(base);
+  for (const p of base.presale.purchases) {
+    if (!p) continue;
+    const ts = Number(p.createdAt || Date.now());
+    if (p.id) base.notifiedAdminRefs[`ps_id_${p.id}`] = ts;
+    if (p.txHash) base.notifiedAdminRefs[`ps_tx_${p.txHash}`] = ts;
+    if (p.bocKey) base.notifiedAdminRefs[`ps_boc_${p.bocKey}`] = ts;
+  }
+  deduplicateWithdrawalsInDB(base);
   normalizeNftRegistryInDB(base);
   return base;
 }
 
 function loadDB() {
-  try {
-    if (fs.existsSync(DB_PATH)) {
-      const rawStr = fs.readFileSync(DB_PATH, 'utf8');
-      const parsed = normalizeParsedDB(JSON.parse(rawStr));
-      const nextStr = JSON.stringify(parsed, null, 2);
-      if (nextStr !== rawStr) {
-        try {
-          fs.writeFileSync(DB_PATH, nextStr, 'utf8');
-        } catch (_) {}
+  const candidates = [DB_PATH, path.join(__dirname, 'data', 'database.json')];
+  for (const candidate of candidates) {
+    try {
+      if (candidate && fs.existsSync(candidate)) {
+        const rawStr = fs.readFileSync(candidate, 'utf8').replace(/^\uFEFF/, '');
+        const parsed = normalizeParsedDB(JSON.parse(rawStr));
+        const nextStr = JSON.stringify(parsed, null, 2);
+        if (candidate === DB_PATH && nextStr !== rawStr && !process.env.VERCEL) {
+          try {
+            fs.writeFileSync(DB_PATH, nextStr, 'utf8');
+          } catch (_) {}
+        }
+        return parsed;
       }
-      return parsed;
-    }
-  } catch (_) {}
+    } catch (_) {}
+  }
   return createEmptyDB();
 }
 
@@ -693,6 +930,8 @@ const db = loadDB();
 // ================= FREE PERMANENT CLOUD DB (UPSTASH REDIS REST API) =================
 const CLOUD_DB_KEY = process.env.CLOUD_DB_KEY || 'maxima_mining_db_v2';
 let cloudDbLoaded = false;
+let lastCloudLoadAt = 0;
+let dbDirty = false;
 let cloudLoadInFlight = null;
 let cloudFlushPromise = null;
 let cloudFlushPendingAgain = false;
@@ -733,36 +972,55 @@ async function upstashCommand(creds, cmdArray) {
   return data;
 }
 
-async function ensureCloudDBLoaded() {
+async function ensureCloudDBLoaded(forceRefresh = false) {
   const creds = getUpstashCreds();
-  if (!creds || cloudDbLoaded) return;
+  if (!creds) return;
+
+  // If this container has un-flushed local mutations, flush them first instead of overwriting them
+  if (dbDirty && cloudDbLoaded) {
+    await flushCloudDB().catch(() => {});
+  }
+
+  const now = Date.now();
+  if (cloudDbLoaded && !forceRefresh && now - lastCloudLoadAt < 2000) {
+    return;
+  }
   if (cloudLoadInFlight) return cloudLoadInFlight;
 
   cloudLoadInFlight = (async () => {
     try {
       const data = await upstashCommand(creds, ['GET', CLOUD_DB_KEY]);
       lastCloudPingAt = Date.now();
+      lastCloudLoadAt = Date.now();
       if (data && typeof data.result === 'string' && data.result.trim().startsWith('{')) {
+        if (cloudDbLoaded && data.result === lastCloudJson) {
+          return;
+        }
         const parsed = normalizeParsedDB(JSON.parse(data.result));
         db.schemaVersion = parsed.schemaVersion;
         db.users = parsed.users;
         db.walletOwners = parsed.walletOwners || {};
         db.withdrawals = parsed.withdrawals;
         db.usedTxRefs = parsed.usedTxRefs;
+        db.notifiedAdminRefs = parsed.notifiedAdminRefs || {};
         db.presale = parsed.presale;
         db.nftRegistry = parsed.nftRegistry || createEmptyNftRegistry();
         const normalizedSnap = JSON.stringify(db);
         lastCloudJson = data.result;
         cloudDbLoaded = true;
-        try {
-          fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
-        } catch (_) {}
+        if (!process.env.VERCEL) {
+          try {
+            fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
+          } catch (_) {}
+        }
         if (normalizedSnap !== data.result) {
+          dbDirty = true;
           await flushCloudDB().catch(() => {});
         }
-        console.log(`☁️  [Cloud DB] Loaded ${Object.keys(db.users).length} permanent member accounts from Upstash!`);
+        console.log(`☁️  [Cloud DB] Synced ${Object.keys(db.users).length} permanent member accounts from Upstash!`);
       } else if (data && data.result === null) {
         cloudDbLoaded = true;
+        dbDirty = true;
         await flushCloudDB();
         console.log('☁️  [Cloud DB] Upstash Redis connected & permanent database initialized!');
       }
@@ -797,12 +1055,20 @@ async function flushCloudDB() {
     do {
       cloudFlushPendingAgain = false;
       const snapshot = JSON.stringify(db);
-      if (snapshot === lastCloudJson) break;
+      if (snapshot === lastCloudJson) {
+        dbDirty = false;
+        break;
+      }
       try {
         const res = await upstashCommand(creds, ['SET', CLOUD_DB_KEY, snapshot]);
         if (res && res.result === 'OK') {
           lastCloudJson = snapshot;
           lastCloudPingAt = Date.now();
+          lastCloudWriteAt = Date.now();
+          lastCloudLoadAt = Date.now();
+          if (!cloudFlushPendingAgain) {
+            dbDirty = false;
+          }
         }
       } catch (err) {
         console.warn('⚠️  [Cloud DB] Failed to save to Upstash Redis:', err.message);
@@ -817,9 +1083,12 @@ async function flushCloudDB() {
 }
 
 function saveDB(immediateCloud = false) {
-  try {
-    fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
-  } catch (_) {}
+  dbDirty = true;
+  if (!process.env.VERCEL) {
+    try {
+      fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
+    } catch (_) {}
+  }
 
   const creds = getUpstashCreds();
   if (!creds || !cloudDbLoaded) return;
@@ -1414,7 +1683,7 @@ async function fetchOnChainJettonBalance(cfg, walletRaw) {
     return Number(whole) + Number(rem) / 10 ** decimals;
   };
 
-  // 1. Primary: TonAPI v2 (menggunakan Raw Address untuk wallet & contract)
+  // 1. Primary: TonAPI v2 (using Raw Address for wallet & contract)
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 5000);
@@ -1435,7 +1704,7 @@ async function fetchOnChainJettonBalance(cfg, walletRaw) {
     }
   } catch (_) {}
 
-  // 2. Fallback Otomatis: Toncenter API v3 (jika TonAPI terkena rate-limit 429 di Render)
+  // 2. Automatic Fallback: Toncenter API v3 (if TonAPI hits HTTP 429 rate-limit)
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 5000);
@@ -1785,13 +2054,16 @@ async function tryAutoVerifyFromChain(cfg, user, forceRefresh = false) {
       user.boundWalletRaw = user.walletRaw;
       checkAndActivateReferral(cfg, user);
       saveDB(true);
+      await flushCloudDB().catch(() => {});
       if (isRecentTx) {
-        notifyTelegramUser(
-          cfg,
-          user.userId,
-          `✅ *Wallet Automatically Verified (On-Chain)!*\n\nYour *${feeTon} GRAM* verification payment was detected on-chain. *Withdraw ${cfg.token.symbol}* is now unlocked!`
-        ).catch(() => {});
-        notifyAdminsWalletVerified(cfg, user).catch(() => {});
+        await Promise.allSettled([
+          notifyTelegramUser(
+            cfg,
+            user.userId,
+            `✅ *Wallet Automatically Verified (On-Chain)!*\n\nYour *${feeTon} GRAM* verification payment was detected on-chain. *Withdraw ${cfg.token.symbol}* is now unlocked!`
+          ),
+          notifyAdminsWalletVerified(cfg, user, tx.hash),
+        ]);
       }
       return true;
     }
@@ -1878,6 +2150,7 @@ async function tryAutoPresaleFromChainUnlocked(cfg, user, forceRefresh = false, 
         at: txTimeMs,
       };
       saveDB(true);
+      await flushCloudDB().catch(() => {});
       continue;
     }
 
@@ -1904,8 +2177,12 @@ async function tryAutoPresaleFromChainUnlocked(cfg, user, forceRefresh = false, 
         at: txTimeMs,
         linkedReceipt: existingBocReceipt.id,
       };
+      if (!db.notifiedAdminRefs || typeof db.notifiedAdminRefs !== 'object') db.notifiedAdminRefs = {};
+      db.notifiedAdminRefs[`ps_tx_${tx.hash}`] = txTimeMs;
+      if (existingBocReceipt.id) db.notifiedAdminRefs[`ps_id_${existingBocReceipt.id}`] = txTimeMs;
       clearPendingWalletTxIntent(user.walletRaw, 'presale');
       saveDB(true);
+      await flushCloudDB().catch(() => {});
       continue;
     }
 
@@ -1940,14 +2217,17 @@ async function tryAutoPresaleFromChainUnlocked(cfg, user, forceRefresh = false, 
     user.presalePurchases.push(receipt);
     db.presale.purchases.push({ ...receipt });
     saveDB(true);
+    await flushCloudDB().catch(() => {});
 
     if (Date.now() - txTimeMs < 30 * 60 * 1000) {
-      notifyTelegramUser(
-        cfg,
-        user.userId,
-        `🚀 *Presale Purchase Automatically Detected (On-Chain)!*\n\n• *Paid:* ${matchedPkg.ton} GRAM\n• *Coins Received:* +${matchedPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[user.walletRaw]} / ${maxTonWallet} GRAM`
-      ).catch(() => {});
-      notifyAdminsNewPresale(cfg, user, receipt).catch(() => {});
+      await Promise.allSettled([
+        notifyTelegramUser(
+          cfg,
+          user.userId,
+          `🚀 *Presale Purchase Automatically Detected (On-Chain)!*\n\n• *Paid:* ${matchedPkg.ton} GRAM\n• *Coins Received:* +${matchedPkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[user.walletRaw]} / ${maxTonWallet} GRAM`
+        ),
+        notifyAdminsNewPresale(cfg, user, receipt),
+      ]);
     }
 
     creditedPkg = matchedPkg;
@@ -1990,7 +2270,11 @@ function getUserPrimaryMintCount(user) {
   return Math.max(byUid, byWallet, fromUserField);
 }
 
-function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', tonPaid = 10, createdAt = Date.now(), onChainAddress = '' }) {
+function executePrimaryNftMintUnlocked(
+  cfg,
+  user,
+  { txHash = '', bocKey = '', tonPaid = 10, createdAt = Date.now(), onChainAddress = '', targetIndex = null }
+) {
   ensureUserSchema(user);
   const reg = ensureNftRegistry();
   const maxTotalSupply = Number(cfg.nftSale?.maxTotalSupply || 1000);
@@ -2000,47 +2284,61 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
   const uid = String(user.userId || '').trim();
   const wRaw = parseTonAddressToRaw(user.walletRaw || '') || '';
 
-  const usedByUser = uid ? Number(reg.userMintCounts[uid] || 0) : 0;
-  const usedByWallet = wRaw ? Number(reg.walletMintCounts[wRaw] || 0) : 0;
-  if (usedByUser >= maxMintPerUser || usedByWallet >= maxMintPerWallet) {
-    return {
-      ok: false,
-      error: `⚠️ Maximum primary mint limit (${maxMintPerUser} NFTs per user/wallet) reached! You can still buy or receive NFTs from other users.`,
-    };
-  }
+  let idx0;
+  const hasExplicitTarget =
+    typeof targetIndex === 'number' &&
+    Number.isInteger(targetIndex) &&
+    targetIndex >= 0 &&
+    targetIndex < maxTotalSupply;
 
-  let idx0 = Math.max(0, Math.floor(reg.nextMintIndex || 0));
-  while (idx0 < maxTotalSupply && reg.mintedByIndex[String(idx0)]) {
-    idx0++;
-  }
-  if (idx0 >= maxTotalSupply) {
-    return {
-      ok: false,
-      error: `⛔ Sold Out! All ${maxTotalSupply.toLocaleString('en-US')} Genesis NFTs have been minted!`,
-    };
+  if (hasExplicitTarget) {
+    idx0 = targetIndex;
+  } else {
+    const usedByUser = uid ? Number(reg.userMintCounts[uid] || 0) : 0;
+    const usedByWallet = wRaw ? Number(reg.walletMintCounts[wRaw] || 0) : 0;
+    if (usedByUser >= maxMintPerUser || usedByWallet >= maxMintPerWallet) {
+      return {
+        ok: false,
+        error: `⚠️ Maximum primary mint limit (${maxMintPerUser} NFTs per user/wallet) reached! You can still buy or receive NFTs from other users.`,
+      };
+    }
+
+    idx0 = Math.max(0, Math.floor(reg.nextMintIndex || 0));
+    while (idx0 < maxTotalSupply && reg.mintedByIndex[String(idx0)]) {
+      idx0++;
+    }
+    if (idx0 >= maxTotalSupply) {
+      return {
+        ok: false,
+        error: `⛔ Sold Out! All ${maxTotalSupply.toLocaleString('en-US')} Genesis NFTs have been minted!`,
+      };
+    }
   }
 
   const spec = getManifestNftByIndex(idx0);
   const key = String(idx0);
-  reg.nextMintIndex = idx0 + 1;
+  if (idx0 + 1 > reg.nextMintIndex) {
+    reg.nextMintIndex = idx0 + 1;
+  }
+
+  const existingRegEntry = reg.mintedByIndex[key] || null;
+  const resolvedOnChainAddress =
+    onChainAddress || (existingRegEntry && existingRegEntry.onChainAddress) || '';
 
   // EXCLUSIVE FIRST-MINT BONUS: ONLY Legendary (+10,000 MAXIMA) & Mythic (+20,000 MAXIMA) on very first primary mint of this NFT item!
   const alreadyClaimedBonus = Boolean(reg.firstMintBonusClaimed[key]);
   const isLegendaryOrMythic = spec.tier === 'LEGENDARY' || spec.tier === 'MYTHIC';
   const awardedMaxima = !alreadyClaimedBonus && isLegendaryOrMythic ? Number(spec.firstMintMaxima || 0) : 0;
 
-  reg.firstMintBonusClaimed[key] = {
-    userId: uid,
-    walletRaw: wRaw,
-    tier: spec.tier,
-    coins: awardedMaxima,
-    at: createdAt,
-  };
-
-  if (uid) reg.userMintCounts[uid] = usedByUser + 1;
-  if (wRaw) reg.walletMintCounts[wRaw] = usedByWallet + 1;
-  user.nftMintCount = Math.max(Number(user.nftMintCount || 0) + 1, reg.userMintCounts[uid] || 1);
-  user.everMintedNft = true;
+  if (!alreadyClaimedBonus) {
+    reg.firstMintBonusClaimed[key] = {
+      userId: uid,
+      walletRaw: wRaw,
+      tier: spec.tier,
+      coins: awardedMaxima,
+      at: createdAt,
+    };
+  }
 
   accruePendingMining(cfg, user);
   if (awardedMaxima > 0) {
@@ -2048,8 +2346,11 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
     user.nftFirstMintCoinsEarned = +(Number(user.nftFirstMintCoinsEarned || 0) + awardedMaxima).toFixed(6);
   }
 
-  if (txHash) {
-    db.usedTxRefs[`chain_nft_${normalizeTxHashHex(txHash)}`] = {
+  const cleanTxHash = txHash ? normalizeTxHashHex(txHash) : (existingRegEntry && existingRegEntry.txHash) || '';
+  const cleanBocKey = bocKey || (existingRegEntry && existingRegEntry.bocKey) || '';
+
+  if (cleanTxHash) {
+    db.usedTxRefs[`chain_nft_${cleanTxHash}`] = {
       type: 'nft',
       userId: uid,
       walletRaw: wRaw,
@@ -2059,8 +2360,8 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
       at: createdAt,
     };
   }
-  if (bocKey) {
-    db.usedTxRefs[bocKey] = {
+  if (cleanBocKey) {
+    db.usedTxRefs[cleanBocKey] = {
       type: 'nft',
       userId: uid,
       walletRaw: wRaw,
@@ -2079,8 +2380,9 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
     firstMinterUserId: uid,
     firstMinterWalletRaw: wRaw,
     ownerWalletRaw: wRaw,
-    onChainAddress: onChainAddress || '',
-    isOnChainMinted: Boolean(onChainAddress),
+    onChainAddress: resolvedOnChainAddress,
+    isOnChainMinted: Boolean(resolvedOnChainAddress),
+    isOnChainSynced: Boolean(resolvedOnChainAddress),
     nftId: spec.nftId,
     name: spec.name,
     fullTitle: spec.fullTitle,
@@ -2100,8 +2402,8 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
     coreGeometry: spec.coreGeometry,
     emblemFinish: spec.emblemFinish,
     overclockPct: spec.overclockPct,
-    txHash: txHash ? normalizeTxHashHex(txHash) : '',
-    bocKey: bocKey || '',
+    txHash: cleanTxHash,
+    bocKey: cleanBocKey,
     createdAt,
   };
 
@@ -2111,17 +2413,46 @@ function executePrimaryNftMintUnlocked(cfg, user, { txHash = '', bocKey = '', to
     serialCode: spec.serialCode,
     tier: spec.tier,
     powerBoostPct: spec.powerBoostPct,
-    firstMinterUserId: uid,
-    firstMinterWalletRaw: wRaw,
-    mintedAt: createdAt,
-    txHash: receipt.txHash,
-    bocKey: receipt.bocKey,
-    onChainAddress: onChainAddress || '',
+    firstMinterUserId: (existingRegEntry && existingRegEntry.firstMinterUserId) || uid,
+    firstMinterWalletRaw: (existingRegEntry && existingRegEntry.firstMinterWalletRaw) || wRaw,
+    mintedAt: (existingRegEntry && existingRegEntry.mintedAt) || createdAt,
+    txHash: cleanTxHash,
+    bocKey: cleanBocKey,
+    onChainAddress: resolvedOnChainAddress,
     currentOwnerUserId: uid,
     currentOwnerWalletRaw: wRaw,
   };
 
-  user.nftPurchases.push(receipt);
+  // Upsert into user.nftPurchases by serialCode so the same NFT index is never added twice
+  if (!Array.isArray(user.nftPurchases)) user.nftPurchases = [];
+  const existingPurchaseIdx = user.nftPurchases.findIndex(
+    (p) => p && (p.serialCode === spec.serialCode || Number(p.index) === idx0)
+  );
+  if (existingPurchaseIdx >= 0) {
+    user.nftPurchases[existingPurchaseIdx] = {
+      ...user.nftPurchases[existingPurchaseIdx],
+      ...receipt,
+      id: user.nftPurchases[existingPurchaseIdx].id || receipt.id,
+    };
+  } else {
+    user.nftPurchases.push(receipt);
+  }
+
+  // Recalculate mint counts strictly from reg.mintedByIndex so 1 NFT = 1 Mint Count
+  let userCount = 0;
+  let walletCount = 0;
+  for (const entry of Object.values(reg.mintedByIndex)) {
+    if (!entry) continue;
+    const eUid = String(entry.firstMinterUserId || entry.currentOwnerUserId || '').trim();
+    const eWal = String(entry.firstMinterWalletRaw || entry.currentOwnerWalletRaw || '').trim();
+    if (uid && eUid === uid) userCount++;
+    if (wRaw && eWal === wRaw) walletCount++;
+  }
+  if (uid) reg.userMintCounts[uid] = Math.max(1, userCount);
+  if (wRaw) reg.walletMintCounts[wRaw] = Math.max(1, walletCount);
+  user.nftMintCount = Math.max(reg.userMintCounts[uid] || 1, reg.walletMintCounts[wRaw] || 1);
+  user.everMintedNft = true;
+
   saveDB(true);
 
   const bonusNote =
@@ -2143,6 +2474,15 @@ async function tryAutoNftMintFromChainUnlocked(cfg, user, forceRefresh = false, 
 
   const startsAtMs = Date.parse(cfg.nftSale?.startsAt || '2026-11-04T00:00:00Z');
   if (Number.isFinite(startsAtMs) && Date.now() < startsAtMs) return null;
+
+  const colAddrRaw = parseTonAddressToRaw(cfg.nftSale?.collectionAddress || '');
+  const contractMintMode = Boolean(colAddrRaw);
+
+  // Always reconcile on-chain collection & user wallet NFTs BEFORE matching payment transactions
+  if (contractMintMode) {
+    await reconcileCollectionOnChainOwnership(cfg, forceRefresh).catch(() => false);
+    await syncOnChainNftsForUser(cfg, user, forceRefresh).catch(() => false);
+  }
 
   const boxPriceTon = Number(cfg.nftSale?.boxPriceTon || 10);
   const gasTon = isDirectContractMintActive(cfg) ? Number(cfg.nftSale?.contractMintGasTon || 0.08) : 0;
@@ -2171,25 +2511,32 @@ async function tryAutoNftMintFromChainUnlocked(cfg, user, forceRefresh = false, 
     ensureUserSchema(user);
     const reg = ensureNftRegistry();
 
-    // Check if an unhashed BOC receipt from immediate callback already recorded this exact mint within 60 minutes
+    // 1. Check if an unhashed receipt in user.nftPurchases already recorded this exact mint
     const userNftList = Array.isArray(user.nftPurchases) ? user.nftPurchases : [];
     const existingUnhashedNft = userNftList.find(
       (n) =>
         n &&
         !n.txHash &&
-        n.firstMinterUserId === String(user.userId) &&
-        Math.abs(Number(n.createdAt || 0) - txTimeMs) < 60 * 60 * 1000
+        (n.firstMinterUserId === String(user.userId) || n.ownerWalletRaw === user.walletRaw) &&
+        (!contractMintMode || Boolean(n.onChainAddress))
     );
     if (existingUnhashedNft) {
       existingUnhashedNft.txHash = tx.hash;
       const idxKey = String(existingUnhashedNft.index ?? (Number(existingUnhashedNft.serialNum || 1) - 1));
       if (reg.mintedByIndex[idxKey]) {
         reg.mintedByIndex[idxKey].txHash = tx.hash;
+        if (!reg.mintedByIndex[idxKey].firstMinterUserId) {
+          reg.mintedByIndex[idxKey].firstMinterUserId = String(user.userId);
+        }
+        if (!reg.mintedByIndex[idxKey].firstMinterWalletRaw) {
+          reg.mintedByIndex[idxKey].firstMinterWalletRaw = user.walletRaw;
+        }
       }
       db.usedTxRefs[`chain_nft_${tx.hash}`] = {
         type: 'nft',
         userId: user.userId,
         walletRaw: user.walletRaw,
+        nftIndex: Number(idxKey),
         serialCode: existingUnhashedNft.serialCode,
         ton: boxPriceTon,
         at: txTimeMs,
@@ -2197,6 +2544,60 @@ async function tryAutoNftMintFromChainUnlocked(cfg, user, forceRefresh = false, 
       };
       clearPendingWalletTxIntent(user.walletRaw, 'nft');
       saveDB(true);
+      await flushCloudDB().catch(() => {});
+      lastMintedReceipt = existingUnhashedNft;
+      continue;
+    }
+
+    // 2. When on-chain collection contract is active, match this payment tx directly to the user's on-chain minted NFT item!
+    if (contractMintMode) {
+      const onChainList = Array.isArray(user.onChainNfts) ? user.onChainNfts : [];
+      let matchedOnChainIdx = null;
+      let matchedOnChainAddr = '';
+
+      // First look in user.onChainNfts for an item whose reg.mintedByIndex entry has no txHash yet
+      for (const oc of onChainList) {
+        if (!oc) continue;
+        const idx0 = typeof oc.index === 'number' ? oc.index : Number(oc.serialNum || 1) - 1;
+        const rEntry = reg.mintedByIndex[String(idx0)];
+        if (!rEntry || !rEntry.txHash || rEntry.txHash === tx.hash) {
+          matchedOnChainIdx = idx0;
+          matchedOnChainAddr = oc.onChainAddress || (rEntry && rEntry.onChainAddress) || '';
+          break;
+        }
+      }
+
+      // Fallback: look in reg.mintedByIndex for any on-chain item owned by this wallet without a txHash
+      if (matchedOnChainIdx === null) {
+        for (const [k, rEntry] of Object.entries(reg.mintedByIndex)) {
+          if (
+            rEntry &&
+            rEntry.onChainAddress &&
+            (!rEntry.txHash || rEntry.txHash === tx.hash) &&
+            (rEntry.currentOwnerWalletRaw === user.walletRaw || rEntry.firstMinterWalletRaw === user.walletRaw)
+          ) {
+            matchedOnChainIdx = Number(rEntry.index ?? k);
+            matchedOnChainAddr = rEntry.onChainAddress;
+            break;
+          }
+        }
+      }
+
+      if (matchedOnChainIdx !== null) {
+        const mintRes = executePrimaryNftMintUnlocked(cfg, user, {
+          txHash: tx.hash,
+          bocKey: '',
+          tonPaid: boxPriceTon,
+          createdAt: txTimeMs,
+          onChainAddress: matchedOnChainAddr,
+          targetIndex: matchedOnChainIdx,
+        });
+        await flushCloudDB().catch(() => {});
+        if (mintRes && mintRes.ok && mintRes.receipt) {
+          lastMintedReceipt = mintRes.receipt;
+        }
+      }
+      // Never fabricate an off-chain phantom NFT when contractMintMode is active!
       continue;
     }
 
@@ -2206,6 +2607,7 @@ async function tryAutoNftMintFromChainUnlocked(cfg, user, forceRefresh = false, 
       tonPaid: boxPriceTon,
       createdAt: txTimeMs,
     });
+    await flushCloudDB().catch(() => {});
     if (mintRes && mintRes.ok && mintRes.receipt) {
       lastMintedReceipt = mintRes.receipt;
     } else {
@@ -2617,11 +3019,11 @@ async function fetchWalletMaximaNftsOnChain(cfg, walletRaw) {
   if (!cleanWallet) return { ok: false, items: [] };
   const colAddrRaw = parseTonAddressToRaw(cfg.nftSale?.collectionAddress || '');
 
-  // 1. Primary: TonAPI v2
+  // 1. Primary: TonAPI v2 (indirect_ownership=true includes items still owned by the user via Getgems sale escrow)
   try {
     const url = colAddrRaw
-      ? `https://tonapi.io/v2/accounts/${encodeURIComponent(cleanWallet)}/nfts?collection=${encodeURIComponent(colAddrRaw)}&limit=200&indirect_ownership=false`
-      : `https://tonapi.io/v2/accounts/${encodeURIComponent(cleanWallet)}/nfts?limit=200&indirect_ownership=false`;
+      ? `https://tonapi.io/v2/accounts/${encodeURIComponent(cleanWallet)}/nfts?collection=${encodeURIComponent(colAddrRaw)}&limit=200&indirect_ownership=true`
+      : `https://tonapi.io/v2/accounts/${encodeURIComponent(cleanWallet)}/nfts?limit=200&indirect_ownership=true`;
     const data = await fetchJsonWithTimeout(url, 4500, buildTonApiHeaders());
     const nftItems = Array.isArray(data && data.nft_items) ? data.nft_items : [];
     const matched = [];
@@ -2629,9 +3031,10 @@ async function fetchWalletMaximaNftsOnChain(cfg, walletRaw) {
 
     for (const item of nftItems) {
       if (!item) continue;
-      // Exclude NFTs currently locked inside external sale/auction contracts
-      if (item.sale) continue;
-      const liveOwnerRaw = parseTonAddressToRaw(item.owner && (item.owner.address || item.owner));
+      const liveOwnerRaw = parseTonAddressToRaw(
+        (item.sale && item.sale.owner && (item.sale.owner.address || item.sale.owner)) ||
+          (item.owner && (item.owner.address || item.owner))
+      );
       if (liveOwnerRaw && liveOwnerRaw !== cleanWallet) continue;
 
       const itemColRaw = parseTonAddressToRaw(item.collection && item.collection.address);
@@ -2651,8 +3054,9 @@ async function fetchWalletMaximaNftsOnChain(cfg, walletRaw) {
 
   // 2. Automatic Fallback: Toncenter API v3
   try {
-    const colParam = colAddrRaw ? `&collection_address=${encodeURIComponent(colAddrRaw)}` : '';
-    const url = `https://toncenter.com/api/v3/nft/items?owner_address=${encodeURIComponent(cleanWallet)}${colParam}&limit=200`;
+    const url = colAddrRaw
+      ? `https://toncenter.com/api/v3/nft/items?collection_address=${encodeURIComponent(colAddrRaw)}&limit=1000`
+      : `https://toncenter.com/api/v3/nft/items?owner_address=${encodeURIComponent(cleanWallet)}&limit=200`;
     const data = await fetchJsonWithTimeout(url, 5000, buildToncenterHeaders());
     const nftItems = Array.isArray(data && data.nft_items) ? data.nft_items : [];
     const metaMap = (data && data.metadata) || {};
@@ -2661,8 +3065,8 @@ async function fetchWalletMaximaNftsOnChain(cfg, walletRaw) {
 
     for (const item of nftItems) {
       if (!item) continue;
-      const liveOwnerRaw = parseTonAddressToRaw(item.owner_address);
-      if (liveOwnerRaw && liveOwnerRaw !== cleanWallet) continue;
+      const liveOwnerRaw = parseTonAddressToRaw(item.real_owner || item.owner_address);
+      if (!liveOwnerRaw || liveOwnerRaw !== cleanWallet) continue;
 
       const itemColRaw = parseTonAddressToRaw(item.collection_address);
       const itemAddrKey = String(item.address || '');
@@ -2701,6 +3105,9 @@ function applyWalletOnChainNftSnapshot(cfg, user, onChainItems) {
   const cleanWallet = parseTonAddressToRaw(user.walletRaw);
   if (!cleanWallet) return false;
 
+  const colAddrRaw = parseTonAddressToRaw(cfg.nftSale?.collectionAddress || '');
+  const contractMintMode = Boolean(colAddrRaw);
+
   let dbChanged = false;
   const onChainBySerial = new Map();
   for (const oc of onChainItems || []) {
@@ -2724,6 +3131,14 @@ function applyWalletOnChainNftSnapshot(cfg, user, onChainItems) {
         reg.mintedByIndex[idxKey].currentOwnerUserId = String(user.userId);
         dbChanged = true;
       }
+      if (!reg.mintedByIndex[idxKey].firstMinterUserId) {
+        reg.mintedByIndex[idxKey].firstMinterUserId = String(user.userId);
+        dbChanged = true;
+      }
+      if (!reg.mintedByIndex[idxKey].firstMinterWalletRaw) {
+        reg.mintedByIndex[idxKey].firstMinterWalletRaw = cleanWallet;
+        dbChanged = true;
+      }
     } else {
       reg.mintedByIndex[idxKey] = {
         index: Number(idxKey),
@@ -2731,8 +3146,8 @@ function applyWalletOnChainNftSnapshot(cfg, user, onChainItems) {
         serialCode: oc.serialCode,
         tier: oc.tier,
         powerBoostPct: oc.powerBoostPct,
-        firstMinterUserId: '',
-        firstMinterWalletRaw: '',
+        firstMinterUserId: String(user.userId),
+        firstMinterWalletRaw: cleanWallet,
         mintedAt: Date.now(),
         onChainAddress: oc.onChainAddress || '',
         currentOwnerUserId: String(user.userId),
@@ -2764,28 +3179,36 @@ function applyWalletOnChainNftSnapshot(cfg, user, onChainItems) {
     }
   }
 
-  // 2. Evict any on-chain-minted NFTs from THIS user's nftPurchases if they are NO LONGER in this user's on-chain wallet!
+  // 2. Evict any NFTs from THIS user's nftPurchases if they are NOT in this user's on-chain wallet!
+  // When contractMintMode is active, ALL valid NFTs must exist on-chain in the user's wallet (evicts phantom off-chain duplicates like #0002).
   if (Array.isArray(user.nftPurchases) && user.nftPurchases.length > 0) {
     const keptPurchases = [];
     let evictedAny = false;
+    const seenPurchaseSerials = new Set();
     for (const p of user.nftPurchases) {
       if (!p) continue;
       const idxKey = String(p.index ?? (Number(p.serialNum || 1) - 1));
       const regEntry = reg.mintedByIndex[idxKey];
       const hasOnChainIdentity = Boolean(
-        p.isOnChainMinted ||
+        contractMintMode ||
+          p.isOnChainMinted ||
           p.onChainAddress ||
           (regEntry && regEntry.onChainAddress)
       );
 
-      if (hasOnChainIdentity && !onChainBySerial.has(p.serialCode)) {
+      if ((hasOnChainIdentity && !onChainBySerial.has(p.serialCode)) || seenPurchaseSerials.has(p.serialCode)) {
         if (!evictedAny) {
           accruePendingMining(cfg, user);
           evictedAny = true;
         }
-        if (regEntry && regEntry.currentOwnerWalletRaw === cleanWallet) {
-          regEntry.currentOwnerWalletRaw = '';
-          regEntry.currentOwnerUserId = '';
+        if (regEntry) {
+          if (!regEntry.onChainAddress && contractMintMode) {
+            delete reg.mintedByIndex[idxKey];
+            delete reg.firstMintBonusClaimed[idxKey];
+          } else if (regEntry.currentOwnerWalletRaw === cleanWallet && !onChainBySerial.has(p.serialCode)) {
+            regEntry.currentOwnerWalletRaw = '';
+            regEntry.currentOwnerUserId = '';
+          }
         }
         dbChanged = true;
         continue;
@@ -2800,6 +3223,7 @@ function applyWalletOnChainNftSnapshot(cfg, user, onChainItems) {
           dbChanged = true;
         }
       }
+      if (p.serialCode) seenPurchaseSerials.add(p.serialCode);
       keptPurchases.push(p);
     }
     if (evictedAny) {
@@ -2821,6 +3245,7 @@ function applyWalletOnChainNftSnapshot(cfg, user, onChainItems) {
   user.lastNftOnChainSyncAt = Date.now();
 
   if (dbChanged) {
+    normalizeNftRegistryInDB(db);
     saveDB(true);
   }
   return dbChanged;
@@ -2833,10 +3258,10 @@ async function syncOnChainNftsForUser(cfg, user, forceRefresh = false) {
 
   const now = Date.now();
   const cached = onChainNftCache.get(cleanWallet);
-  // Continuous automatic check: 12s TTL on normal sync, 0ms on forceRefresh
-  if (!forceRefresh && cached && now - cached.time < 12000) {
+  // Continuous automatic check: 12s TTL on normal sync, 3s coalescing window on forceRefresh
+  if (cached && now - cached.time < (forceRefresh ? 3000 : 12000)) {
     user.onChainNfts = cached.items;
-    return false;
+    return applyWalletOnChainNftSnapshot(cfg, user, cached.items);
   }
 
   const scan = await fetchWalletMaximaNftsOnChain(cfg, cleanWallet);
@@ -2849,13 +3274,13 @@ async function syncOnChainNftsForUser(cfg, user, forceRefresh = false) {
   return applyWalletOnChainNftSnapshot(cfg, user, scan.items);
 }
 
-// Collection-wide on-chain ownership reconciliation: detects wallet-to-wallet transfers across ALL 1,000 items automatically!
+// Collection-wide on-chain ownership reconciliation: detects wallet-to-wallet transfers & purges any phantom off-chain NFTs across ALL 1,000 items automatically!
 async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
   const colAddrRaw = parseTonAddressToRaw(cfg.nftSale?.collectionAddress || '');
   if (!colAddrRaw) return false;
 
   const now = Date.now();
-  if (!forceRefresh && now - lastCollectionReconcileAt < 20000) return false;
+  if (now - lastCollectionReconcileAt < (forceRefresh ? 3000 : 20000)) return false;
   if (collectionReconcileInFlight) return collectionReconcileInFlight;
 
   collectionReconcileInFlight = (async () => {
@@ -2872,7 +3297,11 @@ async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
         items = data.nft_items.map((it) => ({
           index: parseNftIndexFromChainItem(it.index, it.metadata && it.metadata.name),
           address: it.address || '',
-          ownerRaw: it.sale ? '' : parseTonAddressToRaw(it.owner && (it.owner.address || it.owner)) || '',
+          ownerRaw:
+            parseTonAddressToRaw(
+              (it.sale && it.sale.owner && (it.sale.owner.address || it.sale.owner)) ||
+                (it.owner && (it.owner.address || it.owner))
+            ) || '',
           inSale: Boolean(it.sale),
         }));
       }
@@ -2890,8 +3319,8 @@ async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
           items = data.nft_items.map((it) => ({
             index: parseNftIndexFromChainItem(it.index, ''),
             address: it.address || '',
-            ownerRaw: parseTonAddressToRaw(it.owner_address) || '',
-            inSale: false,
+            ownerRaw: parseTonAddressToRaw(it.real_owner || it.owner_address) || '',
+            inSale: Boolean(it.on_sale),
           }));
         }
       } catch (_) {}
@@ -2908,15 +3337,20 @@ async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
       }
     }
 
+    const onChainIndexMap = new Map();
+    const onChainSerialToOwner = new Map();
     const walletItemsMap = new Map();
     let changed = false;
 
     for (const ci of items) {
       if (!ci || ci.index < 0 || ci.index >= 1000) continue;
+      onChainIndexMap.set(ci.index, ci);
       const spec = getManifestNftByIndex(ci.index);
+      onChainSerialToOwner.set(spec.serialCode, ci.ownerRaw || '');
       const idxKey = String(ci.index);
       const itemRaw = parseTonAddressToRaw(ci.address);
       const friendlyItemAddr = itemRaw ? rawToFriendlyTon(itemRaw, true) : ci.address;
+      const ownerUserId = (ci.ownerRaw && userByWallet.get(ci.ownerRaw)?.userId) || '';
 
       if (!reg.mintedByIndex[idxKey]) {
         reg.mintedByIndex[idxKey] = {
@@ -2925,14 +3359,13 @@ async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
           serialCode: spec.serialCode,
           tier: spec.tier,
           powerBoostPct: spec.powerBoostPct,
-          firstMinterUserId: '',
+          firstMinterUserId: ownerUserId,
           firstMinterWalletRaw: ci.ownerRaw || '',
           mintedAt: Date.now(),
           onChainAddress: friendlyItemAddr,
-          currentOwnerUserId: (ci.ownerRaw && userByWallet.get(ci.ownerRaw)?.userId) || '',
+          currentOwnerUserId: ownerUserId,
           currentOwnerWalletRaw: ci.ownerRaw || '',
         };
-        if (ci.index + 1 > reg.nextMintIndex) reg.nextMintIndex = ci.index + 1;
         changed = true;
       } else {
         const rec = reg.mintedByIndex[idxKey];
@@ -2940,30 +3373,17 @@ async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
           rec.onChainAddress = friendlyItemAddr;
           changed = true;
         }
-        const nextOwnerUid = (ci.ownerRaw && userByWallet.get(ci.ownerRaw)?.userId) || '';
-        if (rec.currentOwnerWalletRaw !== ci.ownerRaw || rec.currentOwnerUserId !== nextOwnerUid) {
+        if (rec.currentOwnerWalletRaw !== ci.ownerRaw || rec.currentOwnerUserId !== ownerUserId) {
           rec.currentOwnerWalletRaw = ci.ownerRaw || '';
-          rec.currentOwnerUserId = nextOwnerUid;
+          rec.currentOwnerUserId = ownerUserId;
           changed = true;
         }
-      }
-
-      // Remove from any user in DB whose wallet is NOT ci.ownerRaw!
-      for (const u of Object.values(db.users || {})) {
-        if (!u || u.walletRaw === ci.ownerRaw) continue;
-        const hadPurchase =
-          Array.isArray(u.nftPurchases) && u.nftPurchases.some((p) => p && p.serialCode === spec.serialCode);
-        const hadOnChain =
-          Array.isArray(u.onChainNfts) && u.onChainNfts.some((p) => p && p.serialCode === spec.serialCode);
-        if (hadPurchase || hadOnChain) {
-          accruePendingMining(cfg, u);
-          if (hadPurchase) {
-            u.nftPurchases = u.nftPurchases.filter((p) => !p || p.serialCode !== spec.serialCode);
-          }
-          if (hadOnChain) {
-            u.onChainNfts = u.onChainNfts.filter((p) => !p || p.serialCode !== spec.serialCode);
-          }
-          if (u.walletRaw) onChainNftCache.delete(u.walletRaw);
+        if (!rec.firstMinterWalletRaw && ci.ownerRaw) {
+          rec.firstMinterWalletRaw = ci.ownerRaw;
+          changed = true;
+        }
+        if (!rec.firstMinterUserId && ownerUserId) {
+          rec.firstMinterUserId = ownerUserId;
           changed = true;
         }
       }
@@ -2974,11 +3394,100 @@ async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
       }
     }
 
-    // Update onChainNfts for every connected wallet user in DB
+    // 3. Purge any phantom off-chain indices from reg.mintedByIndex that do NOT exist on-chain in the collection!
+    for (const [k, entry] of Object.entries(reg.mintedByIndex)) {
+      const idx0 = Number(entry?.index ?? k);
+      if (!onChainIndexMap.has(idx0)) {
+        // Relink txHash/minter info to the same wallet's real on-chain NFT if it was unlinked
+        const phantomWallet = entry && (entry.firstMinterWalletRaw || entry.currentOwnerWalletRaw);
+        if (entry && entry.txHash && phantomWallet) {
+          for (const [realIdx, realCi] of onChainIndexMap.entries()) {
+            const realEntry = reg.mintedByIndex[String(realIdx)];
+            if (
+              realEntry &&
+              !realEntry.txHash &&
+              (realCi.ownerRaw === phantomWallet || realEntry.firstMinterWalletRaw === phantomWallet)
+            ) {
+              realEntry.txHash = entry.txHash;
+              realEntry.bocKey = entry.bocKey || realEntry.bocKey || '';
+              if (entry.firstMinterUserId) realEntry.firstMinterUserId = entry.firstMinterUserId;
+              if (entry.mintedAt) realEntry.mintedAt = entry.mintedAt;
+              const txRefKey = `chain_nft_${entry.txHash}`;
+              if (db.usedTxRefs && db.usedTxRefs[txRefKey]) {
+                db.usedTxRefs[txRefKey].nftIndex = realIdx;
+                db.usedTxRefs[txRefKey].serialCode = realEntry.serialCode;
+              }
+              break;
+            }
+          }
+        }
+        delete reg.mintedByIndex[k];
+        delete reg.firstMintBonusClaimed[k];
+        changed = true;
+      }
+    }
+
+    // 4. Remove any NFT from any user's nftPurchases or onChainNfts if it does not exist on-chain OR its on-chain owner is not that user's wallet!
+    for (const u of Object.values(db.users || {})) {
+      if (!u || typeof u !== 'object') continue;
+      if (Array.isArray(u.nftPurchases) && u.nftPurchases.length > 0) {
+        const filteredPurchases = u.nftPurchases.filter((p) => {
+          if (!p || !p.serialCode) return false;
+          if (!onChainSerialToOwner.has(p.serialCode)) return false;
+          const trueOwnerWallet = onChainSerialToOwner.get(p.serialCode);
+          return Boolean(u.walletRaw && trueOwnerWallet && u.walletRaw === trueOwnerWallet);
+        });
+        if (filteredPurchases.length !== u.nftPurchases.length) {
+          accruePendingMining(cfg, u);
+          u.nftPurchases = filteredPurchases;
+          if (u.walletRaw) onChainNftCache.delete(u.walletRaw);
+          changed = true;
+        }
+      }
+      if (!u.walletRaw && Array.isArray(u.onChainNfts) && u.onChainNfts.length > 0) {
+        accruePendingMining(cfg, u);
+        u.onChainNfts = [];
+        changed = true;
+      }
+    }
+
+    // 5. Update onChainNfts for every connected wallet user in DB
     for (const [wRaw, u] of userByWallet.entries()) {
       const nextList = walletItemsMap.get(wRaw) || [];
       onChainNftCache.set(wRaw, { time: Date.now(), items: nextList });
       if (applyWalletOnChainNftSnapshot(cfg, u, nextList)) {
+        changed = true;
+      }
+    }
+
+    // 6. Recalculate nextMintIndex, userMintCounts, walletMintCounts, and u.nftMintCount strictly from on-chain registry
+    let trueNextMintIndex = 0;
+    const newUserMintCounts = {};
+    const newWalletMintCounts = {};
+    for (const [k, entry] of Object.entries(reg.mintedByIndex)) {
+      if (!entry) continue;
+      const idx0 = Number(entry.index ?? k);
+      if (Number.isFinite(idx0) && idx0 + 1 > trueNextMintIndex) {
+        trueNextMintIndex = idx0 + 1;
+      }
+      const uid = String(entry.firstMinterUserId || entry.currentOwnerUserId || '').trim();
+      const wRaw = String(entry.firstMinterWalletRaw || entry.currentOwnerWalletRaw || '').trim();
+      if (uid) newUserMintCounts[uid] = (newUserMintCounts[uid] || 0) + 1;
+      if (wRaw) newWalletMintCounts[wRaw] = (newWalletMintCounts[wRaw] || 0) + 1;
+    }
+    if (reg.nextMintIndex !== trueNextMintIndex) {
+      reg.nextMintIndex = trueNextMintIndex;
+      changed = true;
+    }
+    reg.userMintCounts = newUserMintCounts;
+    reg.walletMintCounts = newWalletMintCounts;
+    for (const [uid, u] of Object.entries(db.users || {})) {
+      if (!u || typeof u !== 'object') continue;
+      const wRaw = parseTonAddressToRaw(u.walletRaw || '') || '';
+      const cnt = Math.max(newUserMintCounts[uid] || 0, wRaw ? newWalletMintCounts[wRaw] || 0 : 0);
+      if (u.nftMintCount !== cnt) {
+        u.nftMintCount = cnt;
+        u.everMintedNft = cnt > 0;
         changed = true;
       }
     }
@@ -2997,11 +3506,25 @@ async function reconcileCollectionOnChainOwnership(cfg, forceRefresh = false) {
 function getEffectiveUserNfts(user) {
   const inAppList = Array.isArray(user && user.nftPurchases) ? user.nftPurchases : [];
   const onChainList = user && user.walletRaw && Array.isArray(user.onChainNfts) ? user.onChainNfts : [];
+  const cfgForNft = loadConfig();
+  const contractMintMode = Boolean(cfgForNft.nftSale && cfgForNft.nftSale.collectionAddress);
+  const hasOnChainSync = Boolean(
+    contractMintMode && user && (user.lastNftOnChainSyncAt > 0 || onChainList.length > 0)
+  );
+  const onChainSerials = new Set(onChainList.map((oc) => oc && oc.serialCode).filter(Boolean));
   const bySerial = new Map();
   const combined = [];
 
   for (const item of inAppList) {
     if (!item) continue;
+    // When on-chain collection contract is active, ignore any unbacked off-chain phantom item
+    if (hasOnChainSync && !onChainSerials.has(item.serialCode) && !item.onChainAddress) {
+      continue;
+    }
+    if (contractMintMode && !item.onChainAddress && !onChainSerials.has(item.serialCode)) {
+      continue;
+    }
+    if (item.serialCode && bySerial.has(item.serialCode)) continue;
     const copy = { ...item };
     if (copy.serialCode) bySerial.set(copy.serialCode, copy);
     combined.push(copy);
@@ -3715,11 +4238,11 @@ function parseBody(req) {
 }
 
 async function sendJson(res, status, data) {
-  if (status === 200 && res._flushCloud) {
-    await flushCloudDB();
+  if (dbDirty || (status === 200 && res._flushCloud)) {
+    await flushCloudDB().catch(() => {});
   } else if (status === 200 && process.env.VERCEL && Date.now() - lastCloudWriteAt > 25000) {
     lastCloudWriteAt = Date.now();
-    await flushCloudDB();
+    await flushCloudDB().catch(() => {});
   }
   const bodyBuf = Buffer.from(JSON.stringify(data), 'utf8');
   const acceptEncoding = String((res._reqHeaders && res._reqHeaders['accept-encoding']) || '');
@@ -3792,7 +4315,7 @@ const server = http.createServer(async (req, res) => {
 
   // Telegram Bot Webhook Endpoint (Used automatically when deployed with HTTPS publicAppUrl)
   if (req.method === 'POST' && pathname === '/api/telegram/webhook') {
-    await ensureCloudDBLoaded();
+    await ensureCloudDBLoaded(true);
     const update = await parseBody(req);
     if (cfg.botToken && update && typeof update === 'object') {
       await handleTelegramUpdate(cfg, update).catch(() => {});
@@ -3911,7 +4434,10 @@ const server = http.createServer(async (req, res) => {
 
   // POST API Endpoints
   if (req.method === 'POST' && pathname.startsWith('/api/')) {
-    await ensureCloudDBLoaded();
+    const isMutatingEndpoint =
+      pathname !== '/api/user/sync' &&
+      pathname !== '/api/admin/withdrawals';
+    await ensureCloudDBLoaded(isMutatingEndpoint);
     res._flushCloud = pathname !== '/api/user/sync';
     const body = await parseBody(req);
     getOrCreateUser(cfg, body);
@@ -4333,6 +4859,7 @@ const server = http.createServer(async (req, res) => {
       const prevLevel = rawUser.level || 1;
 
       return withUserTxLock(`tx_${rawUser.walletRaw || rawUser.userId}`, async () => {
+        await ensureCloudDBLoaded(true);
         // Support on-chain auto-detection if txBoc callback was dropped by Telegram Desktop / WebView
         if (!txBoc || txBoc.length < 20) {
           const autoPkg = await tryAutoPresaleFromChainUnlocked(cfg, rawUser, true, true);
@@ -4384,7 +4911,7 @@ const server = http.createServer(async (req, res) => {
             Number(p.tonPaid) === Number(pkg.ton) &&
             (String(p.userId) === String(rawUser.userId) || parseTonAddressToRaw(p.walletAddress) === rawUser.walletRaw) &&
             Math.abs(nowMs - Number(p.createdAt || 0)) < 60 * 60 * 1000 &&
-            ((p.txHash && !p.bocKey) || p.bocKey === bocKey)
+            ((p.txHash && !p.bocKey) || p.bocKey === bocKey || Math.abs(nowMs - Number(p.createdAt || 0)) < 90 * 1000)
         );
 
         if (existingChainOrRecentReceipt) {
@@ -4402,8 +4929,14 @@ const server = http.createServer(async (req, res) => {
             at: nowMs,
             linkedReceipt: existingChainOrRecentReceipt.id,
           };
+          if (!db.notifiedAdminRefs || typeof db.notifiedAdminRefs !== 'object') db.notifiedAdminRefs = {};
+          db.notifiedAdminRefs[`ps_boc_${bocKey}`] = nowMs;
+          if (existingChainOrRecentReceipt.id) {
+            db.notifiedAdminRefs[`ps_id_${existingChainOrRecentReceipt.id}`] = nowMs;
+          }
           clearPendingWalletTxIntent(rawUser.walletRaw, 'presale');
           saveDB(true);
+          await flushCloudDB().catch(() => {});
 
           const view = getOrCreateUser(cfg, body);
           const leveledUp = view.level > prevLevel;
@@ -4459,13 +4992,16 @@ const server = http.createServer(async (req, res) => {
         rawUser.presalePurchases.push(receipt);
         db.presale.purchases.push({ ...receipt });
         saveDB(true);
+        await flushCloudDB().catch(() => {});
 
-        notifyTelegramUser(
-          cfg,
-          rawUser.userId,
-          `🚀 *Presale Purchase Successful!*\n\n• *Paid:* ${pkg.ton} GRAM\n• *Coins Received:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} GRAM`
-        ).catch(() => {});
-        notifyAdminsNewPresale(cfg, rawUser, receipt).catch(() => {});
+        await Promise.allSettled([
+          notifyTelegramUser(
+            cfg,
+            rawUser.userId,
+            `🚀 *Presale Purchase Successful!*\n\n• *Paid:* ${pkg.ton} GRAM\n• *Coins Received:* +${pkg.coins.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Wallet Quota Used:* ${db.presale.walletTonSpent[rawUser.walletRaw]} / ${maxTonWallet} GRAM`
+          ),
+          notifyAdminsNewPresale(cfg, rawUser, receipt),
+        ]);
 
         const view = getOrCreateUser(cfg, body);
         const leveledUp = view.level > prevLevel;
@@ -4509,8 +5045,11 @@ const server = http.createServer(async (req, res) => {
 
       const txBoc = String(body.txBoc || '').trim();
       const prevLevel = rawUser.level || 1;
+      const contractMintMode = Boolean(parseTonAddressToRaw(cfg.nftSale?.collectionAddress || ''));
 
       return withUserTxLock(`tx_${rawUser.walletRaw || rawUser.userId}`, async () => {
+        await ensureCloudDBLoaded(true);
+
         // 1. On-chain auto-detection fallback (when Telegram WebView / mobile wallet drops txBoc callback)
         if (!txBoc || txBoc.length < 20) {
           const autoReceipt = await tryAutoNftMintFromChainUnlocked(cfg, rawUser, true, true);
@@ -4554,7 +5093,13 @@ const server = http.createServer(async (req, res) => {
         }
 
         // Scan on-chain first so if the payment already indexed, we link bocKey without double-minting!
-        const chainAuto = await tryAutoNftMintFromChainUnlocked(cfg, rawUser, true, true);
+        let chainAuto = await tryAutoNftMintFromChainUnlocked(cfg, rawUser, true, true);
+        if (!chainAuto && contractMintMode) {
+          // Wait briefly for TON blockchain indexer to finalize the new NFT item before returning
+          await new Promise((resolve) => setTimeout(resolve, 2500));
+          chainAuto = await tryAutoNftMintFromChainUnlocked(cfg, rawUser, true, true);
+        }
+
         if (chainAuto) {
           chainAuto.bocKey = bocKey;
           db.usedTxRefs[bocKey] = {
@@ -4567,6 +5112,7 @@ const server = http.createServer(async (req, res) => {
             linkedReceipt: chainAuto.id,
           };
           saveDB(true);
+          await flushCloudDB().catch(() => {});
           const view = getOrCreateUser(cfg, body);
           const leveledUp = view.level > prevLevel;
           const awarded = Number(chainAuto.instantCoins || 0);
@@ -4579,6 +5125,26 @@ const server = http.createServer(async (req, res) => {
             leveledUp,
             pulledNft: chainAuto,
             message: `💎 MINTED [${chainAuto.tier}]! ${chainAuto.name} ${chainAuto.serialCode} (+${chainAuto.powerBoostPct}% Mining Power)${bonusTxt}`,
+            data: buildSyncPayload(cfg, view),
+          });
+        }
+
+        // CRITICAL: When on-chain NFT collection contract is active, NEVER mint a phantom off-chain NFT from an unindexed txBoc!
+        // The TON smart contract assigns the exact item index on-chain; our 3.5s auto-poll will detect it as soon as the block confirms.
+        if (contractMintMode) {
+          recordPendingWalletTxIntent(rawUser.walletRaw, 'nft', {
+            userId: rawUser.userId,
+          });
+          saveDB(true);
+          await flushCloudDB().catch(() => {});
+          const view = getOrCreateUser(cfg, body);
+          return sendJson(res, 200, {
+            ok: true,
+            pendingConfirmation: true,
+            leveledUp: false,
+            pulledNft: null,
+            message:
+              '⏳ NFT Mint transaction broadcast to TON blockchain! Waiting for on-chain NFT confirmation (3-10 seconds)...',
             data: buildSyncPayload(cfg, view),
           });
         }
@@ -4603,6 +5169,7 @@ const server = http.createServer(async (req, res) => {
           });
         }
 
+        await flushCloudDB().catch(() => {});
         const receipt = mintRes.receipt;
         const awardedMaxima = mintRes.awardedMaxima || 0;
         const spec = mintRes.spec;
@@ -5033,13 +5600,16 @@ const server = http.createServer(async (req, res) => {
 
       checkAndActivateReferral(cfg, rawUser);
       saveDB(true);
+      await flushCloudDB().catch(() => {});
 
-      notifyTelegramUser(
-        cfg,
-        rawUser.userId,
-        `✅ *Wallet Verified Automatically!*\n\nYour *${cfg.wallet.verificationFeeTon} GRAM* verification payment has been confirmed. *Withdraw ${cfg.token.symbol}* is now unlocked!`
-      ).catch(() => {});
-      notifyAdminsWalletVerified(cfg, rawUser).catch(() => {});
+      await Promise.allSettled([
+        notifyTelegramUser(
+          cfg,
+          rawUser.userId,
+          `✅ *Wallet Verified Automatically!*\n\nYour *${cfg.wallet.verificationFeeTon} GRAM* verification payment has been confirmed. *Withdraw ${cfg.token.symbol}* is now unlocked!`
+        ),
+        notifyAdminsWalletVerified(cfg, rawUser, bocKey),
+      ]);
 
       const view = getOrCreateUser(cfg, body);
       return sendJson(res, 200, {
@@ -5056,72 +5626,114 @@ const server = http.createServer(async (req, res) => {
       const feeCoins = Number(cfg.wallet?.withdrawFeeCoins ?? 100);
       const feeTon = Number(cfg.wallet?.verificationFeeTon ?? 0.1);
 
-      if (!rawUser.walletRaw) {
-        return sendJson(res, 403, {
-          ok: false,
-          error: '🔒 Please connect your personal wallet via TON Connect first!',
-        });
-      }
-      if (findWalletOwnerUserId(rawUser.walletRaw, rawUser.userId)) {
-        return sendJson(res, 409, {
-          ok: false,
-          code: 'WALLET_ALREADY_BOUND',
-          error:
-            '⛔ This wallet is already registered on another Telegram account! Withdrawal rejected because only 1 wallet is allowed per account.',
-        });
-      }
-      if (!rawUser.walletVerified) {
-        return sendJson(res, 403, {
-          ok: false,
-          error: `🛡️ Please complete wallet verification (${feeTon} GRAM) first before withdrawing!`,
-        });
-      }
-      if (!Number.isFinite(amount) || amount < minW) {
-        return sendJson(res, 400, {
-          ok: false,
-          error: `Minimum withdrawal amount is ${minW.toLocaleString('en-US')} ${cfg.token.symbol}!`,
-        });
-      }
-      if (rawUser.balance + 1e-9 < amount) {
-        return sendJson(res, 400, {
-          ok: false,
-          error: `Insufficient in-app balance (Available: ${rawUser.balance.toFixed(2)} ${cfg.token.symbol}).`,
-        });
-      }
+      return withUserTxLock(`wd_${rawUser.walletRaw || rawUser.userId}`, async () => {
+        await ensureCloudDBLoaded(true);
+        const freshUser = db.users[String(body.userId || rawUser.userId).trim()] || rawUser;
+        ensureUserSchema(freshUser);
 
-      accruePendingMining(cfg, rawUser);
-      const netReceived = +(amount - feeCoins).toFixed(4);
-      rawUser.balance = Math.max(0, +(rawUser.balance - amount).toFixed(6));
+        if (!freshUser.walletRaw) {
+          return sendJson(res, 403, {
+            ok: false,
+            error: '🔒 Please connect your personal wallet via TON Connect first!',
+          });
+        }
+        if (findWalletOwnerUserId(freshUser.walletRaw, freshUser.userId)) {
+          return sendJson(res, 409, {
+            ok: false,
+            code: 'WALLET_ALREADY_BOUND',
+            error:
+              '⛔ This wallet is already registered on another Telegram account! Withdrawal rejected because only 1 wallet is allowed per account.',
+          });
+        }
+        if (!freshUser.walletVerified) {
+          return sendJson(res, 403, {
+            ok: false,
+            error: `🛡️ Please complete wallet verification (${feeTon} GRAM) first before withdrawing!`,
+          });
+        }
+        if (!Number.isFinite(amount) || amount < minW) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: `Minimum withdrawal amount is ${minW.toLocaleString('en-US')} ${cfg.token.symbol}!`,
+          });
+        }
 
-      const wdRecord = {
-        id: `WD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
-        userId: rawUser.userId,
-        username: rawUser.username,
-        firstName: rawUser.firstName,
-        requestedAmount: amount,
-        feeCoins,
-        netAmount: netReceived,
-        walletAddress: rawUser.walletFriendly,
-        walletRaw: rawUser.walletRaw,
-        contractAddress: cfg.token.contractAddress,
-        status: 'QUEUED FOR ON-CHAIN PAYOUT',
-        createdAt: Date.now(),
-      };
-      rawUser.withdrawals.push(wdRecord);
-      db.withdrawals.push(wdRecord);
+        // Enforce 1 active PENDING withdrawal per user/wallet and 60s anti-spam cooldown
+        const allWds = Array.isArray(db.withdrawals) ? db.withdrawals : [];
+        const existingPending = allWds.find(
+          (w) =>
+            w &&
+            isWithdrawPending(w) &&
+            (String(w.userId) === String(freshUser.userId) ||
+              (freshUser.walletRaw && parseTonAddressToRaw(w.walletRaw || w.walletAddress) === freshUser.walletRaw))
+        );
+        if (existingPending) {
+          return sendJson(res, 400, {
+            ok: false,
+            error:
+              '⏳ You already have a pending withdrawal request in the payout queue. Please wait until your current withdrawal is processed before submitting another one.',
+          });
+        }
 
-      notifyTelegramUser(
-        cfg,
-        rawUser.userId,
-        `💸 *Withdrawal Request Received!*\n\n• *Withdrawal Amount:* ${amount.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Withdrawal Fee:* -${feeCoins} ${cfg.token.symbol}\n• *Net Payout:* ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Recipient Wallet:* \`${rawUser.walletFriendly}\`\n• *Jetton Contract:* \`${cfg.token.contractAddress}\``
-      ).catch(() => {});
-      notifyAdminsNewWithdraw(cfg, rawUser, wdRecord).catch(() => {});
+        const recentWd = allWds.find(
+          (w) =>
+            w &&
+            (String(w.userId) === String(freshUser.userId) ||
+              (freshUser.walletRaw && parseTonAddressToRaw(w.walletRaw || w.walletAddress) === freshUser.walletRaw)) &&
+            Date.now() - Number(w.createdAt || 0) < 60000
+        );
+        if (recentWd) {
+          return sendJson(res, 429, {
+            ok: false,
+            error: '⏳ Please wait at least 60 seconds between withdrawal requests.',
+          });
+        }
 
-      const view = getOrCreateUser(cfg, body);
-      return sendJson(res, 200, {
-        ok: true,
-        message: `💸 Withdrawal of ${amount.toLocaleString('en-US')} ${cfg.token.symbol} submitted! (Fee: ${feeCoins} • Net: ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol})`,
-        data: buildSyncPayload(cfg, view),
+        accruePendingMining(cfg, freshUser);
+        if (freshUser.balance + 1e-9 < amount) {
+          return sendJson(res, 400, {
+            ok: false,
+            error: `Insufficient in-app balance (Available: ${freshUser.balance.toFixed(2)} ${cfg.token.symbol}).`,
+          });
+        }
+
+        const netReceived = +(amount - feeCoins).toFixed(4);
+        freshUser.balance = Math.max(0, +(freshUser.balance - amount).toFixed(6));
+
+        const wdRecord = {
+          id: `WD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+          userId: freshUser.userId,
+          username: freshUser.username,
+          firstName: freshUser.firstName,
+          requestedAmount: amount,
+          feeCoins,
+          netAmount: netReceived,
+          walletAddress: freshUser.walletFriendly,
+          walletRaw: freshUser.walletRaw,
+          contractAddress: cfg.token.contractAddress,
+          status: 'QUEUED FOR ON-CHAIN PAYOUT',
+          createdAt: Date.now(),
+        };
+        freshUser.withdrawals.push(wdRecord);
+        db.withdrawals.push(wdRecord);
+        saveDB(true);
+        await flushCloudDB().catch(() => {});
+
+        await Promise.allSettled([
+          notifyTelegramUser(
+            cfg,
+            freshUser.userId,
+            `💸 *Withdrawal Request Received!*\n\n• *Withdrawal Amount:* ${amount.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Withdrawal Fee:* -${feeCoins} ${cfg.token.symbol}\n• *Net Payout:* ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol}\n• *Recipient Wallet:* \`${freshUser.walletFriendly}\`\n• *Jetton Contract:* \`${cfg.token.contractAddress}\``
+          ),
+          notifyAdminsNewWithdraw(cfg, freshUser, wdRecord),
+        ]);
+
+        const view = getOrCreateUser(cfg, body);
+        return sendJson(res, 200, {
+          ok: true,
+          message: `💸 Withdrawal of ${amount.toLocaleString('en-US')} ${cfg.token.symbol} submitted! (Fee: ${feeCoins} • Net: ${netReceived.toLocaleString('en-US')} ${cfg.token.symbol})`,
+          data: buildSyncPayload(cfg, view),
+        });
       });
     }
 
@@ -5817,12 +6429,45 @@ function buildWithdrawAdminKeyboard(wdId) {
 }
 
 async function notifyAdminsNewWithdraw(cfg, rawUser, wdRecord) {
+  if (!wdRecord || !wdRecord.id) return;
+  if (!db.notifiedAdminRefs || typeof db.notifiedAdminRefs !== 'object') db.notifiedAdminRefs = {};
+  const idKey = `wd_id_${wdRecord.id}`;
+  if (db.notifiedAdminRefs[idKey]) return;
+  db.notifiedAdminRefs[idKey] = Date.now();
+  saveDB(true);
+  await flushCloudDB().catch(() => {});
+
   const html = buildWithdrawAdminCardHtml(cfg, wdRecord, rawUser);
   const kb = buildWithdrawAdminKeyboard(wdRecord.id);
   await notifyAdminsHtml(cfg, html, kb);
 }
 
 async function notifyAdminsNewPresale(cfg, rawUser, receipt) {
+  if (!receipt) return;
+  if (!db.notifiedAdminRefs || typeof db.notifiedAdminRefs !== 'object') db.notifiedAdminRefs = {};
+  const idKey = receipt.id ? `ps_id_${receipt.id}` : '';
+  const txKey = receipt.txHash ? `ps_tx_${normalizeTxHashHex(receipt.txHash)}` : '';
+  const bocKey = receipt.bocKey ? `ps_boc_${receipt.bocKey}` : '';
+  const bucketTs = Math.floor(Number(receipt.createdAt || Date.now()) / 90000);
+  const bucketKey = `ps_u_${receipt.userId || (rawUser && rawUser.userId) || ''}_${receipt.tonPaid}_${bucketTs}`;
+
+  if (
+    (idKey && db.notifiedAdminRefs[idKey]) ||
+    (txKey && db.notifiedAdminRefs[txKey]) ||
+    (bocKey && db.notifiedAdminRefs[bocKey]) ||
+    db.notifiedAdminRefs[bucketKey]
+  ) {
+    return;
+  }
+
+  const now = Date.now();
+  if (idKey) db.notifiedAdminRefs[idKey] = now;
+  if (txKey) db.notifiedAdminRefs[txKey] = now;
+  if (bocKey) db.notifiedAdminRefs[bocKey] = now;
+  db.notifiedAdminRefs[bucketKey] = now;
+  saveDB(true);
+  await flushCloudDB().catch(() => {});
+
   const sym = escHtml(cfg.token.symbol || 'MAXIMA');
   const maxPool = Number(cfg.presale?.maxTotalPresaleCoins || 20000000);
   const totalTon = Number(db.presale?.totalTonRaised || 0);
@@ -5843,7 +6488,20 @@ async function notifyAdminsNewPresale(cfg, rawUser, receipt) {
   await notifyAdminsHtml(cfg, html, [[{ text: '🚀 View All Presale Data', callback_data: 'adm:presale' }]]);
 }
 
-async function notifyAdminsWalletVerified(cfg, rawUser) {
+async function notifyAdminsWalletVerified(cfg, rawUser, txRef = '') {
+  if (!rawUser) return;
+  if (!db.notifiedAdminRefs || typeof db.notifiedAdminRefs !== 'object') db.notifiedAdminRefs = {};
+  const walletKey = `ver_w_${rawUser.walletRaw || rawUser.userId || ''}`;
+  const txKey = txRef ? `ver_tx_${txRef}` : '';
+  if (db.notifiedAdminRefs[walletKey] || (txKey && db.notifiedAdminRefs[txKey])) {
+    return;
+  }
+  const now = Date.now();
+  db.notifiedAdminRefs[walletKey] = now;
+  if (txKey) db.notifiedAdminRefs[txKey] = now;
+  saveDB(true);
+  await flushCloudDB().catch(() => {});
+
   const feeTon = cfg.wallet?.verificationFeeTon ?? 0.1;
   const html = [
     `🛡️ <b>NEW WALLET VERIFICATION (${feeTon} GRAM)!</b>`,
