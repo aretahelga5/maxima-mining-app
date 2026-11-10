@@ -2210,8 +2210,9 @@ async function tryAutoPresaleFromChainUnlocked(cfg, user, forceRefresh = false, 
   if (!user.walletRaw) return null;
   const ownerOfWallet = findWalletOwnerUserId(user.walletRaw, user.userId);
   if (ownerOfWallet) return null;
-  const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-10T23:59:59Z');
-  if (Number.isFinite(presaleEndsAtMs) && Date.now() >= presaleEndsAtMs) return null;
+  // Presale tetap dibuka dan tetap otomatis terdeteksi meskipun waktu presale telah berakhir (Ended)
+  // const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-10T23:59:59Z');
+  // if (Number.isFinite(presaleEndsAtMs) && Date.now() >= presaleEndsAtMs) return null;
 
   const packages = Array.isArray(cfg.presale?.packages) ? cfg.presale.packages : [];
   if (!packages.length) return null;
@@ -4953,13 +4954,8 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-10T23:59:59Z');
-      if (Number.isFinite(presaleEndsAtMs) && Date.now() >= presaleEndsAtMs) {
-        return sendJson(res, 400, {
-          ok: false,
-          error: '⏳ MAXIMA Presale has ended (November 10, 2026)!',
-        });
-      }
+      // Presale tetap bisa dibeli oleh user meskipun waktu presale telah berakhir (Ended)
+      // const presaleEndsAtMs = Date.parse(cfg.presale?.endsAt || '2026-11-10T23:59:59Z');
 
       const packageId = String(body.packageId || '').trim();
       const txBoc = String(body.txBoc || '').trim();
