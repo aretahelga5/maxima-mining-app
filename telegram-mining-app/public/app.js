@@ -1481,7 +1481,7 @@
             const futureSpeed = miningSpeed(futureLvl);
             const exceedsWallet = user.walletConnected && pkg.ton > remTon + 1e-9;
             const exceedsPool = presaleState && pkg.coins > presaleState.totalCoinsRemaining;
-            const disabled = isPresaleEnded || exceedsWallet || exceedsPool;
+            const disabled = exceedsWallet || exceedsPool;
 
             return `
               <div class="presale-pkg-card ${pkg.ton === 100 ? 'popular' : ''}">
@@ -1499,9 +1499,7 @@
                     ${disabled ? 'disabled' : ''}
                   >
                     ${
-                      isPresaleEnded
-                        ? t('presale_ended_btn')
-                        : exceedsWallet
+                      exceedsWallet
                         ? t('pkg_quota_exceeded', { rem: remTon })
                         : t('btn_buy_presale', { ton: pkg.ton })
                     }
@@ -3763,31 +3761,23 @@
     const navBtn = $('navBtnPresale') || document.querySelector('.nav-btn[data-tab="tab-presale"]');
     const navBar = $('bottomNavBar') || document.querySelector('.bottom-nav');
     const tabPane = $('tab-presale');
+    // Tetap buka tab Presale meskipun waktu presale sudah berakhir (Ended)
+    if (navBtn && navBtn.style.display === 'none') {
+      navBtn.style.display = '';
+    }
+    if (navBar) navBar.classList.remove('presale-hidden');
+    if (tabPane && tabPane.style.display === 'none') {
+      tabPane.style.display = '';
+    }
+    // Tampilkan status PRESALE ENDED pada box countdown jika waktu sudah habis
+    const endsLbl = document.querySelector('[data-i18n="presale_ends_lbl"]');
+    const endDatePill = $('presaleEndDatePill');
     if (isEnded) {
-      if (navBtn && navBtn.style.display !== 'none') {
-        const wasActive = navBtn.classList.contains('active') || (tabPane && tabPane.classList.contains('active'));
-        navBtn.style.display = 'none';
-        navBtn.classList.remove('active');
-        if (navBar) navBar.classList.add('presale-hidden');
-        if (tabPane) {
-          tabPane.classList.remove('active');
-          tabPane.style.display = 'none';
-        }
-        if (wasActive) {
-          const miningBtn = document.querySelector('.nav-btn[data-tab="tab-mining"]');
-          const miningPane = $('tab-mining');
-          if (miningBtn) miningBtn.classList.add('active');
-          if (miningPane) miningPane.classList.add('active');
-        }
-      }
+      if (endsLbl) endsLbl.textContent = '⏳ ' + t('presale_ended_btn').toUpperCase();
+      if (endDatePill) endDatePill.textContent = 'ENDED · 10 NOV 2026';
     } else {
-      if (navBtn && navBtn.style.display === 'none') {
-        navBtn.style.display = '';
-      }
-      if (navBar) navBar.classList.remove('presale-hidden');
-      if (tabPane && tabPane.style.display === 'none') {
-        tabPane.style.display = '';
-      }
+      if (endsLbl) endsLbl.textContent = t('presale_ends_lbl');
+      if (endDatePill) endDatePill.textContent = '10 NOV 2026';
     }
   }
 
